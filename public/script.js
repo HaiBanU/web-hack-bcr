@@ -30,8 +30,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // 5. Hiệu ứng
     setInterval(generateMatrixCode, 50);     
-    startFakeTransactions();                  
-    resetCardsUI();                           
+    resetCardsUI();      
+    
+    // Bắt đầu Animation Chart
+    startWaveChartLoop();
 });
 
 // --- LOGIC TRỪ TIỀN (SỬA THÀNH 5) ---
@@ -84,8 +86,14 @@ socket.on('server_update', (allTables) => {
         const serverRes = (tableData.result || "").split('');
         if (serverRes.length > history.length || history.length === 0) {
             history = serverRes;
+            
+            // Render Cầu Lớn (Big Road)
             renderBigRoadGrid(history);
-            drawTrendChart(history); // VẼ SÓNG
+            // Render Cầu Giọt Nước (Bead Plate) - MỚI
+            renderBeadPlate(history);
+            // Cập nhật dữ liệu cho Chart (nhưng vẽ bằng Loop riêng)
+            updateChartData(history); 
+
             if (history.length > 0) {
                 const lastWin = history[history.length - 1];
                 addLog(`-------------------------------`);
@@ -115,16 +123,13 @@ function runPredictionSystem(historyArr) {
     const cleanHist = historyArr.filter(x => x !== 'T');
     let prediction = 'B'; let confidence = 50; let reason = "AI RANDOM SCAN";
 
+    // Logic giả lập phân tích
     if (cleanHist.length >= 3) {
         const len = cleanHist.length;
         const last1 = cleanHist[len-1]; const last2 = cleanHist[len-2]; const last3 = cleanHist[len-3];
         if (last1 === last2 && last2 === last3) { prediction = last1; confidence = Math.floor(Math.random() * (95 - 85) + 85); reason = `DETECTED DRAGON (${last1})`; } 
         else if (last1 !== last2 && last2 !== last3) { prediction = (last1 === 'P') ? 'B' : 'P'; confidence = Math.floor(Math.random() * (90 - 80) + 80); reason = "PING-PONG PATTERN"; } 
-        else if (cleanHist.length >= 6) {
-            const last6 = cleanHist.slice(-6);
-            if (last6.every(v => v === last1)) { prediction = (last1 === 'P') ? 'B' : 'P'; confidence = 98; reason = "BREAK LONG DRAGON"; }
-            else { prediction = (Math.random() > 0.5) ? 'P' : 'B'; confidence = Math.floor(Math.random() * (75 - 60) + 60); reason = "MATRIX ANALYSIS V18"; }
-        } else { prediction = (Math.random() > 0.5) ? 'P' : 'B'; confidence = 65; reason = "HISTORY PROBABILITY"; }
+        else { prediction = (Math.random() > 0.5) ? 'P' : 'B'; confidence = Math.floor(Math.random() * (75 - 60) + 60); reason = "MATRIX ANALYSIS V18"; }
     } else { prediction = (Math.random() > 0.5) ? 'P' : 'B'; reason = "WAITING DATA..."; }
 
     setTimeout(() => { addLog(`>> ANALYZING NEXT ROUND...`); }, 500);
@@ -246,19 +251,6 @@ function generateMatrixCode() {
         el.appendChild(div); el.scrollTop = el.scrollHeight; if(el.children.length > 20) el.removeChild(el.firstChild);
     }
 }
-function startFakeTransactions() {
-    const box = document.getElementById('transLog');
-    const names = ["User99", "HackerVN", "ProPlayer", "Bot_AI", "Winner88"];
-    setInterval(() => {
-        const n = names[Math.floor(Math.random()*names.length)];
-        const side = Math.random()>0.5 ? "PLAYER" : "BANKER";
-        const amt = Math.floor(Math.random()*500)+100;
-        const color = side==="PLAYER"?"#00f3ff":"#ff003c";
-        const div = document.createElement('div'); div.className = "trans-item";
-        div.innerHTML = `<span style="color:#aaa">${n}</span><span style="color:${color}">${side}</span><span style="color:#fff">$${amt}k</span>`;
-        box.prepend(div); if(box.children.length > 6) box.lastChild.remove();
-    }, 2500);
-}
 function initCardRain() {
     const c = document.getElementById('cardRain'); if(!c) return;
     const ctx = c.getContext('2d');
@@ -275,6 +267,10 @@ function initCardRain() {
         }
     }, 50);
 }
+
+// ============================================
+// LOGIC CẦU LỚN (BIG ROAD) - BÊN PHẢI
+// ============================================
 function renderBigRoadGrid(res) {
     const grid = document.getElementById('bigRoadGrid'); if(!grid) return;
     let processed = []; res.forEach(c => { if(c==='T') { if(processed.length>0) processed[processed.length-1].hasTie=true; } else processed.push({type:c, hasTie:false}); });
@@ -294,54 +290,183 @@ function renderBigRoadGrid(res) {
     grid.innerHTML = html;
 }
 
-// --- VẼ ĐỒ THỊ SÓNG (WAVE) ---
-function drawTrendChart(hist) {
-    const c = document.getElementById('trendChart'); if (!c) return;
-    if (c.parentElement) { c.width = c.parentElement.clientWidth; c.height = c.parentElement.clientHeight; }
-    const ctx = c.getContext('2d'); const w = c.width; const h = c.height;
-    ctx.clearRect(0, 0, w, h);
+// ============================================
+// LOGIC CẦU GIỌT NƯỚC (BEAD PLATE) - BÊN TRÁI
+// ============================================
+function renderBeadPlate(res) {
+    const grid = document.getElementById('beadPlateGrid');
+    if(!grid) return;
     
-    const dataSlice = hist.slice(-25); if (dataSlice.length < 2) return;
-    let currentValue = 0; let points = [{ val: 0, res: 'START' }]; 
-    dataSlice.forEach(res => {
-        if (res === 'P') currentValue += 1; else if (res === 'B') currentValue -= 1;
-        points.push({ val: currentValue, res: res });
+    // Bead Plate hiển thị theo cột dọc: Cột 1 (0-5), Cột 2 (6-11)...
+    // Chúng ta sẽ vẽ 6 hàng x N cột
+    let rows = 6;
+    let cols = 15; // Số cột tối thiểu hiển thị
+    let totalCells = rows * cols;
+    
+    // Lấy dữ liệu gần nhất để điền (nếu dài quá thì cắt)
+    // Bead plate thường show lịch sử từ đầu hoặc trượt theo
+    // Ở đây ta hiển thị history từ đầu, nếu tràn thì scroll
+    
+    let html = '';
+    
+    // Tính toán số cột cần thiết dựa trên history
+    let requiredCols = Math.ceil(res.length / rows);
+    if (requiredCols < cols) requiredCols = cols;
+    
+    // Tạo lưới bằng Grid CSS (đã set trong CSS)
+    // Chỉ cần append các cell vào
+    // Bead Plate điền: Hàng 0->5 của Cột 0, sau đó Hàng 0->5 của Cột 1...
+    
+    // Vì CSS Grid đang set `grid-auto-flow: column`, ta chỉ cần append div theo thứ tự history
+    // là nó tự động nhảy xuống hàng, hết hàng nhảy qua cột
+    
+    // Tuy nhiên, logic chuẩn Bead Plate là: 
+    // Cell 1: Col 1 Row 1
+    // Cell 2: Col 1 Row 2
+    // ...
+    // Nên chỉ cần loop qua history và render
+    
+    res.forEach(item => {
+        let cls = '';
+        let txt = '';
+        if (item === 'P') { cls = 'bead-p'; txt = 'P'; }
+        else if (item === 'B') { cls = 'bead-b'; txt = 'B'; }
+        else if (item === 'T') { cls = 'bead-t'; txt = 'T'; }
+        
+        html += `
+            <div class="bead-cell">
+                <div class="bead-circle ${cls}">${txt}</div>
+            </div>
+        `;
     });
-
-    const values = points.map(p => p.val);
-    let minVal = Math.min(...values); let maxVal = Math.max(...values);
-    let range = maxVal - minVal; if (range < 4) range = 4; const padding = 20;
-    const getY = (val) => h - padding - ((val - minVal) / range) * (h - 2 * padding);
-    const stepX = w / (points.length - 1);
-
-    const gradient = ctx.createLinearGradient(0, 0, 0, h);
-    gradient.addColorStop(0, "rgba(0, 243, 255, 1)"); gradient.addColorStop(0.5, "rgba(255, 255, 255, 0.5)"); gradient.addColorStop(1, "rgba(255, 0, 60, 1)");
-    const fillGradient = ctx.createLinearGradient(0, 0, 0, h);
-    fillGradient.addColorStop(0, "rgba(0, 243, 255, 0.3)"); fillGradient.addColorStop(1, "rgba(255, 0, 60, 0.1)");
-
-    ctx.beginPath();
-    ctx.moveTo(0, getY(points[0].val));
-    for (let i = 1; i < points.length - 1; i++) {
-        let xCurr = i * stepX; let yCurr = getY(points[i].val);
-        let xNext = (i + 1) * stepX; let yNext = getY(points[i + 1].val);
-        let cpX = (xCurr + xNext) / 2; let cpY = (yCurr + yNext) / 2;
-        ctx.quadraticCurveTo(xCurr, yCurr, cpX, cpY);
+    
+    // Điền thêm ô trống cho đẹp grid
+    let fillCount = (requiredCols * rows) - res.length;
+    for(let i=0; i<fillCount; i++) {
+         html += `<div class="bead-cell"></div>`;
     }
-    let lastIdx = points.length - 1; ctx.lineTo(lastIdx * stepX, getY(points[lastIdx].val));
+    
+    grid.innerHTML = html;
+    
+    // Auto scroll tới cuối
+    grid.scrollLeft = grid.scrollWidth;
+}
 
-    ctx.lineWidth = 3; ctx.strokeStyle = gradient; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-    ctx.shadowBlur = 10; ctx.shadowColor = "rgba(255, 255, 255, 0.5)"; ctx.stroke();
 
-    ctx.lineTo(w, h); ctx.lineTo(0, h); ctx.closePath();
-    ctx.fillStyle = fillGradient; ctx.fill(); ctx.shadowBlur = 0;
+// ============================================
+// CHART GỢN SÓNG (WAVE ANIMATION)
+// ============================================
+let chartPoints = []; // Dữ liệu điểm vẽ
+let waveOffset = 0;   // Biến tạo chuyển động sóng
+let ctxChart = null;
+let canvasChart = null;
 
-    points.forEach((p, index) => {
-        if(index === 0) return;
-        let px = index * stepX; let py = getY(p.val);
-        ctx.beginPath(); ctx.arc(px, py, 3, 0, Math.PI * 2);
-        if (p.res === 'P') { ctx.fillStyle = '#00f3ff'; ctx.shadowBlur = 5; ctx.shadowColor = '#00f3ff'; } 
-        else if (p.res === 'B') { ctx.fillStyle = '#ff003c'; ctx.shadowBlur = 5; ctx.shadowColor = '#ff003c'; } 
-        else { ctx.fillStyle = '#00ff41'; ctx.shadowBlur = 0; }
-        ctx.fill(); ctx.stroke(); ctx.shadowBlur = 0;
+function updateChartData(hist) {
+    if(!hist || hist.length < 2) return;
+    let dataSlice = hist.slice(-30); // Lấy 30 ván gần nhất
+    let currentVal = 0;
+    chartPoints = [{val: 0, type: 'start'}];
+    
+    dataSlice.forEach(r => {
+        if(r === 'P') currentVal += 1;
+        else if(r === 'B') currentVal -= 1;
+        chartPoints.push({val: currentVal, type: r});
+    });
+}
+
+function startWaveChartLoop() {
+    canvasChart = document.getElementById('trendChart');
+    if(!canvasChart) return;
+    ctxChart = canvasChart.getContext('2d');
+    
+    // Resize canvas
+    function resize() {
+        if(canvasChart.parentElement) {
+            canvasChart.width = canvasChart.parentElement.clientWidth;
+            canvasChart.height = canvasChart.parentElement.clientHeight;
+        }
+    }
+    window.addEventListener('resize', resize);
+    resize();
+    
+    // Loop vẽ
+    function loop() {
+        drawWaveChart();
+        waveOffset += 0.08; // Tốc độ sóng
+        requestAnimationFrame(loop);
+    }
+    loop();
+}
+
+function drawWaveChart() {
+    if(!ctxChart || chartPoints.length < 2) return;
+    const w = canvasChart.width;
+    const h = canvasChart.height;
+    
+    ctxChart.clearRect(0,0,w,h);
+    
+    // 1. Vẽ nền Sóng (Background Wave)
+    const grd = ctxChart.createLinearGradient(0, 0, 0, h);
+    grd.addColorStop(0, "rgba(0, 243, 255, 0.1)");
+    grd.addColorStop(1, "rgba(255, 0, 60, 0.1)");
+    
+    ctxChart.beginPath();
+    ctxChart.moveTo(0, h);
+    for(let i=0; i<=w; i+=10) {
+        // Hàm Sin tạo sóng: y = amplitude * sin(frequency * x + phase)
+        let y = h/2 + Math.sin(i * 0.02 + waveOffset) * 20;
+        ctxChart.lineTo(i, y);
+    }
+    ctxChart.lineTo(w, h);
+    ctxChart.fillStyle = grd;
+    ctxChart.fill();
+    
+    // 2. Vẽ Đường Trend (Line Chart)
+    // Tính toán tỷ lệ
+    const vals = chartPoints.map(p => p.val);
+    let min = Math.min(...vals); let max = Math.max(...vals);
+    let range = max - min; if(range < 4) range = 4; 
+    let padding = 30;
+    let stepX = w / (chartPoints.length - 1);
+    
+    const getY = (v) => h - padding - ((v - min) / range) * (h - 2*padding);
+    
+    ctxChart.beginPath();
+    // Tạo hiệu ứng đường line cũng "thở" nhẹ theo sóng
+    let breathe = Math.sin(waveOffset) * 2; 
+    
+    chartPoints.forEach((p, i) => {
+        let x = i * stepX;
+        let y = getY(p.val) + breathe;
+        if(i===0) ctxChart.moveTo(x, y);
+        else {
+            // Bezier curve cho mượt
+            let prevX = (i-1) * stepX;
+            let prevY = getY(chartPoints[i-1].val) + breathe;
+            let cpX = (prevX + x) / 2;
+            ctxChart.quadraticCurveTo(prevX, prevY, cpX, (prevY+y)/2); // Đơn giản hóa curve
+            ctxChart.lineTo(x, y);
+        }
+    });
+    
+    ctxChart.lineWidth = 3;
+    ctxChart.strokeStyle = "#fff";
+    ctxChart.shadowBlur = 10;
+    ctxChart.shadowColor = "#00ff41";
+    ctxChart.stroke();
+    
+    // 3. Vẽ Điểm (Dots)
+    chartPoints.forEach((p, i) => {
+        if(i===0) return;
+        let x = i * stepX;
+        let y = getY(p.val) + breathe;
+        
+        ctxChart.beginPath();
+        ctxChart.arc(x, y, 4, 0, Math.PI*2);
+        if(p.type === 'P') { ctxChart.fillStyle = '#00f3ff'; ctxChart.shadowColor = '#00f3ff'; }
+        else if(p.type === 'B') { ctxChart.fillStyle = '#ff003c'; ctxChart.shadowColor = '#ff003c'; }
+        else { ctxChart.fillStyle = '#0f0'; }
+        
+        ctxChart.fill();
     });
 }

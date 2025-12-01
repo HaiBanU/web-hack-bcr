@@ -33,7 +33,7 @@
             </div>
         </header>
 
-        <!-- PANEL TRÁI -->
+        <!-- PANEL TRÁI (LOG) -->
         <aside class="panel-left">
             <div style="color:#00ff41; border-bottom:1px solid #333; margin-bottom:5px; font-weight:bold; font-size:0.9rem;">>> SYSTEM LOG</div>
             <div class="log-window" id="systemLog" style="flex:1; overflow-y:auto; font-size:0.7rem; color:#cfc;"></div>
@@ -43,7 +43,7 @@
         <main class="game-center">
             <canvas id="cardRain"></canvas>
 
-            <!-- Khu vực bài (Player vs Banker) -->
+            <!-- Khu vực bài -->
             <div class="battle-wrapper">
                 <!-- PLAYER -->
                 <div class="side-container p-side">
@@ -70,20 +70,15 @@
                 </div>
             </div>
 
-            <!-- KHUNG DỰ ĐOÁN & ROBOT & GAUGE (MỚI) -->
+            <!-- KHUNG DỰ ĐOÁN & ROBOT -->
             <div class="prediction-wrapper">
-                <!-- 1. Robot -->
                 <div class="ai-box">
                     <img src="robot.png" class="ai-img" alt="AI">
                 </div>
-
-                <!-- 2. Text Dự đoán -->
                 <div class="pred-info">
                     <div class="pred-label" id="aiAdvice">SYSTEM ANALYZING...</div>
                     <div class="pred-result blink-wait" id="aiPredText">WAITING</div>
                 </div>
-
-                <!-- 3. Vòng tròn % MỚI -->
                 <div class="pred-gauge">
                     <div class="gauge-circle">
                         <svg viewBox="0 0 36 36" class="circular-chart">
@@ -96,7 +91,7 @@
             </div>
         </main>
 
-        <!-- PANEL PHẢI -->
+        <!-- PANEL PHẢI (MATRIX & TỈ LỆ) -->
         <aside class="panel-right">
             <div style="margin-bottom:15px;">
                 <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:5px;">
@@ -113,19 +108,29 @@
             <div id="matrixCode" style="margin-top:auto; font-size:0.6rem; color:#0f0; word-break:break-all; opacity:0.5; font-family:monospace; height:150px; overflow:hidden;"></div>
         </aside>
 
-        <!-- FOOTER -->
+        <!-- FOOTER: CHIA 2 PHẦN -->
         <footer class="sys-footer">
-            <div class="footer-panel footer-chart">
-                <div style="position:absolute; top:5px; left:5px; font-size:0.7rem; color:#666;">TREND CHART</div>
-                <canvas id="trendChart"></canvas>
+            
+            <!-- CỘT TRÁI: BIỂU ĐỒ + CẦU GIỌT NƯỚC -->
+            <div class="footer-left-col">
+                <!-- 1. Biểu đồ sóng -->
+                <div class="chart-container">
+                    <div class="panel-label">WAVE TREND ANALYSIS</div>
+                    <canvas id="trendChart"></canvas>
+                </div>
+                <!-- 2. Cầu Giọt Nước (Bead Plate) -->
+                <div class="bead-container">
+                    <div class="panel-label">BEAD PLATE (GIỌT NƯỚC)</div>
+                    <div id="beadPlateGrid" class="bead-grid"></div>
+                </div>
             </div>
-            <div class="footer-panel footer-road">
+
+            <!-- CỘT PHẢI: CẦU LỚN (BIG ROAD) -->
+            <div class="footer-right-col">
+                <div class="panel-label">BIG ROAD (CẦU HIỆN TẠI)</div>
                 <div class="road-container" id="bigRoadGrid"></div>
             </div>
-            <div class="footer-panel">
-                <div style="position:absolute; top:5px; left:5px; font-size:0.7rem; color:#666;">LIVE TRANSACTIONS</div>
-                <div id="transLog" style="padding:20px 5px 5px 5px; font-size:0.7rem; overflow:hidden;"></div>
-            </div>
+
         </footer>
     </div>
     
