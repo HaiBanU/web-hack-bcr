@@ -1,11 +1,12 @@
 /* =========================================
-   STYLE.CSS - UPDATED UI/UX & MOBILE FIX
+   STYLE.CSS - UPDATED V4.0 (FULL)
    ========================================= */
 :root {
     --neon-green: #00ff41;
     --neon-green-dim: rgba(0, 255, 65, 0.1);
     --neon-red: #ff003c;
     --neon-cyan: #00f3ff;
+    --neon-gold: #ffd700;
     --bg-dark: #050a05;
     --bg-panel: rgba(0, 20, 0, 0.9);
     --font-main: 'Share Tech Mono', monospace;
@@ -36,166 +37,74 @@ body.lobby-body {
 #matrixCanvas { position: fixed; top: 0; left: 0; z-index: -1; width: 100%; height: 100%; }
 .lobby-content { position: relative; z-index: 10; padding: 15px; max-width: 1400px; margin: 0 auto; padding-bottom: 80px; }
 
-/* --- HEADER MỚI (FIX LỖI ĐÈ MOBILE) --- */
+/* HEADER */
 .lobby-header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative; /* Để authSection canh theo */
-    margin-bottom: 30px;
-    padding-top: 10px;
+    display: flex; flex-direction: column; align-items: center;
+    position: relative; margin-bottom: 30px; padding-top: 10px;
 }
-
 .glitch-text { 
-    font-family: var(--font-display); 
-    font-size: 2.5rem; 
-    color: #fff; 
-    text-shadow: 0 0 10px var(--neon-green); 
-    letter-spacing: 3px;
-    text-align: center;
-    margin-top: 10px; /* Tạo khoảng cách nếu ở mobile */
+    font-family: var(--font-display); font-size: 2.5rem; color: #fff; 
+    text-shadow: 0 0 10px var(--neon-green); letter-spacing: 3px;
+    text-align: center; margin-top: 10px;
 }
-
 .server-info { 
-    display: inline-flex; 
-    gap: 15px; 
-    background: rgba(0,20,0,0.8); 
-    border: 1px solid var(--neon-green); 
-    padding: 5px 15px; 
-    font-size: 0.8rem; 
-    margin-top: 10px; 
+    display: inline-flex; gap: 15px; background: rgba(0,20,0,0.8); 
+    border: 1px solid var(--neon-green); padding: 5px 15px; 
+    font-size: 0.8rem; margin-top: 10px; 
 }
 
-/* KHUNG AUTH (LOGIN/USER INFO) */
-#authSection { 
-    position: absolute; 
-    top: 10px; 
-    right: 20px; 
-    z-index: 100; 
-    text-align: right; 
-    width: auto;
-}
-
-/* Style cho panel User đẹp hơn */
+/* AUTH SECTION */
+#authSection { position: absolute; top: 10px; right: 20px; z-index: 100; text-align: right; width: auto; }
 .user-panel-cyber {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    background: rgba(0, 10, 0, 0.9);
-    border: 1px solid #00ff41;
-    padding: 8px 15px;
-    border-radius: 4px;
-    box-shadow: 0 0 15px rgba(0, 255, 65, 0.15);
-    backdrop-filter: blur(5px);
+    display: flex; align-items: center; gap: 15px;
+    background: rgba(0, 10, 0, 0.9); border: 1px solid #00ff41;
+    padding: 8px 15px; border-radius: 4px;
+    box-shadow: 0 0 15px rgba(0, 255, 65, 0.15); backdrop-filter: blur(5px);
 }
-
-.user-name {
-    font-family: 'Orbitron';
-    color: #fff;
-    font-weight: bold;
-    text-shadow: 0 0 5px #00ff41;
-    font-size: 1rem;
-}
-
-.token-badge {
-    background: #003300;
-    border: 1px dashed #00ff41;
-    padding: 2px 8px;
-    color: #00ff41;
-    font-family: monospace;
-    font-weight: bold;
-    border-radius: 2px;
-    font-size: 0.9rem;
-}
-
+.user-name { font-family: 'Orbitron'; color: #fff; font-weight: bold; text-shadow: 0 0 5px #00ff41; font-size: 1rem; }
+.token-badge { background: #003300; border: 1px dashed #00ff41; padding: 2px 8px; color: #00ff41; font-family: monospace; font-weight: bold; border-radius: 2px; font-size: 0.9rem; }
 .btn-logout-cyber {
-    background: transparent;
-    border: 1px solid #ff003c;
-    color: #ff003c;
-    padding: 5px 12px;
-    font-family: 'Share Tech Mono';
-    cursor: pointer;
-    font-size: 0.85rem;
-    transition: 0.3s;
-    font-weight: bold;
+    background: transparent; border: 1px solid #ff003c; color: #ff003c;
+    padding: 5px 12px; font-family: 'Share Tech Mono'; cursor: pointer;
+    font-size: 0.85rem; transition: 0.3s; font-weight: bold;
 }
-.btn-logout-cyber:hover {
-    background: #ff003c;
-    color: #fff;
-    box-shadow: 0 0 10px #ff003c;
-}
+.btn-logout-cyber:hover { background: #ff003c; color: #fff; box-shadow: 0 0 10px #ff003c; }
 
-/* --- MOBILE RESPONSIVE CHO HEADER --- */
 @media screen and (max-width: 768px) {
-    .lobby-header {
-        margin-top: 0;
-    }
-    
-    #authSection {
-        position: static; /* Bỏ cố định để không đè */
-        width: 100%;
-        display: flex;
-        justify-content: center; /* Căn giữa */
-        margin-bottom: 15px;
-    }
-
-    .user-panel-cyber {
-        width: 100%;
-        max-width: 400px;
-        justify-content: space-between;
-    }
-
-    .glitch-text {
-        font-size: 1.8rem; /* Giảm cỡ chữ tiêu đề */
-    }
+    .lobby-header { margin-top: 0; }
+    #authSection { position: static; width: 100%; display: flex; justify-content: center; margin-bottom: 15px; }
+    .user-panel-cyber { width: 100%; max-width: 400px; justify-content: space-between; }
+    .glitch-text { font-size: 1.8rem; }
 }
 
-/* --- CUSTOM MODAL (POPUP ĐẸP) --- */
+/* MODAL */
 .custom-modal-overlay {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.85);
-    z-index: 99999;
-    display: none; /* Mặc định ẩn */
-    justify-content: center;
-    align-items: center;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.85); z-index: 99999;
+    display: none; justify-content: center; align-items: center;
     backdrop-filter: blur(3px);
 }
-
 .custom-modal-box {
-    background: #000500;
-    border: 2px solid #00ff41;
-    padding: 30px;
-    width: 90%;
-    max-width: 400px;
-    text-align: center;
-    box-shadow: 0 0 30px rgba(0, 255, 65, 0.2);
-    position: relative;
+    background: #000500; border: 2px solid #00ff41; padding: 30px;
+    width: 90%; max-width: 400px; text-align: center;
+    box-shadow: 0 0 30px rgba(0, 255, 65, 0.2); position: relative;
     animation: modalPop 0.3s ease-out;
 }
-
 @keyframes modalPop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
 .modal-title {
     font-family: 'Orbitron'; color: #00ff41; font-size: 1.4rem; font-weight: bold;
     margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px;
     text-shadow: 0 0 10px #00ff41;
 }
-
 .modal-content { color: #fff; font-family: monospace; line-height: 1.8; margin-bottom: 30px; font-size: 1.1rem; }
-
 .modal-actions { display: flex; gap: 15px; justify-content: center; }
-
-.btn-modal {
-    flex: 1; padding: 12px; border: none; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; font-size: 1rem;
-}
+.btn-modal { flex: 1; padding: 12px; border: none; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; font-size: 1rem; }
 .btn-confirm { background: #00ff41; color: #000; box-shadow: 0 0 15px rgba(0, 255, 65, 0.4); }
 .btn-confirm:hover { background: #fff; box-shadow: 0 0 20px #00ff41; }
-
 .btn-cancel { background: #222; color: #aaa; border: 1px solid #444; }
 .btn-cancel:hover { background: #333; color: #fff; border-color: #fff; }
 
-/* GRID BÀN VÀ CARD (GIỮ NGUYÊN) */
+/* GRID BÀN */
 .tables-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
 
 .casino-card {
@@ -204,6 +113,45 @@ body.lobby-body {
 }
 .casino-card:hover { transform: translateY(-5px); box-shadow: 0 0 15px rgba(0,255,65,0.3); border-color: var(--neon-green); }
 
+/* --- [MỚI] HIỆU ỨNG BÀN VIP (TỶ LỆ CAO) --- */
+.high-rate {
+    border-color: var(--neon-gold) !important;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+    animation: goldPulse 2s infinite alternate;
+}
+.high-rate .cc-rate {
+    background: var(--neon-gold);
+    color: #000;
+    box-shadow: 0 0 10px var(--neon-gold);
+}
+@keyframes goldPulse {
+    from { box-shadow: 0 0 5px rgba(255, 215, 0, 0.2); transform: translateY(0); }
+    to { box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); transform: translateY(-3px); }
+}
+
+/* --- [MỚI] GIAO DIỆN BÀN BỊ GIÁN ĐOẠN --- */
+.interrupted-card {
+    border-color: #555 !important;
+    opacity: 0.8;
+}
+.rate-error {
+    background: #333; color: #888;
+    padding: 2px 6px; margin-left: 10px; 
+    font-size: 0.8rem; font-family: var(--font-display);
+}
+.interrupted-box {
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    background: #0a0a00;
+    color: #ff9800; /* Màu cam cảnh báo */
+    font-family: var(--font-display);
+}
+.warn-icon { font-size: 1.5rem; margin-bottom: 5px; animation: blink 1s infinite; }
+.warn-text { font-size: 1rem; font-weight: bold; letter-spacing: 1px; }
+.warn-sub { font-size: 0.6rem; color: #666; font-family: var(--font-main); margin-top: 2px; }
+
+/* CARD INNER STRUCTURE */
 .cc-header { background: #111; padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; }
 .cc-name { font-family: var(--font-display); font-weight: bold; color: #fff; font-size: 1rem; }
 .cc-rate {
@@ -211,16 +159,16 @@ body.lobby-body {
     font-size: 0.8rem; padding: 2px 6px; margin-left: 10px; border-radius: 2px;
     box-shadow: 0 0 8px #00ff41; animation: pulseRate 1.5s infinite alternate;
 }
-@keyframes pulseRate { from { box-shadow: 0 0 5px #00ff41; transform: scale(1); } to { box-shadow: 0 0 15px #00ff41; transform: scale(1.05); } }
+@keyframes pulseRate { from { box-shadow: 0 0 5px currentColor; transform: scale(1); } to { box-shadow: 0 0 15px currentColor; transform: scale(1.05); } }
 
 .cc-body { display: flex; height: 97px; background: #000; border-bottom: 1px solid #222; }
-.cc-grid-area { flex: 1; background: #fff; overflow: hidden; position: relative; } 
+.cc-grid-area { flex: 1; background: #fff; overflow: hidden; position: relative; } /* Nền trắng cho cầu */
 .cc-predict-area { width: 80px; background: #051005; border-left: 1px solid #333; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 5px; }
 
 .cc-footer { background: #000; padding: 5px 10px; display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: #888; }
 .btn-join { background: #ff9800; color: #000; border: none; padding: 3px 10px; font-weight: bold; font-family: var(--font-display); cursor: pointer; }
 
-/* CẤU TRÚC LƯỚI CHUNG */
+/* ROAD MAP GRID STYLES */
 .road-grid-wrapper { display: flex; height: 100%; width: 100%; }
 .road-col { width: 16px; display: flex; flex-direction: column; border-right: 1px solid #eee; }
 .road-cell { flex: 1; border-bottom: 1px solid #eee; display: flex; justify-content: center; align-items: center; }
@@ -232,34 +180,40 @@ body.lobby-body {
     top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg);
 }
 
-/* 2. TRANG TOOL VÀ CÁC THÀNH PHẦN KHÁC GIỮ NGUYÊN NHƯ CŨ, CHỈ THÊM PHẦN TRÊN */
+/* =========================================
+   2. TRANG TOOL (CHI TIẾT)
+   ========================================= */
 .hacker-layout { display: grid; grid-template-columns: 280px 1fr 280px; grid-template-rows: 60px 1fr 140px; height: 100vh; gap: 10px; padding: 10px; }
-/* ... (Phần CSS cho trang Tool giữ nguyên như cũ để tránh lỗi layout tool) ... */
 .sys-header { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; background: var(--bg-panel); border: 1px solid var(--neon-green); padding: 0 20px; box-shadow: 0 0 10px var(--neon-green-dim); }
 .brand-box { display: flex; align-items: center; gap: 10px; }
 .sexy-tag { background: var(--neon-red); color: #fff; padding: 2px 6px; font-weight: bold; font-family: var(--font-display); font-size: 0.8rem; animation: blink 2s infinite; }
 .glitch-name { font-family: var(--font-display); font-size: 1.8rem; color: #fff; text-shadow: 0 0 10px var(--neon-green); margin: 0; }
 .btn-exit { background: transparent; border: 1px solid var(--neon-red); color: var(--neon-red); padding: 5px 15px; font-weight: bold; cursor: pointer; transition: 0.3s; }
 .btn-exit:hover { background: var(--neon-red); color: #000; }
+
 .panel-left, .panel-right { background: var(--bg-panel); border: 1px solid var(--neon-green); display: flex; flex-direction: column; padding: 10px; overflow: hidden; }
 .box-title { background: rgba(0, 255, 65, 0.1); color: var(--neon-green); padding: 5px; font-weight: bold; font-size: 0.75rem; margin-bottom: 5px; border-left: 3px solid var(--neon-green); }
 .log-window { flex: 1; overflow-y: auto; font-size: 0.7rem; color: #cfc; font-family: monospace; }
 .log-line { margin-bottom: 3px; border-bottom: 1px dashed #002200; }
+
 .game-center { position: relative; border: 1px solid var(--neon-green); background: radial-gradient(circle at center, #001500 0%, #000 90%); display: flex; flex-direction: column; justify-content: center; align-items: center; }
 .battle-wrapper { display: flex; width: 100%; justify-content: space-around; margin-top: -20px; }
 .side-container { text-align: center; width: 40%; transition: 0.3s; padding: 10px; border-radius: 10px; }
 .side-label { font-family: var(--font-display); font-size: 1.4rem; font-weight: 900; margin-bottom: 10px; display: inline-block; border-bottom: 2px solid currentColor; }
 .p-side { color: var(--neon-cyan); } .b-side { color: var(--neon-red); }
+
 .side-active-p { border: 2px solid var(--neon-cyan); box-shadow: inset 0 0 40px rgba(0, 243, 255, 0.2), 0 0 20px var(--neon-cyan); background: rgba(0, 243, 255, 0.05); animation: sidePulseP 1s infinite alternate; }
 .side-active-b { border: 2px solid var(--neon-red); box-shadow: inset 0 0 40px rgba(255, 0, 60, 0.2), 0 0 20px var(--neon-red); background: rgba(255, 0, 60, 0.05); animation: sidePulseB 1s infinite alternate; }
 @keyframes sidePulseP { from { box-shadow: 0 0 10px var(--neon-cyan); } to { box-shadow: 0 0 30px var(--neon-cyan); } }
 @keyframes sidePulseB { from { box-shadow: 0 0 10px var(--neon-red); } to { box-shadow: 0 0 30px var(--neon-red); } }
+
 .cards-area { display: flex; justify-content: center; gap: 8px; height: 110px; margin-bottom: 5px; }
 .card-slot { width: 80px; height: 110px; border: 1px dashed #444; border-radius: 6px; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; font-size: 2.5rem; font-weight: bold; position: relative; opacity: 0.3; transform-style: preserve-3d; }
 .card-slot.revealed { background: linear-gradient(135deg, #fff 0%, #ddd 100%); border: 2px solid #fff; color: #000; opacity: 1; box-shadow: 0 0 15px rgba(255,255,255,0.5); animation: cyberFlip 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 @keyframes cyberFlip { 0% { transform: perspective(400px) rotateY(90deg) scale(0.8); opacity: 0; } 40% { transform: perspective(400px) rotateY(-10deg) scale(1.1); opacity: 1; } 100% { transform: perspective(400px) rotateY(0deg) scale(1); opacity: 1; } }
 .card-slot.hearts, .card-slot.diamonds { color: #d00; } .card-slot.spades, .card-slot.clubs { color: #000; }
 .score-box { font-size: 2.5rem; font-family: var(--font-display); font-weight: bold; text-shadow: 0 0 15px currentColor; }
+
 .prediction-bar { width: 90%; padding: 10px 20px; position: absolute; bottom: 15px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #333; background: rgba(0,10,0,0.95); transition: 0.3s; overflow: hidden; }
 .prediction-bar.win-p { border: 2px solid var(--neon-cyan); box-shadow: 0 0 25px rgba(0, 243, 255, 0.3); background: linear-gradient(90deg, rgba(0,0,0,0.9) 0%, rgba(0, 243, 255, 0.1) 100%); }
 .prediction-bar.win-b { border: 2px solid var(--neon-red); box-shadow: 0 0 25px rgba(255, 0, 60, 0.3); background: linear-gradient(90deg, rgba(0,0,0,0.9) 0%, rgba(255, 0, 60, 0.1) 100%); }
@@ -269,6 +223,14 @@ body.lobby-body {
 .pred-result { font-size: 1.8rem; font-family: var(--font-display); font-weight: 900; z-index: 2; }
 .res-P { color: #fff; text-shadow: 0 0 10px var(--neon-cyan), 0 0 20px var(--neon-cyan); }
 .res-B { color: #fff; text-shadow: 0 0 10px var(--neon-red), 0 0 20px var(--neon-red); }
+
+.analysis-box { margin-bottom: 10px; background: rgba(0,0,0,0.3); border: 1px solid #222; padding: 5px; }
+.stat-group { margin-bottom: 5px; }
+.stat-label { display: flex; justify-content: space-between; font-size: 0.7rem; color: #aaa; margin-bottom: 2px; }
+.stat-bar-bg { width: 100%; height: 6px; background: #222; border-radius: 3px; overflow: hidden; }
+.stat-bar-fill { height: 100%; transition: width 0.5s; }
+.p-fill { background: var(--neon-cyan); } .b-fill { background: var(--neon-red); }
+
 .sys-footer { grid-column: 1 / -1; background: #000; border: 1px solid var(--neon-green); display: flex; overflow: hidden; padding: 0; position: relative; }
 #bigRoadGrid { display: flex; height: 100%; width: 100%; overflow-x: auto; background: #000; scroll-behavior: smooth; }
 .tool-road-col { width: 26px; min-width: 26px; display: flex; flex-direction: column; border-right: 1px solid rgba(0, 255, 65, 0.15); }
@@ -276,7 +238,7 @@ body.lobby-body {
 .tool-bead { width: 17px; height: 17px; border-radius: 50%; border: 3px solid; background: transparent; box-shadow: 0 0 5px currentColor; position: relative; }
 .tool-p { border-color: #00f3ff; } .tool-b { border-color: #ff003c; } .tool-t { border-color: #00ff41; }
 
-/* MOBILE CHO TRANG TOOL */
+/* MOBILE RESPONSIVE CHO TRANG TOOL */
 @media screen and (max-width: 1024px) {
     body { overflow-y: auto; height: auto; }
     .hacker-layout { display: flex; flex-direction: column; height: auto; gap: 5px; padding: 5px; }
