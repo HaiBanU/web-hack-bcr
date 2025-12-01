@@ -1,10 +1,7 @@
-/* --- START OF FILE lobby.css --- */
-
 /* =========================================
-   LOBBY.CSS - FINAL VERSION (NEON & MODAL FIX)
+   LOBBY.CSS - CYBERPUNK VIP STYLE (FULL)
    ========================================= */
 
-/* --- CẤU TRÚC CHÍNH --- */
 .lobby-content { 
     position: relative; 
     z-index: 10; 
@@ -24,217 +21,273 @@
     z-index: 20; 
 }
 
-/* Khu vực Auth (User/Token) */
 #authSection { 
-    width: 100%;
-    display: flex;
-    justify-content: flex-end; /* Căn phải */
-    padding-right: 20px;
+    width: 100%; 
+    display: flex; 
+    justify-content: flex-end; /* Căn phải nút user */
+    padding-right: 20px; 
     margin-bottom: 10px;
 }
 
 .glitch-text { 
-    font-size: 4rem; 
-    font-weight: 900;
+    font-size: 3.5rem; 
+    font-weight: 900; 
     color: #fff; 
-    text-shadow: 0 0 10px var(--neon-green), 0 0 20px var(--neon-green), 0 0 40px var(--neon-green); 
+    text-shadow: 0 0 10px var(--neon-green), 0 0 20px var(--neon-green); 
     margin: 0; 
     letter-spacing: 5px; 
-    text-transform: uppercase;
+    text-transform: uppercase; 
+    text-align: center;
     animation: textPulse 3s infinite alternate;
 }
-@keyframes textPulse { from { text-shadow: 0 0 10px var(--neon-green); } to { text-shadow: 0 0 30px var(--neon-green), 0 0 10px #fff; } }
+
+@media screen and (max-width: 768px) { 
+    .glitch-text { font-size: 1.8rem; letter-spacing: 2px; } 
+}
+
+@keyframes textPulse { 
+    from { text-shadow: 0 0 10px var(--neon-green); } 
+    to { text-shadow: 0 0 30px var(--neon-green), 0 0 10px #fff; } 
+}
 
 .server-info {
-    margin-top: 10px; font-size: 1rem; letter-spacing: 2px; color: #aaa;
-    background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 20px; border: 1px solid #333;
+    margin-top: 15px; 
+    font-size: 1rem; 
+    letter-spacing: 2px; 
+    color: #aaa;
+    background: rgba(0,0,0,0.6); 
+    padding: 8px 25px; 
+    border-radius: 4px; 
+    border: 1px solid #333;
+    display: flex; 
+    gap: 15px;
+    align-items: center;
 }
 .blink { animation: blinkStatus 1s infinite; }
 @keyframes blinkStatus { 50% { opacity: 0.5; } }
 
 /* --- USER PANEL --- */
 .btn-join { 
-    background: rgba(0, 255, 65, 0.1); border: 1px solid var(--neon-green); color: var(--neon-green); 
-    padding: 10px 25px; font-family: var(--font-display); cursor: pointer; 
-    transition: 0.3s; font-weight: bold; border-radius: 4px; text-shadow: 0 0 5px var(--neon-green);
+    background: rgba(0, 255, 65, 0.1); 
+    border: 1px solid var(--neon-green); 
+    color: var(--neon-green); 
+    padding: 10px 25px; 
+    font-family: var(--font-display); 
+    cursor: pointer; 
+    transition: 0.3s; 
+    font-weight: bold; 
+    border-radius: 4px;
 }
 .btn-join:hover { background: var(--neon-green); color: #000; box-shadow: 0 0 20px var(--neon-green); }
 
-.user-panel-cyber { display: flex; align-items: center; gap: 15px; background: rgba(0,0,0,0.6); padding: 10px; border-radius: 8px; border: 1px solid #333; }
-.user-name { font-weight: bold; color: #fff; font-size: 1.1rem; }
-.token-badge { 
-    border: 1px solid var(--neon-green); padding: 5px 12px; 
-    background: rgba(0, 255, 65, 0.1); border-radius: 4px; 
-    color: var(--neon-green); font-weight: bold; box-shadow: 0 0 5px var(--neon-green);
+.user-panel-cyber { 
+    display: flex; 
+    align-items: center; 
+    gap: 15px; 
+    background: rgba(0,20,0,0.8); 
+    padding: 8px 15px; 
+    border-radius: 4px; 
+    border: 1px solid #00ff41; 
+    box-shadow: 0 0 10px rgba(0,255,65,0.2);
 }
-.btn-logout-cyber { background: #d00; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; font-weight: bold; }
+.user-name { font-weight: bold; color: #fff; font-size: 1rem; }
+.token-badge { 
+    background: #003b0f; 
+    color: #00ff41; 
+    padding: 4px 10px; 
+    border-radius: 2px; 
+    font-weight: bold; 
+    font-family: var(--font-main); 
+    border: 1px solid #00ff41;
+}
+.btn-logout-cyber { 
+    background: #d00; 
+    color: #fff; 
+    border: none; 
+    padding: 5px 10px; 
+    cursor: pointer; 
+    font-weight: bold; 
+    border-radius: 2px;
+}
 
-/* --- GRID HỆ THỐNG BÀN --- */
+/* --- GRID SYSTEM --- */
 .tables-grid { 
     display: grid; 
-    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); 
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); 
     gap: 30px; 
+    padding: 0 10px;
 }
+@media screen and (max-width: 600px) { .tables-grid { grid-template-columns: 1fr; } }
 
-/* --- CARD BÀN (HIỆU ỨNG VIỀN CHẠY) --- */
+/* --- CARD BÀN VIP (CYBER STYLE) --- */
 .casino-card { 
-    background: #000; 
+    background: #050505; /* Nền đen sâu */
     border: 1px solid #333; 
-    border-radius: 12px;
-    display: flex; flex-direction: column; overflow: hidden; position: relative; 
+    position: relative; 
+    height: 230px; 
+    cursor: pointer;
     transition: all 0.3s ease;
-    height: 220px; cursor: pointer;
-    box-shadow: 0 0 15px rgba(0,0,0,0.8);
+    /* Cắt góc kiểu công nghệ (Vát góc) */
+    clip-path: polygon(
+        15px 0, 100% 0, 
+        100% calc(100% - 15px), calc(100% - 15px) 100%, 
+        0 100%, 0 15px
+    );
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
 }
 
-.casino-card::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-    border-radius: 12px; padding: 2px;
-    background: linear-gradient(45deg, transparent, #333, transparent);
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor; mask-composite: exclude;
-    pointer-events: none;
-}
-
+/* Hiệu ứng Hover: Sáng viền xanh */
 .casino-card:hover { 
     transform: translateY(-5px); 
-    box-shadow: 0 0 25px rgba(0, 255, 65, 0.4); 
     border-color: var(--neon-green);
+    box-shadow: 0 0 20px rgba(0, 255, 65, 0.3); 
 }
-.casino-card:hover::before {
-    background: linear-gradient(45deg, var(--neon-green), transparent, var(--neon-green));
-    animation: rotateBorder 2s linear infinite;
+
+/* Trang trí góc thẻ bằng pseudo-elements */
+.casino-card::before {
+    content: ''; position: absolute; top: 0; left: 0; width: 20px; height: 20px;
+    border-top: 3px solid var(--neon-green); border-left: 3px solid var(--neon-green);
 }
-@keyframes rotateBorder { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
+.casino-card::after {
+    content: ''; position: absolute; bottom: 0; right: 0; width: 20px; height: 20px;
+    border-bottom: 3px solid var(--neon-green); border-right: 3px solid var(--neon-green);
+}
 
 /* HEADER CỦA CARD */
 .cc-header { 
-    background: linear-gradient(90deg, #111, #050505); 
-    border-bottom: 1px solid #333;
-    padding: 10px 15px; 
-    display: flex; justify-content: space-between; align-items: center; 
+    background: linear-gradient(90deg, #0a200a, #000); 
+    border-bottom: 1px solid #222;
+    padding: 0 20px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
     height: 50px;
 }
 .cc-name { 
-    font-family: var(--font-display); font-weight: 900; 
-    color: #fff; font-size: 1.2rem; letter-spacing: 1px; 
+    font-family: var(--font-display); 
+    font-weight: 900; 
+    color: #fff; 
+    font-size: 1.1rem; 
+    letter-spacing: 1px; 
+    text-shadow: 0 0 5px rgba(255,255,255,0.5);
 }
 
 /* BODY CỦA CARD */
-.cc-body { display: flex; height: calc(100% - 50px); background: #0b0b0b; }
+.cc-body { 
+    display: flex; 
+    height: calc(100% - 50px); 
+    background: #0b0b0b; 
+}
 
-/* --- BẢNG CẦU (GRID AREA) --- */
+/* BẢNG CẦU (GRID AREA) */
 .cc-grid-area { 
     flex: 1; 
-    position: relative; 
-    background: #fff; /* Nền trắng */
+    background: #fff; /* Nền trắng cho hạt cầu nổi */
     display: flex; 
-    justify-content: flex-start;
-    align-items: flex-start;
+    border-right: 2px solid #222;
     overflow: hidden; 
-    border-right: 2px solid #000;
 } 
-
 .road-grid-wrapper { display: flex; height: 100%; width: 100%; }
-
 .road-col { 
-    width: 28px; 
-    display: flex; flex-direction: column; 
+    width: 16.66%; /* Chia đều 6 cột */
     border-right: 1px solid #ccc; 
+    display: flex; flex-direction: column; 
 }
 .road-cell { 
     flex: 1; 
     border-bottom: 1px solid #ccc; 
     display: flex; justify-content: center; align-items: center; 
+}
+
+/* HẠT CẦU */
+.bead { 
+    width: 16px; height: 16px; 
+    border-radius: 50%; 
+    border: 3px solid; 
     position: relative; 
 }
-
-/* --- HẠT CẦU (BEAD) --- */
-.bead { 
-    width: 20px; height: 20px; 
-    border-radius: 50%; 
-    background: transparent; 
-    border: 3px solid; 
-    position: relative;
-}
-.bead.p { border-color: #007bff; } /* Player - Xanh Dương */
-.bead.b { border-color: #dc3545; } /* Banker - Đỏ */
-
-/* HIỆU ỨNG GẠCH CHÉO CHO HÒA (TIE) */
+.bead.p { border-color: #007bff; } /* Player xanh dương */
+.bead.b { border-color: #dc3545; } /* Banker đỏ */
 .bead.has-tie::after {
-    content: '';
-    position: absolute;
-    width: 3px; height: 24px;
-    background-color: #28a745; /* Vạch xanh lá */
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%) rotate(-45deg); /* Xoay chéo */
+    content: ''; position: absolute; width: 3px; height: 20px; background: #28a745; 
+    top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg);
 }
 
-/* --- PHẦN DỰ ĐOÁN (BÊN PHẢI CARD) --- */
+/* KHUNG DỰ ĐOÁN (BÊN PHẢI) */
 .cc-predict-area { 
-    width: 110px; 
+    width: 120px; 
     background: #000; 
-    display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; 
-    border-left: 1px solid #333;
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center; 
+    align-items: center; 
+    text-align: center; 
+    position: relative;
+    padding: 10px;
 }
+/* Hiệu ứng nền lưới mờ */
+.cc-predict-area::before {
+    content: ''; position: absolute; top:0; left:0; width:100%; height:100%;
+    background-image: linear-gradient(#111 1px, transparent 1px), linear-gradient(90deg, #111 1px, transparent 1px);
+    background-size: 10px 10px; opacity: 0.5; z-index: 0;
+}
+
 .cc-rate { 
-    font-family: var(--font-display); font-weight: 900; color: #000; 
+    position: relative; z-index: 1;
+    font-family: var(--font-display); 
+    font-weight: 900; 
+    color: #000; 
     background: var(--neon-green); 
-    padding: 10px 0; width: 90%; font-size: 1.4rem; margin-top: 5px; 
-    border-radius: 4px; box-shadow: 0 0 15px var(--neon-green);
+    padding: 12px 0; 
+    width: 100%; 
+    font-size: 1.4rem; 
+    margin-top: 5px; 
+    /* Cắt góc nút WIN */
+    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+    box-shadow: 0 0 15px var(--neon-green);
     animation: glowRate 2s infinite alternate;
 }
-@keyframes glowRate { from { box-shadow: 0 0 10px var(--neon-green); } to { box-shadow: 0 0 25px var(--neon-green); } }
-
-/* =========================================
-   MODAL POPUP (FIXED CENTER) - QUAN TRỌNG
-   ========================================= */
-
-.custom-modal-overlay {
-    display: none; /* Mặc định ẩn, JS sẽ chuyển thành flex */
-    position: fixed; /* Ghim cứng màn hình */
-    top: 0; left: 0; 
-    width: 100vw; height: 100vh;
-    background: rgba(0, 0, 0, 0.9); /* Nền đen mờ */
-    backdrop-filter: blur(5px); /* Làm mờ phía sau */
-    z-index: 99999; 
-    justify-content: center; /* Căn giữa ngang */
-    align-items: center; /* Căn giữa dọc */
+@keyframes glowRate { 
+    from { box-shadow: 0 0 10px var(--neon-green); opacity: 0.9; } 
+    to { box-shadow: 0 0 25px var(--neon-green); opacity: 1; } 
 }
 
+/* --- MODAL (POPUP XÁC NHẬN) --- */
+.custom-modal-overlay {
+    display: none; 
+    position: fixed; top: 0; left: 0; 
+    width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.9); 
+    z-index: 99999; 
+    justify-content: center; align-items: center;
+    backdrop-filter: blur(5px);
+}
 .custom-modal-box {
-    background: #000; 
+    background: #050505; 
     border: 2px solid var(--neon-green);
     padding: 30px; 
     width: 90%; max-width: 450px;
-    box-shadow: 0 0 50px rgba(0, 255, 65, 0.3);
-    border-radius: 12px;
-    text-align: center;
+    box-shadow: 0 0 50px rgba(0, 255, 65, 0.2);
+    text-align: center; 
     position: relative;
-    animation: zoomIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border-radius: 8px;
 }
-
-@keyframes zoomIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
 .modal-title { 
-    font-family: var(--font-display); font-size: 1.8rem; 
-    color: var(--neon-green); margin-bottom: 15px; 
-    text-transform: uppercase; border-bottom: 1px solid #333; 
-    padding-bottom: 10px; text-shadow: 0 0 10px var(--neon-green);
+    font-family: var(--font-display); 
+    font-size: 1.5rem; 
+    color: var(--neon-green); 
+    margin-bottom: 20px; 
+    border-bottom: 1px solid #333; 
+    padding-bottom: 10px;
 }
-.modal-content { 
-    color: #ddd; font-size: 1rem; margin-bottom: 25px; 
-    text-align: left; line-height: 1.6; 
-}
-.modal-actions { display: flex; justify-content: space-between; gap: 15px; }
-
+.modal-actions { display: flex; gap: 10px; margin-top: 20px; }
 .btn-modal { 
     flex: 1; padding: 12px; border: none; font-weight: bold; cursor: pointer; 
-    font-family: var(--font-display); font-size: 1rem; border-radius: 4px; 
-    text-transform: uppercase; transition: 0.2s;
+    font-family: var(--font-display); 
+    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+    transition: 0.2s;
 }
 .btn-cancel { background: #333; color: #fff; border: 1px solid #555; }
 .btn-cancel:hover { background: #555; }
-
 .btn-confirm { background: var(--neon-green); color: #000; box-shadow: 0 0 15px var(--neon-green); }
-.btn-confirm:hover { transform: scale(1.05); background: #fff; box-shadow: 0 0 30px #fff; }
+.btn-confirm:hover { transform: translateY(-2px); box-shadow: 0 0 25px var(--neon-green); }

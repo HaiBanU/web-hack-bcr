@@ -1,4 +1,4 @@
-/* --- START OF FILE script.js (FIXED TOKEN & LOG) --- */
+/* --- START OF FILE script.js --- */
 
 let currentTableId = null;
 let history = [];
@@ -13,19 +13,24 @@ window.addEventListener('DOMContentLoaded', () => {
     // 1. Lấy thông tin bàn từ URL
     const urlParams = new URLSearchParams(window.location.search);
     currentTableId = urlParams.get('tableId');
+    
+    // LẤY TÊN BÀN VÀ XỬ LÝ NẾU CHƯA CÓ CHỮ BACCARAT
     let tName = decodeURIComponent(urlParams.get('tableName') || "UNKNOWN");
+    if (!tName.includes("BACCARAT")) {
+         tName = tName.replace("BÀN", "BÀN BACCARAT");
+    }
     document.getElementById('tableNameDisplay').innerText = tName.toUpperCase();
     
-    // 2. Hiển thị token ban đầu từ LocalStorage (để người dùng đỡ sốt ruột)
+    // 2. Hiển thị token ban đầu
     updateTokenUI(localStorage.getItem('tokens') || 0);
 
     addLog(`SYSTEM CONNECTED: ${tName}`);
     addLog(`>> CONNECTING TO SERVER... [OK]`);
 
-    // 3. TRỪ TIỀN VÀO BÀN (3 Token)
+    // 3. TRỪ TIỀN VÀO BÀN
     deductToken('entry');
 
-    // 4. Bắt đầu đếm ngược trừ tiền duy trì (30s trừ 1 lần)
+    // 4. Bắt đầu đếm ngược trừ tiền duy trì
     startPeriodicDeduction();
 
     // 5. Chạy các hiệu ứng nền
@@ -34,7 +39,7 @@ window.addEventListener('DOMContentLoaded', () => {
     resetCardsUI();                           
 });
 
-// --- LOGIC TRỪ TIỀN (QUAN TRỌNG) ---
+// --- LOGIC TRỪ TIỀN ---
 async function deductToken(type) {
     const token = localStorage.getItem('token');
     if (!token) window.location.href = 'login.html';
@@ -49,58 +54,44 @@ async function deductToken(type) {
         const data = await res.json();
 
         if (data.status === 'success') {
-            // Cập nhật số dư mới nhất từ Server
             let remaining = data.remaining; 
-            if(remaining === 'VIP') remaining = 999999; // Nếu là SuperAdmin
-
+            if(remaining === 'VIP') remaining = 999999;
             updateTokenUI(remaining);
             
-            // Ghi Log trừ tiền
-            if (type === 'entry') {
-                addLog(`>> ENTRY FEE: -3 TOKENS`);
-            } else {
-                addLog(`>> MAINTENANCE FEE: -3 TOKENS`);
-            }
+            if (type === 'entry') addLog(`>> ENTRY FEE: -3 TOKENS`);
+            else addLog(`>> MAINTENANCE FEE: -3 TOKENS`);
         } else {
-            // Hết tiền hoặc lỗi
             alert("❌ HẾT TOKEN! Vui lòng liên hệ Admin để nạp thêm.");
             window.location.href = 'index.html';
         }
     } catch (e) {
         console.error(e);
-        // Nếu mất mạng hoặc lỗi server thì không đá ra ngay, cho chơi nốt ván
     }
 }
 
 function startPeriodicDeduction() {
     if (tokenInterval) clearInterval(tokenInterval);
-    // Cứ 30 giây (30000ms) gọi hàm trừ tiền 1 lần
     tokenInterval = setInterval(() => {
         deductToken('periodic');
     }, 30000);
 }
 
 function updateTokenUI(amount) {
-    // Lưu lại vào LocalStorage để đồng bộ
     localStorage.setItem('tokens', amount);
-    // Update giao diện
     const displayAmt = Math.floor(amount).toLocaleString('vi-VN');
     document.getElementById('headerTokenDisplay').innerText = displayAmt;
 }
 
-
-// --- SOCKET LISTENER: NHẬN KẾT QUẢ TỪ SERVER ---
+// --- SOCKET LISTENER ---
 socket.on('server_update', (allTables) => {
     if (isProcessing || !currentTableId) return;
     const tableData = allTables.find(t => t.table_id == currentTableId);
     
     if (tableData) {
         const serverRes = (tableData.result || "").split('');
-        // Nếu có kết quả mới so với lịch sử hiện tại
         if (serverRes.length > history.length || history.length === 0) {
             history = serverRes;
             
-            // Vẽ lại cầu và biểu đồ
             renderBigRoadGrid(history);
             drawTrendChart(history); 
             
@@ -108,33 +99,29 @@ socket.on('server_update', (allTables) => {
                 const lastWin = history[history.length - 1];
                 addLog(`-------------------------------`);
                 addLog(`>> KẾT QUẢ VỪA RA: [ ${lastWin} ]`);
-                
-                // CHẠY PHÂN TÍCH DỰ ĐOÁN CHO TAY SAU
                 runPredictionSystem(history);
             }
         }
     }
 });
 
-// --- HỆ THỐNG DỰ ĐOÁN & GHI LOG CHI TIẾT ---
+// --- HỆ THỐNG DỰ ĐOÁN ---
 function runPredictionSystem(historyArr) {
     isProcessing = true;
-    resetCardsUI(); // Úp bài lại chuẩn bị cho ván mới
+    resetCardsUI();
     
     const adviceEl = document.getElementById('aiAdvice');
     const predEl = document.getElementById('aiPredText');
     
-    // Hiệu ứng "Đang tính toán"
     adviceEl.innerText = "CALCULATING...";
     adviceEl.style.color = "#ffff00";
     predEl.innerText = "SCANNING...";
     predEl.className = "pred-result res-wait";
     
-    // 1. LOGIC SOI CẦU GIẢ LẬP
-    const cleanHist = historyArr.filter(x => x !== 'T'); // Bỏ hòa để soi
+    const cleanHist = historyArr.filter(x => x !== 'T');
     let prediction = 'B'; 
     let confidence = 50;
-    let reason = "AI RANDOM SCAN"; // Lý do mặc định
+    let reason = "AI RANDOM SCAN";
 
     if (cleanHist.length >= 3) {
         const len = cleanHist.length;
@@ -142,56 +129,42 @@ function runPredictionSystem(historyArr) {
         const last2 = cleanHist[len-2];
         const last3 = cleanHist[len-3];
 
-        // LOGIC 1: Bắt Cầu Bệt (Dragon) - Nếu 3 tay gần nhất giống nhau
         if (last1 === last2 && last2 === last3) {
             prediction = last1; 
-            confidence = Math.floor(Math.random() * (95 - 85) + 85); // 85-95%
+            confidence = Math.floor(Math.random() * (95 - 85) + 85);
             reason = `DETECTED DRAGON (${last1})`;
         } 
-        // LOGIC 2: Bắt Cầu 1-1 (Ping Pong) - Nếu thay đổi liên tục
         else if (last1 !== last2 && last2 !== last3) {
             prediction = (last1 === 'P') ? 'B' : 'P';
-            confidence = Math.floor(Math.random() * (90 - 80) + 80); // 80-90%
+            confidence = Math.floor(Math.random() * (90 - 80) + 80);
             reason = "PING-PONG PATTERN";
         }
-        // LOGIC 3: Bẻ cầu (Nếu bệt dài quá 6 tay -> bẻ)
         else if (cleanHist.length >= 6) {
-            // Kiểm tra 6 tay cuối có giống nhau không
             const last6 = cleanHist.slice(-6);
             if (last6.every(v => v === last1)) {
                 prediction = (last1 === 'P') ? 'B' : 'P';
                 confidence = 98;
                 reason = "BREAK LONG DRAGON";
             } else {
-                 // Logic Random thông minh
                 prediction = (Math.random() > 0.5) ? 'P' : 'B'; 
                 confidence = Math.floor(Math.random() * (75 - 60) + 60);
                 reason = "MATRIX ANALYSIS V12";
             }
         }
         else {
-             // Logic Random
              prediction = (Math.random() > 0.5) ? 'P' : 'B'; 
              confidence = 65;
              reason = "HISTORY PROBABILITY";
         }
     } else {
-        // Ít dữ liệu quá thì random
         prediction = (Math.random() > 0.5) ? 'P' : 'B';
         reason = "WAITING DATA...";
     }
 
-    // 2. GHI LOG QUÁ TRÌNH PHÂN TÍCH (DELAY ĐỂ TẠO CẢM GIÁC THẬT)
-    setTimeout(() => {
-        addLog(`>> ANALYZING NEXT ROUND...`);
-    }, 500);
+    setTimeout(() => { addLog(`>> ANALYZING NEXT ROUND...`); }, 500);
+    setTimeout(() => { addLog(`>> ALGORITHM: ${reason}`); }, 1000);
 
     setTimeout(() => {
-        addLog(`>> ALGORITHM: ${reason}`);
-    }, 1000);
-
-    setTimeout(() => {
-        // Cập nhật giao diện kết quả
         adviceEl.innerText = reason;
         adviceEl.style.color = "#00ff41";
         predEl.innerText = (prediction === 'P') ? "PLAYER" : "BANKER";
@@ -203,15 +176,12 @@ function runPredictionSystem(historyArr) {
         document.getElementById('confP').innerText = confP+"%"; document.getElementById('barP').style.width = confP+"%";
         document.getElementById('confB').innerText = confB+"%"; document.getElementById('barB').style.width = confB+"%";
 
-        // Ghi log kết quả dự đoán
         addLog(`>> PREDICTION: [ ${prediction} ] (RATE: ${confidence}%)`);
-
-        // BẮT ĐẦU LẬT BÀI MÔ PHỎNG
         simulateHandReveal(prediction);
     }, 2000);
 }
 
-// --- CARD SIMULATION (LOGIC BACCARAT CHUẨN) ---
+// --- CARD SIMULATION ---
 function getCardValue(card) {
     if (card.raw >= 10) return 0;
     return card.raw;
@@ -230,11 +200,9 @@ function generateFakeHand(targetWinner) {
         let pScore = calculateHandScore(pHand);
         let bScore = calculateHandScore(bHand);
         
-        // LUẬT: Nếu 8 hoặc 9 điểm (Natural) -> Dừng luôn, không bốc
         let isNatural = (pScore >= 8 || bScore >= 8);
         
         if (!isNatural) {
-            // Luật rút bài Player
             let p3 = null;
             if (pScore <= 5) {
                 p3 = getCard();
@@ -242,7 +210,6 @@ function generateFakeHand(targetWinner) {
                 pScore = calculateHandScore(pHand);
             }
 
-            // Luật rút bài Banker
             let bDraws = false;
             if (pHand.length === 2) { 
                 if (bScore <= 5) bDraws = true; 
@@ -277,13 +244,11 @@ function simulateHandReveal(target) {
     document.querySelector('.p-side').classList.remove('winner-p','winner-b');
     document.querySelector('.b-side').classList.remove('winner-p','winner-b');
 
-    // Lật bài từ từ
     setTimeout(() => revealCard('p1', hand.p[0]), 500);
     setTimeout(() => revealCard('b1', hand.b[0]), 1000);
     setTimeout(() => revealCard('p2', hand.p[1]), 1500);
     setTimeout(() => revealCard('b2', hand.b[1]), 2000);
     
-    // Lật lá thứ 3
     setTimeout(() => {
         if(hand.p[2]) revealCard('p3', hand.p[2]);
         else document.getElementById('p3').style.opacity = '0.3';
@@ -301,7 +266,7 @@ function simulateHandReveal(target) {
     }, 3000);
 }
 
-// --- UI HELPER FUNCTIONS ---
+// --- HELPERS ---
 function revealCard(id, card) {
     const slot = document.getElementById(id);
     slot.style.opacity = '1';
@@ -334,24 +299,22 @@ function getCard() {
 
 function addLog(msg) {
     const box = document.getElementById('systemLog');
-    const time = new Date().toLocaleTimeString('vi-VN', { hour12: false }); // Định dạng 24h
+    const time = new Date().toLocaleTimeString('vi-VN', { hour12: false });
     const div = document.createElement('div');
-    // Style cho từng dòng log để dễ nhìn hơn
     div.style.borderBottom = "1px solid #111";
     div.style.padding = "3px 0";
     div.style.fontFamily = "monospace";
     div.style.fontSize = "0.75rem";
     
-    // Màu sắc log dựa trên nội dung
     let color = "#fff";
     if(msg.includes("PLAYER")) color = "#00f3ff";
     else if(msg.includes("BANKER")) color = "#ff003c";
-    else if(msg.includes("FEE")) color = "#ff9800"; // Màu cam cho tiền nong
-    else if(msg.includes("ALGORITHM")) color = "#00ff41"; // Màu xanh cho thuật toán
+    else if(msg.includes("FEE")) color = "#ff9800";
+    else if(msg.includes("ALGORITHM")) color = "#00ff41";
 
     div.innerHTML = `<span style="color:#666">[${time}]</span> <span style="color:${color}">${msg}</span>`;
     box.appendChild(div);
-    box.scrollTop = box.scrollHeight; // Tự cuộn xuống dưới
+    box.scrollTop = box.scrollHeight;
 }
 
 function generateMatrixCode() {
@@ -401,7 +364,6 @@ function initCardRain() {
     }, 50);
 }
 
-// Chart Vẽ Chấm Tròn
 function drawTrendChart(hist) {
     const c = document.getElementById('trendChart');
     if(!c) return;

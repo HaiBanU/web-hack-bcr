@@ -1,9 +1,5 @@
 /* --- START OF FILE lobby.js --- */
 
-/* =========================================
-   LOBBY MANAGER - FULL LOGIC & POPUP HANDLE
-   ========================================= */
-
 let rateManager = {
     lastUpdate: 0,
     rates: {}, 
@@ -41,12 +37,11 @@ function updateWinRates(tables) {
     }
 }
 
-// Logic vẽ bảng cầu (Big Road) có xử lý Tie
+// Logic vẽ bảng cầu (Big Road)
 function generateGridHTML(resultStr) {
     let rawData = resultStr.split('');
     let processedData = []; 
     
-    // Logic Tie: Gạch chéo lên hạt trước
     rawData.forEach(char => {
         if (char === 'T') { 
             if (processedData.length > 0) {
@@ -57,8 +52,7 @@ function generateGridHTML(resultStr) {
         }
     });
 
-    // Big Road Logic
-    let maxCols = 12; // Số cột hiển thị trên Lobby
+    let maxCols = 12; 
     let columns = []; 
     let currentCol = []; 
     let lastType = null;
@@ -75,11 +69,9 @@ function generateGridHTML(resultStr) {
     });
     if (currentCol.length > 0) columns.push(currentCol);
 
-    // Cắt lấy dữ liệu mới nhất
     if (columns.length > maxCols) columns = columns.slice(-maxCols);
     while(columns.length < maxCols) columns.push([]);
 
-    // Render HTML
     let html = '<div class="road-grid-wrapper">';
     columns.forEach(col => {
         html += '<div class="road-col">';
@@ -124,8 +116,12 @@ function renderTables(data) {
         let sortScore = (isGold ? 1000 : 0) + winRate;
         if (isInterrupted) sortScore = -1;
 
-        let displayName = item.table_name.toUpperCase().replace("BACCARAT", "").trim();
-        if (!displayName.startsWith("BÀN")) displayName = "BÀN " + displayName;
+        // --- XỬ LÝ TÊN BÀN TỰ ĐỘNG ---
+        let rawName = item.table_name.toUpperCase();
+        // Loại bỏ các từ cũ để tránh lặp
+        rawName = rawName.replace("BACCARAT", "").replace("BÀN", "").trim();
+        // Tạo tên chuẩn mới
+        let displayName = "BÀN BACCARAT " + rawName;
 
         return { ...item, resultStr, isInterrupted, winRate, isGold, sortScore, displayName };
     });
@@ -141,14 +137,10 @@ function renderTables(data) {
         const card = document.createElement('div');
         card.className = cardClass;
         
-        // --- SỰ KIỆN CLICK BÀN (HIỆN POPUP) ---
+        // SỰ KIỆN CLICK: TRUYỀN TÊN MỚI QUA URL
         card.onclick = () => {
             if (isInterrupted) return;
-            
-            // 1. Lưu địa chỉ bàn
             pendingTableUrl = `tool.html?tableId=${table_id}&tableName=${encodeURIComponent(displayName)}`;
-            
-            // 2. Hiện Modal (display: flex để căn giữa)
             const modal = document.getElementById('confirmModal');
             if(modal) modal.style.display = 'flex';
         };
@@ -163,13 +155,13 @@ function renderTables(data) {
         card.innerHTML = `
             <div class="cc-header">
                 <div><span class="cc-name">${displayName}</span></div>
-                <div style="color:${liveColor}; font-size:0.8rem; font-weight:bold;">${liveStatus}</div>
+                <div style="color:${liveColor}; font-size:0.7rem; font-weight:bold;">${liveStatus}</div>
             </div>
             <div class="cc-body">
                 <div class="cc-grid-area">${generateGridHTML(resultStr)}</div>
                 <div class="cc-predict-area">
-                    <span style="font-size:0.6rem; color:#aaa; margin-bottom:5px;">${aiTag}</span>
-                    <span style="font-size:0.7rem; margin-bottom:5px; color:#fff;">CẦU ĐẸP</span>
+                    <span style="font-size:0.6rem; color:#666; margin-bottom:5px;">${aiTag}</span>
+                    <span style="font-size:0.6rem; margin-bottom:5px; color:#fff;">TỈ LỆ THẮNG</span>
                     <div class="cc-rate" style="${predictStyle}">${rateDisplay}</div>
                 </div>
             </div>
@@ -178,24 +170,20 @@ function renderTables(data) {
     });
 }
 
-// --- LOGIC XỬ LÝ NÚT TRONG POPUP ---
+// Xử lý nút Modal
 document.addEventListener('DOMContentLoaded', () => {
-    // Nút Hủy
     const btnCancel = document.querySelector('.btn-cancel');
     if(btnCancel) {
         btnCancel.onclick = () => {
             document.getElementById('confirmModal').style.display = 'none';
         };
     }
-
-    // Nút Xác Nhận (Hack Ngay)
     const btnConfirm = document.getElementById('btnConfirmAction');
     if(btnConfirm) {
         btnConfirm.onclick = async () => {
             const token = localStorage.getItem('token');
             if(token) {
                 try {
-                    // Gọi API trừ tiền
                     const res = await fetch('/api/enter-table', {
                         method: 'POST',
                         headers: { 'Authorization': token, 'Content-Type': 'application/json' }
@@ -203,14 +191,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     const data = await res.json();
                     
                     if(data.status === 'success') {
-                        // Thành công -> Vào bàn
                         window.location.href = pendingTableUrl;
                     } else {
                         alert("❌ " + (data.message || "Lỗi: Không đủ Token!"));
                         document.getElementById('confirmModal').style.display = 'none';
                     }
                 } catch(e) {
-                    // Lỗi mạng -> Vẫn cho vào (test) hoặc chặn
                     window.location.href = pendingTableUrl;
                 }
             } else {
