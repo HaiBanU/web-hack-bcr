@@ -242,20 +242,46 @@ function addLog(msg) {
     box.appendChild(div); box.scrollTop = box.scrollHeight;
 }
 function initCardRain() {
-    const c = document.getElementById('cardRain'); if(!c) return;
+    const c = document.getElementById('cardRain'); 
+    if(!c) return;
+    
     const ctx = c.getContext('2d');
-    function resize() { if(c.parentElement) { c.width = c.parentElement.clientWidth; c.height = c.parentElement.clientHeight; } }
-    window.addEventListener('resize', resize); resize();
-    const chars = "XY_01_WIN_$$"; const drops = Array(Math.floor(c.width/15)).fill(1);
+    
+    function resize() { 
+        if(c.parentElement) { 
+            c.width = c.parentElement.clientWidth; 
+            c.height = c.parentElement.clientHeight; 
+        } 
+    }
+    window.addEventListener('resize', resize); 
+    resize();
+
+    // Ký tự muốn hiển thị (Số, Tiền, Win...)
+    const chars = "01_XY_WIN_$$__HACK_$$"; 
+    const fontSize = 14; // Tăng size chữ lên 14px cho rõ
+    const drops = Array(Math.floor(c.width / fontSize)).fill(1);
+
     setInterval(() => {
-        ctx.fillStyle = "rgba(0, 0, 0, 0.1)"; ctx.fillRect(0, 0, c.width, c.height);
-        ctx.fillStyle = "#003300"; ctx.font = "10px monospace";
-        for(let i=0; i<drops.length; i++){
-            ctx.fillText(chars[Math.floor(Math.random()*chars.length)], i*15, drops[i]*15);
-            if(drops[i]*15 > c.height && Math.random()>0.98) drops[i]=0;
+        // Tạo lớp phủ mờ để tạo hiệu ứng đuôi dài
+        ctx.fillStyle = "rgba(0, 0, 0, 0.1)"; 
+        ctx.fillRect(0, 0, c.width, c.height);
+
+        // MÀU CHỮ: Đổi từ tối sang XANH NEON SÁNG
+        ctx.fillStyle = "#00ff41"; 
+        ctx.font = fontSize + "px monospace";
+        ctx.shadowBlur = 0; // Bỏ bóng mờ để chữ sắc nét hơn
+
+        for(let i = 0; i < drops.length; i++){
+            const text = chars[Math.floor(Math.random() * chars.length)];
+            ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+            // Reset giọt mưa khi chạm đáy ngẫu nhiên
+            if(drops[i] * fontSize > c.height && Math.random() > 0.98) {
+                drops[i] = 0;
+            }
             drops[i]++;
         }
-    }, 50);
+    }, 40); // Tốc độ rơi (càng nhỏ càng nhanh)
 }
 
 // --- BIG ROAD LOGIC (FIXED) ---

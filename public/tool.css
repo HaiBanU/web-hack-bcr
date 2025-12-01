@@ -73,8 +73,20 @@
 @keyframes rotateBorder { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
 #cardRain { 
-    position: absolute; top:0; left:0; width:100%; height:100%; 
-    z-index: 0; opacity: 0.2; pointer-events: none;
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    z-index: 0; /* Nằm dưới các lá bài */
+    opacity: 0.8; /* TĂNG TỪ 0.2 LÊN 0.5 ĐỂ RÕ HƠN */
+    pointer-events: none;
+}
+
+/* Đảm bảo nội dung đè lên trên chữ chạy */
+.battle-wrapper, .prediction-wrapper {
+    position: relative;
+    z-index: 10; /* Cao hơn canvas */
 }
 
 /* --- BATTLE AREA (BÀI) --- */
