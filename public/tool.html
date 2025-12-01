@@ -1,22 +1,20 @@
+<!-- --- START OF FILE tool.html --- -->
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HACKER AI - SYSTEM V7</title>
-    <!-- Link CSS Chính -->
+    <title>HACKER AI - SYSTEM V8 ULTIMATE</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Link CSS Mobile (Mới) -->
     <link rel="stylesheet" href="mobile.css">
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@500;900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- HIỆU ỨNG NỀN CYBERPUNK -->
+    <!-- HIỆU ỨNG NỀN CAO CẤP -->
     <div class="cyber-grid-bg"></div>
-    <div class="cyber-particles"></div>
-
-    <div class="crt-overlay"></div>
-    <div class="scan-bar"></div>
+    <div class="particles" id="particles"></div>
+    <div class="scan-line-overlay"></div>
+    <div class="vignette"></div>
 
     <div class="hacker-layout">
         
@@ -24,16 +22,16 @@
         <header class="sys-header">
             <div class="brand-box">
                 <span class="sexy-tag">SEXY</span>
-                <span class="root-text">// ADMIN</span>
+                <span class="root-text">// SYSTEM V8</span>
             </div>
             
             <div class="table-identity">
-                <h1 id="tableNameDisplay" class="glitch-name">CONNECTING...</h1>
+                <h1 id="tableNameDisplay" class="glitch-name">INITIALIZING...</h1>
             </div>
 
             <div class="sys-status">
                 <div class="header-token-box">
-                    TOKEN: <span id="headerTokenDisplay" style="color:#fff; font-weight:bold;">---</span>
+                    TOKEN: <span id="headerTokenDisplay" class="blink-text">---</span>
                 </div>
                 <button onclick="window.location.href='index.html'" class="btn-exit">THOÁT</button>
             </div>
@@ -47,10 +45,9 @@
             </div>
         </aside>
 
-        <!-- GAME CENTER -->
+        <!-- GAME CENTER (GIỮ NGUYÊN) -->
         <main class="game-center">
             <div class="battle-wrapper">
-                <!-- NHÀ CON -->
                 <div class="side-container p-side">
                     <div class="side-label">NHÀ CON</div>
                     <div class="cards-area">
@@ -63,7 +60,6 @@
 
                 <div class="vs-divider">VS</div>
 
-                <!-- NHÀ CÁI -->
                 <div class="side-container b-side">
                     <div class="side-label">NHÀ CÁI</div>
                     <div class="cards-area">
@@ -75,12 +71,10 @@
                 </div>
             </div>
 
-            <!-- THANH DỰ ĐOÁN -->
             <div class="prediction-bar">
-                <div class="scan-line"></div>
                 <div class="pred-left">
-                    <div class="pred-title">PHÂN TÍCH AI</div>
-                    <span id="aiAdvice" style="font-size: 0.8rem; color:#aaa;">Đang chờ dữ liệu...</span>
+                    <div class="pred-title">AI PREDICT</div>
+                    <span id="aiAdvice" style="font-size: 0.8rem; color:#aaa;">WAITING DATA...</span>
                 </div>
                 <div class="pred-content">
                     <div class="pred-result blink" id="aiPredText">...</div>
@@ -104,25 +98,32 @@
 
             <div class="analysis-box matrix-box" style="flex:1; display:flex; flex-direction:column; margin-top:10px;">
                 <div class="box-title">DECODING STREAM</div>
-                <div id="matrixCode" class="code-rain">Initializing...</div>
+                <div id="matrixCode" class="code-rain">Loading...</div>
             </div>
         </aside>
 
-        <!-- FOOTER -->
+        <!-- FOOTER (ĐÃ SỬA LAYOUT 3 CỘT) -->
         <footer class="sys-footer">
-            <div class="road-container" id="bigRoadGrid"></div>
-
-            <div class="footer-side-panel">
-                <div class="fs-header">
-                    <span>BIỂU ĐỒ SIGNAL</span>
-                    <span class="live-dot">●</span>
-                </div>
+            
+            <!-- CỘT 1: BIỂU ĐỒ (TRÁI) -->
+            <div class="footer-panel footer-chart">
+                <div class="fp-header">SIGNAL CHART <span class="live-dot">●</span></div>
                 <div class="chart-wrapper">
                     <canvas id="trendChart"></canvas>
                 </div>
-                <div class="fs-stats">
-                    <span>VOL: <strong style="color:#00f3ff">HIGH</strong></span>
-                    <span>STR: <strong style="color:#00ff41" id="chartStr">92%</strong></span>
+            </div>
+
+            <!-- CỘT 2: BẢNG CẦU (GIỮA) -->
+            <div class="footer-panel footer-road">
+                <div class="fp-header" style="text-align: center; color: #fff;">ROADMAP HISTORY</div>
+                <div class="road-container" id="bigRoadGrid"></div>
+            </div>
+
+            <!-- CỘT 3: NỘI DUNG MỚI (PHẢI) -->
+            <div class="footer-panel footer-extra">
+                <div class="fp-header">LIVE TRANSACTIONS</div>
+                <div class="transaction-list" id="transLog">
+                    <!-- JS sẽ fake data vào đây -->
                 </div>
             </div>
         </footer>
@@ -131,5 +132,17 @@
     
     <script src="/socket.io/socket.io.js"></script>
     <script src="script.js"></script>
+    <!-- Script tạo hiệu ứng hạt nền -->
+    <script>
+        const pContainer = document.getElementById('particles');
+        for(let i=0; i<50; i++){
+            let p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = Math.random()*100 + 'vw';
+            p.style.animationDuration = (Math.random()*5 + 3) + 's';
+            p.style.opacity = Math.random();
+            pContainer.appendChild(p);
+        }
+    </script>
 </body>
 </html>
