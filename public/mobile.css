@@ -1,123 +1,86 @@
 /* =========================================
-   MOBILE.CSS - FIX V8.2 FINAL (FULL CODE)
+   MOBILE.CSS - V11 (RESPONSIVE PERFECT)
    ========================================= */
 
 @media screen and (max-width: 1024px) {
-    /* 1. RESET BODY MOBILE (SỬA LỖI NỀN TRẮNG) */
-    html, body {
-        background-color: #000 !important; 
-        background-image: none !important; 
-        overflow-y: auto; 
-        -webkit-overflow-scrolling: touch;
-        min-height: 100vh;
-    }
-    
-    /* 2. LAYOUT CHÍNH */
+    /* 1. RESET LAYOUT THÀNH CỘT DỌC */
     .hacker-layout {
         display: flex; 
-        flex-direction: column; 
-        height: auto; 
+        flex-direction: column;
+        height: auto;
         min-height: 100vh;
-        padding: 5px; 
+        padding: 5px;
         gap: 15px;
-        background: #000; 
     }
 
-    /* 3. HEADER MOBILE */
+    /* 2. HEADER */
     .sys-header {
-        position: sticky; top: 0; z-index: 999;
-        background: rgba(0, 10, 0, 0.95); 
-        backdrop-filter: blur(10px);
-        border-bottom: 1px solid var(--neon-green); 
-        padding: 5px 10px; height: auto; min-height: 50px;
-        order: 0;
-        flex-wrap: wrap; 
+        order: 1; flex-wrap: wrap; height: auto; padding: 10px; justify-content: center;
     }
-    .brand-box { transform: scale(0.9); transform-origin: left; }
-    .glitch-name { font-size: 0.9rem; margin-left: auto; margin-right: auto; }
-    .btn-exit { padding: 4px 10px; font-size: 0.7rem; }
-    .header-token-box { font-size: 0.75rem; padding: 2px 5px; }
+    .brand-box { width: 100%; text-align: center; margin-bottom: 5px; }
+    .glitch-text { font-size: 1.5rem !important; margin: 5px 0; }
+    .sys-status { width: 100%; justify-content: center; display: flex; gap: 10px; }
 
-    /* 4. GAME CENTER MOBILE */
+    /* 3. GAME CENTER (SỬA LỖI TRÀN) */
     .game-center {
-        order: 1; 
-        height: auto; 
-        padding: 15px 0; margin-top: 5px;
-        background: rgba(10, 10, 10, 0.8); 
-        border: 1px solid rgba(0, 255, 65, 0.3);
-        box-shadow: 0 0 15px rgba(0, 255, 65, 0.1);
-    }
-    .battle-wrapper { width: 100%; margin-top: 0; padding: 0 5px; }
-    .side-container { width: 48%; padding: 5px; background: rgba(0,0,0,0.6); }
-    .side-label { font-size: 1rem; margin-bottom: 5px; }
-    
-    .card-slot { width: 40px; height: 55px; font-size: 1.1rem; border-radius: 3px; }
-    .cards-area { height: 60px; gap: 2px; }
-    .score-box { font-size: 1.5rem; margin-top: 5px; }
-    
-    /* PREDICTION BAR & ROBOT MOBILE */
-    .prediction-bar {
-        width: 96%; height: 60px; 
-        margin-top: 15px; margin-bottom: 0;
-        background: linear-gradient(90deg, #000, #0a0a0a);
-        padding-right: 10px;
-    }
-    .ai-robot-box {
-        width: 60px;
-        margin-right: 10px;
-        border-right: 1px dashed #444;
-    }
-    .ai-robot-img { width: 35px; height: 35px; }
-
-    .pred-content { align-items: flex-start; }
-    .pred-result { font-size: 1.8rem; margin-left: 0; }
-
-    /* 5. ẨN CÁC PHẦN KHÔNG CẦN THIẾT */
-    .panel-left { display: none; }
-    .matrix-box { display: none; }
-
-    /* 6. PANEL PHẢI */
-    .panel-right { 
         order: 2; 
-        background: #050505; 
-        border: 1px solid #333; padding: 10px; 
+        width: 100%;
+        min-height: 480px; /* Đảm bảo đủ cao */
+        padding: 10px 5px;
+        margin: 0;
     }
 
-    /* 7. FOOTER MOBILE */
+    /* BÀI TRÊN MOBILE */
+    .battle-wrapper {
+        margin-top: 10px;
+        padding: 0;
+        justify-content: space-between;
+        width: 98%;
+    }
+    .side-container { width: 48% !important; margin: 0; }
+    .cards-area { height: 70px; gap: 2px; } /* Thu nhỏ vùng bài */
+    .card-slot { 
+        width: 42px; height: 60px; /* Thu nhỏ lá bài */
+        font-size: 1.2rem; 
+        border-radius: 4px;
+    }
+    .score-box { font-size: 2rem !important; margin-top: 5px; }
+
+    /* KHUNG DỰ ĐOÁN MOBILE */
+    .prediction-wrapper {
+        width: 95%; /* Full chiều ngang */
+        height: 70px; 
+        margin-top: 15px;
+        padding: 5px;
+        border-radius: 35px;
+    }
+    .ai-box {
+        width: 55px; height: 55px; 
+        margin-right: 10px;
+        border: 1px solid rgba(0,255,65,0.2);
+    }
+    .ai-img { width: 40px; height: 40px; }
+    .pred-label { font-size: 0.6rem; letter-spacing: 1px; }
+    .pred-result { font-size: 2rem; } 
+
+    /* 4. CÁC PANEL KHÁC */
+    .panel-left { order: 3; height: 150px; } /* Log */
+    .panel-right { order: 4; margin-top: 0; } /* Tỷ lệ */
+
+    /* 5. FOOTER MOBILE */
     .sys-footer {
-        display: flex !important; 
-        flex-direction: column; 
-        height: auto; 
-        gap: 15px; 
-        order: 3;
-        margin-bottom: 30px;
+        order: 5;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
     }
-    
-    .footer-road {
-        order: 1; height: 140px;
-        background: #000;
-        border: 1px solid var(--neon-green);
-    }
-    .road-container { overflow-x: scroll; }
-    .tool-road-col { width: 22px; min-width: 22px; }
-    .tool-bead { width: 16px; height: 16px; border-width: 2px; }
+    .footer-panel { width: 100%; height: auto; }
+    .footer-chart { height: 150px; }
+    .footer-road { height: 120px; }
 
-    .footer-chart {
-        order: 2; height: 160px; display: block;
-        background: #000;
-        border: 1px solid #333;
-    }
-    
-    .footer-extra { 
-        order: 3; height: 120px; 
-        background: #000;
-    }
-    .transaction-list { font-size: 0.7rem; }
-    
-    /* --- LOBBY MOBILE --- */
-    .lobby-content { padding: 10px; padding-bottom: 50px; }
-    .tables-grid { grid-template-columns: 1fr; gap: 15px; }
-    .cc-body { height: 100px; }
-    .road-col { width: 13px; }
-    .bead { width: 9px; height: 9px; border-width: 2px; }
+    /* 6. LOBBY MOBILE */
+    .lobby-header .glitch-text { font-size: 2rem; }
+    .tables-grid { grid-template-columns: 1fr; } /* 1 cột duy nhất */
+    .casino-card { height: 180px; }
+    .cc-grid-area { background-size: 11px 11px; } /* Lưới nhỏ hơn */
 }

@@ -1,8 +1,8 @@
 /* =========================================
-   LOBBY MANAGER - V10 (FIXED GRID)
+   LOBBY MANAGER - V11 (FIX GRID & SCROLL)
    ========================================= */
 
-// --- LOGIC TỶ LỆ ---
+// --- LOGIC TỶ LỆ (GIỮ NGUYÊN) ---
 let rateManager = {
     lastUpdate: 0,
     rates: {}, 
@@ -30,21 +30,29 @@ function updateWinRates(tables) {
             if (rateManager.goldTables.includes(id)) {
                 rate = Math.floor(Math.random() * (98 - 92 + 1)) + 92;
             } else {
-                rate = Math.floor(Math.random() * (85 - 30 + 1)) + 30;
+                rate = Math.floor(Math.random() * (85 - 40 + 1)) + 40;
             }
             rateManager.rates[id] = rate;
         });
-
         rateManager.lastUpdate = now;
     }
 }
 
-// --- LOGIC VẼ CẦU MỚI (18 CỘT CHO ĐẸP) ---
+// --- LOGIC VẼ CẦU MỚI (CẮT DỮ LIỆU ĐỂ BỎ SCROLL) ---
 function generateGridHTML(resultStr) {
     let rawData = resultStr.split('');
-    // Lấy nhiều dữ liệu hơn để lấp đầy card
-    let maxDisplay = 108; // 18 cột * 6 dòng
-    if(rawData.length > maxDisplay) rawData = rawData.slice(-maxDisplay);
+    
+    // --- ĐIỂM QUAN TRỌNG: CẮT DỮ LIỆU ---
+    // Mỗi khung card chứa được khoảng 18-20 cột.
+    // Ta chỉ lấy đúng số lượng đó từ cuối chuỗi để hiển thị cái mới nhất.
+    // 20 cột * 6 dòng = 120 ký tự tối đa.
+    let maxCols = 20; 
+    let maxItems = maxCols * 6;
+    
+    if(rawData.length > maxItems) {
+        // Cắt lấy phần cuối
+        rawData = rawData.slice(-maxItems);
+    }
 
     let processedData = [];
     rawData.forEach(char => {
@@ -63,11 +71,11 @@ function generateGridHTML(resultStr) {
     });
     if (currentCol.length > 0) columns.push(currentCol);
 
-    // Fill đủ 18 cột
-    while(columns.length < 18) { columns.push([]); }
+    // Fill đủ 20 cột để lưới luôn đẹp
+    while(columns.length < maxCols) { columns.push([]); }
     
-    // Lấy 18 cột cuối
-    let displayCols = columns.slice(-18); 
+    // Đảm bảo chỉ lấy maxCols cuối cùng
+    let displayCols = columns.slice(-maxCols); 
 
     let html = '<div class="road-grid-wrapper">';
     displayCols.forEach(col => {
@@ -75,6 +83,7 @@ function generateGridHTML(resultStr) {
         for (let r = 0; r < 6; r++) {
             let cellContent = ''; let node = col[r];
             if (node) {
+                // Class p, b, t ở đây sẽ map với CSS .bead.p, .bead.b trong style.css
                 let colorClass = (node.type === 'P') ? 'p' : 'b';
                 html += `<div class="road-cell"><div class="bead ${colorClass}"></div></div>`;
             } else {
@@ -130,6 +139,7 @@ function renderTables(data) {
         
         card.onclick = () => {
             if (isInterrupted) return;
+            // Vào thẳng tool
             window.location.href = `tool.html?tableId=${table_id}&tableName=${encodeURIComponent(displayName)}`;
         };
 
@@ -137,7 +147,9 @@ function renderTables(data) {
         const liveStatus = isInterrupted ? 'OFF' : 'LIVE ●';
         const liveColor = isInterrupted ? '#666' : '#0f0';
         
-        let aiTag = isGold ? '<span style="color:#ffd700; font-weight:bold;">★ VIP ★</span>' : 'AI GỢI Ý';
+        let aiTag = isGold ? '<span style="color:black; font-weight:bold;">★ VIP ★</span>' : 'AI GỢI Ý';
+        // Style riêng cho bàn vàng
+        let predictStyle = isGold ? 'background:#ffd700; color:#000; box-shadow:0 0 10px #ffd700;' : '';
 
         card.innerHTML = `
             <div class="cc-header">
@@ -149,7 +161,7 @@ function renderTables(data) {
                 <div class="cc-predict-area">
                     <span style="font-size:0.6rem; color:#aaa; margin-bottom:2px;">${aiTag}</span>
                     <span style="font-size:0.7rem; margin-bottom:5px; color:#fff;">CẦU ĐẸP</span>
-                    <div class="cc-rate">${rateDisplay}</div>
+                    <div class="cc-rate" style="${predictStyle}">${rateDisplay}</div>
                 </div>
             </div>
         `;
