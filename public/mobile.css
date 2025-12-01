@@ -1,12 +1,12 @@
 /* =========================================
-   MOBILE.CSS - FIX V8.1 (FINAL)
+   MOBILE.CSS - FIX V8.2 FINAL (FULL CODE)
    ========================================= */
 
 @media screen and (max-width: 1024px) {
     /* 1. RESET BODY MOBILE (SỬA LỖI NỀN TRẮNG) */
     html, body {
-        background-color: #000 !important; /* Bắt buộc đen */
-        background-image: none !important; /* Bỏ grid nếu gây lỗi */
+        background-color: #000 !important; 
+        background-image: none !important; 
         overflow-y: auto; 
         -webkit-overflow-scrolling: touch;
         min-height: 100vh;
@@ -19,8 +19,8 @@
         height: auto; 
         min-height: 100vh;
         padding: 5px; 
-        gap: 15px; /* Tăng khoảng cách để không dính nhau */
-        background: #000; /* Nền layout đen */
+        gap: 15px;
+        background: #000; 
     }
 
     /* 3. HEADER MOBILE */
@@ -31,7 +31,7 @@
         border-bottom: 1px solid var(--neon-green); 
         padding: 5px 10px; height: auto; min-height: 50px;
         order: 0;
-        flex-wrap: wrap; /* Cho phép xuống dòng nếu chật */
+        flex-wrap: wrap; 
     }
     .brand-box { transform: scale(0.9); transform-origin: left; }
     .glitch-name { font-size: 0.9rem; margin-left: auto; margin-right: auto; }
@@ -43,7 +43,7 @@
         order: 1; 
         height: auto; 
         padding: 15px 0; margin-top: 5px;
-        background: rgba(10, 10, 10, 0.8); /* Nền tối hơn chút */
+        background: rgba(10, 10, 10, 0.8); 
         border: 1px solid rgba(0, 255, 65, 0.3);
         box-shadow: 0 0 15px rgba(0, 255, 65, 0.1);
     }
@@ -55,19 +55,28 @@
     .cards-area { height: 60px; gap: 2px; }
     .score-box { font-size: 1.5rem; margin-top: 5px; }
     
+    /* PREDICTION BAR & ROBOT MOBILE */
     .prediction-bar {
-        width: 96%; height: 50px; 
+        width: 96%; height: 60px; 
         margin-top: 15px; margin-bottom: 0;
         background: linear-gradient(90deg, #000, #0a0a0a);
+        padding-right: 10px;
     }
-    .pred-left { width: 35%; padding-left: 10px; }
+    .ai-robot-box {
+        width: 60px;
+        margin-right: 10px;
+        border-right: 1px dashed #444;
+    }
+    .ai-robot-img { width: 35px; height: 35px; }
+
+    .pred-content { align-items: flex-start; }
     .pred-result { font-size: 1.8rem; margin-left: 0; }
 
     /* 5. ẨN CÁC PHẦN KHÔNG CẦN THIẾT */
-    .panel-left, .scan-line-overlay { display: none; }
+    .panel-left { display: none; }
     .matrix-box { display: none; }
 
-    /* 6. PANEL PHẢI (TỶ LỆ THẮNG) */
+    /* 6. PANEL PHẢI */
     .panel-right { 
         order: 2; 
         background: #050505; 
@@ -85,7 +94,7 @@
     }
     
     .footer-road {
-        order: 1; height: 140px; /* Tăng chiều cao để dễ nhìn */
+        order: 1; height: 140px;
         background: #000;
         border: 1px solid var(--neon-green);
     }
@@ -105,9 +114,7 @@
     }
     .transaction-list { font-size: 0.7rem; }
     
-    /* Tắt hiệu ứng hạt trên mobile để nhẹ máy */
-    .particles { display: none; }
-
+    /* --- LOBBY MOBILE --- */
     .lobby-content { padding: 10px; padding-bottom: 50px; }
     .tables-grid { grid-template-columns: 1fr; gap: 15px; }
     .cc-body { height: 100px; }

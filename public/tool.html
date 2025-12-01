@@ -1,19 +1,21 @@
-<!-- --- START OF FILE tool.html --- -->
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HACKER AI - SYSTEM V8 ULTIMATE</title>
+    <title>HACKER AI - SYSTEM V8.2 PERFECT</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="mobile.css">
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@500;900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- HIỆU ỨNG NỀN CAO CẤP -->
+    <!-- CANVAS MATRIX CODE RAIN -->
+    <canvas id="matrixCanvas"></canvas>
+
+    <!-- NỀN LƯỚI CYBERPUNK -->
     <div class="cyber-grid-bg"></div>
-    <div class="particles" id="particles"></div>
-    <div class="scan-line-overlay"></div>
+    
+    <!-- HIỆU ỨNG VIGNETTE TỐI GÓC -->
     <div class="vignette"></div>
 
     <div class="hacker-layout">
@@ -22,11 +24,11 @@
         <header class="sys-header">
             <div class="brand-box">
                 <span class="sexy-tag">SEXY</span>
-                <span class="root-text">// SYSTEM V8</span>
+                <span class="root-text">// SYSTEM V8.2</span>
             </div>
             
             <div class="table-identity">
-                <h1 id="tableNameDisplay" class="glitch-name">INITIALIZING...</h1>
+                <h1 id="tableNameDisplay" class="glitch-name">CONNECTING...</h1>
             </div>
 
             <div class="sys-status">
@@ -37,7 +39,7 @@
             </div>
         </header>
 
-        <!-- PANEL TRÁI -->
+        <!-- PANEL TRÁI (LOG) -->
         <aside class="panel-left">
             <div class="panel-head">>> SYSTEM LOG</div>
             <div class="log-window" id="systemLog">
@@ -45,9 +47,10 @@
             </div>
         </aside>
 
-        <!-- GAME CENTER (GIỮ NGUYÊN) -->
+        <!-- GAME CENTER (GIỮA) -->
         <main class="game-center">
             <div class="battle-wrapper">
+                <!-- NHÀ CON -->
                 <div class="side-container p-side">
                     <div class="side-label">NHÀ CON</div>
                     <div class="cards-area">
@@ -60,6 +63,7 @@
 
                 <div class="vs-divider">VS</div>
 
+                <!-- NHÀ CÁI -->
                 <div class="side-container b-side">
                     <div class="side-label">NHÀ CÁI</div>
                     <div class="cards-area">
@@ -71,18 +75,21 @@
                 </div>
             </div>
 
+            <!-- THANH DỰ ĐOÁN & ROBOT -->
             <div class="prediction-bar">
-                <div class="pred-left">
-                    <div class="pred-title">AI PREDICT</div>
-                    <span id="aiAdvice" style="font-size: 0.8rem; color:#aaa;">WAITING DATA...</span>
+                <!-- KHUNG CHỨA ROBOT (BẠN BỎ FILE ẢNH robot.png VÀO CÙNG THƯ MỤC) -->
+                <div class="ai-robot-box">
+                    <img src="robot.png" alt="AI" class="ai-robot-img">
                 </div>
+
                 <div class="pred-content">
-                    <div class="pred-result blink" id="aiPredText">...</div>
+                    <div class="pred-label" id="aiAdvice">ANALYZING DATA STREAM...</div>
+                    <div class="pred-result blink" id="aiPredText">WAITING</div>
                 </div>
             </div>
         </main>
 
-        <!-- PANEL PHẢI -->
+        <!-- PANEL PHẢI (TỶ LỆ) -->
         <aside class="panel-right">
             <div class="analysis-box">
                 <div class="box-title">TỶ LỆ CHIẾN THẮNG</div>
@@ -102,10 +109,10 @@
             </div>
         </aside>
 
-        <!-- FOOTER (ĐÃ SỬA LAYOUT 3 CỘT) -->
+        <!-- FOOTER (3 CỘT) -->
         <footer class="sys-footer">
             
-            <!-- CỘT 1: BIỂU ĐỒ (TRÁI) -->
+            <!-- CỘT 1: BIỂU ĐỒ -->
             <div class="footer-panel footer-chart">
                 <div class="fp-header">SIGNAL CHART <span class="live-dot">●</span></div>
                 <div class="chart-wrapper">
@@ -113,18 +120,16 @@
                 </div>
             </div>
 
-            <!-- CỘT 2: BẢNG CẦU (GIỮA) -->
+            <!-- CỘT 2: BẢNG CẦU -->
             <div class="footer-panel footer-road">
                 <div class="fp-header" style="text-align: center; color: #fff;">ROADMAP HISTORY</div>
                 <div class="road-container" id="bigRoadGrid"></div>
             </div>
 
-            <!-- CỘT 3: NỘI DUNG MỚI (PHẢI) -->
+            <!-- CỘT 3: GIAO DỊCH -->
             <div class="footer-panel footer-extra">
                 <div class="fp-header">LIVE TRANSACTIONS</div>
-                <div class="transaction-list" id="transLog">
-                    <!-- JS sẽ fake data vào đây -->
-                </div>
+                <div class="transaction-list" id="transLog"></div>
             </div>
         </footer>
 
@@ -132,17 +137,5 @@
     
     <script src="/socket.io/socket.io.js"></script>
     <script src="script.js"></script>
-    <!-- Script tạo hiệu ứng hạt nền -->
-    <script>
-        const pContainer = document.getElementById('particles');
-        for(let i=0; i<50; i++){
-            let p = document.createElement('div');
-            p.className = 'particle';
-            p.style.left = Math.random()*100 + 'vw';
-            p.style.animationDuration = (Math.random()*5 + 3) + 's';
-            p.style.opacity = Math.random();
-            pContainer.appendChild(p);
-        }
-    </script>
 </body>
 </html>

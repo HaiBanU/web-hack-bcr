@@ -158,7 +158,7 @@ function renderTables(data) {
             </div>
             <div class="cc-footer">
                 <span>Dữ liệu: ${resultStr.length}</span>
-                <button class="btn-join" ${isInterrupted ? 'disabled style="opacity:0.5; background:#555; cursor:not-allowed;"' : ''}>${isInterrupted ? 'BẢO TRÌ' : 'XÂM NHẬP'}</button>
+                <button class="btn-join" ${isInterrupted ? 'disabled style="opacity:0.5; background:#555; cursor:not-allowed;"' : ''}>${isInterrupted ? 'BẢO TRÌ' : 'HACK '}</button>
             </div>
         `;
         grid.appendChild(card);
