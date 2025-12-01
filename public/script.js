@@ -342,22 +342,26 @@ function renderBeadPlate(res) {
     const grid = document.getElementById('beadPlateGrid');
     if(!grid) return;
 
-    // QUAY VỀ 25 Ô (5x5)
-    const totalCells = 25; 
+    const totalCells = 25; // 5x5
 
-    // Lấy 25 kết quả mới nhất
+    // LOGIC CẮT DỮ LIỆU ĐỂ TẠO HIỆU ỨNG TRÔI:
+    // Luôn lấy tối đa 25 phần tử CUỐI CÙNG của mảng lịch sử.
     let displayData = [];
     if (res.length > totalCells) {
+        // Ví dụ: Có 30 kết quả -> Lấy từ index 5 đến 30.
+        // Cột 1 (index 0-4 cũ) sẽ bị loại bỏ.
         displayData = res.slice(res.length - totalCells, res.length);
     } else {
+        // Nếu chưa đủ 25 kết quả, hiển thị từ đầu.
+        // Nó sẽ điền cột 1, rồi cột 2... các cột bên phải sẽ trống.
         displayData = res;
     }
     
     let html = '';
 
-    // Vòng lặp vẽ 25 ô
+    // Render đúng 25 ô
     for(let i = 0; i < totalCells; i++) {
-        const item = displayData[i]; 
+        const item = displayData[i]; // Lấy dữ liệu
         
         if (item) {
             let cls = ''; let txt = '';
@@ -367,7 +371,7 @@ function renderBeadPlate(res) {
             
             html += `<div class="bead-cell"><div class="bead-circle ${cls}">${txt}</div></div>`;
         } else {
-            // Ô trống
+            // Render ô trống nếu chưa có dữ liệu
             html += `<div class="bead-cell"></div>`;
         }
     }

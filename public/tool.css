@@ -338,29 +338,29 @@
     box-shadow: inset 0 0 10px #000;
 }
 
-/* 2. LƯỚI 5x5 (CỐ ĐỊNH) */
+/* 2. LƯỚI 5x5 (ĐIỀN DỌC - TRÔI NGANG) */
 .bead-grid {
     display: grid;
     /* Cố định 5 dòng - 5 cột */
     grid-template-rows: repeat(5, 1fr);
     grid-template-columns: repeat(5, 1fr);
     
-    /* QUAN TRỌNG: Ép buộc hiển thị từ TRÁI SANG PHẢI */
+    /* QUAN TRỌNG: direction LTR để đi từ Trái sang Phải */
     direction: ltr !important; 
     
-    /* Điền hết hàng ngang rồi mới xuống dòng */
-    grid-auto-flow: row; 
+    /* Điền hết cột 1 rồi mới sang cột 2 (Vertical Flow) */
+    grid-auto-flow: column; 
     
     gap: 0; 
     width: 100%;
     height: 100%;
     
-    /* Viền bao quanh */
+    /* Viền bao quanh lưới */
     border-top: 1px solid #333;
     border-left: 1px solid #333;
 }
 
-/* 3. Ô CHỨA (KẺ Ô LY) */
+/* 3. Ô CHỨA HẠT */
 .bead-cell {
     width: 100%;
     height: 100%;
@@ -368,7 +368,7 @@
     justify-content: center;
     align-items: center;
     
-    /* Viền ngăn cách các ô */
+    /* Viền ngăn cách */
     border-right: 1px solid #333;
     border-bottom: 1px solid #333;
     
@@ -376,12 +376,12 @@
     min-width: 0; min-height: 0;
 }
 
-/* 4. HẠT CẦU (THU NHỎ LẠI CÒN 65%) -> KHÔNG BAO GIỜ VỠ */
+/* 4. HẠT CẦU (THU NHỎ CÒN 60%) -> ĐẢM BẢO KHÔNG VỠ */
 .bead-circle {
-    /* Quan trọng: Giảm xuống 65% để có khoảng trống xung quanh */
-    width: 65%; 
+    /* Kích thước an toàn tuyệt đối */
+    width: 40%; 
     height: auto;
-    aspect-ratio: 1/1; /* Luôn tròn */
+    aspect-ratio: 1/1; 
     
     border-radius: 50%;
     display: flex;
@@ -392,17 +392,16 @@
     font-weight: bold;
     
     /* Font chữ tự co giãn */
-    font-size: clamp(8px, 1.5vh, 12px); 
+    font-size: clamp(8px, 1.4vh, 12px); 
     color: #fff;
     
-    box-shadow: none; /* Phẳng, sạch sẽ */
+    box-shadow: none; 
 }
 
-/* 5. MÀU SẮC (CHUẨN HÌNH 2) */
-.bead-p { background-color: #007bff; } /* Xanh */
-.bead-b { background-color: #dc3545; } /* Đỏ */
-.bead-t { background-color: #28a745; } /* Hòa */
-
+/* 5. MÀU SẮC CHUẨN */
+.bead-p { background-color: #007bff; }
+.bead-b { background-color: #dc3545; }
+.bead-t { background-color: #28a745; }
 /* 3. BIG ROAD */
 .road-panel { background: #000; padding-top: 20px; }
 .road-container { display: flex; height: 100%; width: 100%; justify-content: flex-start; padding-left: 5px; }
