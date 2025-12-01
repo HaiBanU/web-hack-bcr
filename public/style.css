@@ -1,5 +1,5 @@
 /* =========================================
-   STYLE.CSS - V7.0 (GREEN CARDS & MOBILE LAYOUT FIX)
+   STYLE.CSS - V8.0 (MERGED LOBBY & TOOL FIX)
    ========================================= */
 :root {
     --neon-green: #00ff41;
@@ -23,12 +23,115 @@ body {
     overflow: hidden; 
 }
 
+/* Scrollbar */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: #000; }
 ::-webkit-scrollbar-thumb { background: var(--neon-green); border-radius: 2px; }
 
-/* HEADER */
+/* Canvas Matrix (Dùng chung) */
+#matrixCanvas { position: fixed; top: 0; left: 0; z-index: -1; width: 100%; height: 100%; }
+
+/* =========================================
+   1. GIAO DIỆN SẢNH CHỜ (LOBBY - INDEX.HTML)
+   ========================================= */
+body.lobby-body {
+    overflow-y: auto !important; height: auto !important; min-height: 100vh;
+}
+.lobby-content { position: relative; z-index: 10; padding: 15px; max-width: 1400px; margin: 0 auto; padding-bottom: 80px; }
+
+/* Header Sảnh */
+.lobby-header {
+    display: flex; flex-direction: column; align-items: center;
+    position: relative; margin-bottom: 30px; padding-top: 10px;
+}
+.glitch-text { 
+    font-family: var(--font-display); font-size: 2.5rem; color: #fff; 
+    text-shadow: 0 0 10px var(--neon-green); letter-spacing: 3px;
+    text-align: center; margin-top: 10px;
+}
+.server-info { 
+    display: inline-flex; gap: 15px; background: rgba(0,20,0,0.8); 
+    border: 1px solid var(--neon-green); padding: 5px 15px; 
+    font-size: 0.8rem; margin-top: 10px; 
+}
+
+/* User Panel (Index) */
+#authSection { position: absolute; top: 10px; right: 20px; z-index: 100; text-align: right; width: auto; }
+.user-panel-cyber {
+    display: flex; align-items: center; gap: 15px;
+    background: rgba(0, 10, 0, 0.9); border: 1px solid #00ff41;
+    padding: 8px 15px; border-radius: 4px;
+    box-shadow: 0 0 15px rgba(0, 255, 65, 0.15); backdrop-filter: blur(5px);
+}
+.user-name { font-family: 'Orbitron'; color: #fff; font-weight: bold; text-shadow: 0 0 5px #00ff41; font-size: 1rem; }
+.token-badge { background: #003300; border: 1px dashed #00ff41; padding: 2px 8px; color: #00ff41; font-family: monospace; font-weight: bold; border-radius: 2px; font-size: 0.9rem; }
+.btn-logout-cyber {
+    background: transparent; border: 1px solid #ff003c; color: #ff003c;
+    padding: 5px 12px; font-family: 'Share Tech Mono'; cursor: pointer;
+    font-size: 0.85rem; transition: 0.3s; font-weight: bold;
+}
+.btn-logout-cyber:hover { background: #ff003c; color: #fff; box-shadow: 0 0 10px #ff003c; }
+
+/* Grid Bàn (Lobby) */
+.tables-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
+
+.casino-card {
+    background: #000; border: 1px solid #333; border-top: 2px solid var(--neon-green);
+    display: flex; flex-direction: column; overflow: hidden; cursor: pointer; transition: 0.3s;
+}
+.casino-card:hover { transform: translateY(-5px); box-shadow: 0 0 15px rgba(0,255,65,0.3); border-color: var(--neon-green); }
+
+/* Card Inner */
+.cc-header { background: #111; padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; }
+.cc-name { font-family: var(--font-display); font-weight: bold; color: #fff; font-size: 1rem; }
+.cc-rate {
+    background: #00ff41; color: #000; font-weight: 900; font-family: var(--font-display);
+    font-size: 0.8rem; padding: 2px 6px; margin-left: 10px; border-radius: 2px;
+    box-shadow: 0 0 8px #00ff41; animation: pulseRate 1.5s infinite alternate;
+}
+.cc-body { display: flex; height: 97px; background: #000; border-bottom: 1px solid #222; }
+.cc-grid-area { flex: 1; background: #fff; overflow: hidden; position: relative; }
+.cc-predict-area { width: 80px; background: #051005; border-left: 1px solid #333; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 5px; }
+.cc-footer { background: #000; padding: 5px 10px; display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: #888; }
+.btn-join { background: #ff9800; color: #000; border: none; padding: 3px 10px; font-weight: bold; font-family: var(--font-display); cursor: pointer; }
+
+/* Hiệu ứng Bàn VIP & Lỗi */
+.high-rate { border-color: var(--neon-gold) !important; box-shadow: 0 0 15px rgba(255, 215, 0, 0.2); animation: goldPulse 2s infinite alternate; }
+.high-rate .cc-rate { background: var(--neon-gold); color: #000; box-shadow: 0 0 10px var(--neon-gold); }
+.interrupted-card { border-color: #555 !important; opacity: 0.9; }
+.interrupted-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.75); display: flex; justify-content: center; align-items: center;
+    z-index: 5; backdrop-filter: blur(1px);
+}
+.int-content { text-align: center; border: 1px dashed #ff9800; padding: 5px 10px; background: rgba(0,0,0,0.8); transform: rotate(-5deg); box-shadow: 0 0 10px rgba(255, 152, 0, 0.3); }
+
+/* POPUP MODAL (Đã thêm lại phần bị thiếu) */
+.custom-modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.85); z-index: 99999;
+    display: none; justify-content: center; align-items: center;
+    backdrop-filter: blur(3px);
+}
+.custom-modal-box {
+    background: #000500; border: 2px solid #00ff41; padding: 30px;
+    width: 90%; max-width: 400px; text-align: center;
+    box-shadow: 0 0 30px rgba(0, 255, 65, 0.2); position: relative;
+    animation: modalPop 0.3s ease-out;
+}
+.modal-title { font-family: 'Orbitron'; color: #00ff41; font-size: 1.4rem; font-weight: bold; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; text-shadow: 0 0 10px #00ff41; }
+.modal-content { color: #fff; font-family: monospace; line-height: 1.8; margin-bottom: 30px; font-size: 1.1rem; }
+.modal-actions { display: flex; gap: 15px; justify-content: center; }
+.btn-modal { flex: 1; padding: 12px; border: none; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; font-size: 1rem; }
+.btn-confirm { background: #00ff41; color: #000; box-shadow: 0 0 15px rgba(0, 255, 65, 0.4); }
+.btn-cancel { background: #222; color: #aaa; border: 1px solid #444; }
+
+/* =========================================
+   2. GIAO DIỆN TRONG BÀN (TOOL - TOOL.HTML)
+   ========================================= */
 .hacker-layout { display: grid; grid-template-columns: 280px 1fr 280px; grid-template-rows: 60px 1fr 140px; height: 100vh; gap: 10px; padding: 10px; }
+
+/* Header Tool */
 .sys-header { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; background: var(--bg-panel); border: 1px solid var(--neon-green); padding: 0 15px; box-shadow: 0 0 10px var(--neon-green-dim); }
 .brand-box { display: flex; align-items: center; gap: 10px; }
 .sexy-tag { background: var(--neon-red); color: #fff; padding: 2px 6px; font-weight: bold; font-family: var(--font-display); font-size: 0.8rem; animation: blink 2s infinite; }
@@ -38,7 +141,7 @@ body {
 .btn-exit { background: transparent; border: 1px solid var(--neon-red); color: var(--neon-red); padding: 5px 15px; font-weight: bold; cursor: pointer; transition: 0.3s; font-family: var(--font-display); }
 .btn-exit:hover { background: var(--neon-red); color: #000; }
 
-/* GAME CENTER */
+/* Game Center */
 .game-center { position: relative; border: 1px solid var(--neon-green); background: radial-gradient(circle at center, #001500 0%, #000 90%); display: flex; flex-direction: column; justify-content: center; align-items: center; }
 .battle-wrapper { display: flex; width: 100%; justify-content: space-around; margin-top: -20px; }
 .side-container { text-align: center; width: 40%; transition: 0.3s; padding: 10px; border-radius: 10px; }
@@ -49,36 +152,27 @@ body {
 @keyframes sidePulseP { from { box-shadow: 0 0 10px var(--neon-cyan); } to { box-shadow: 0 0 30px var(--neon-cyan); } }
 @keyframes sidePulseB { from { box-shadow: 0 0 10px var(--neon-red); } to { box-shadow: 0 0 30px var(--neon-red); } }
 
-/* --- [UPDATED] LÁ BÀI MÀU XANH LÁ --- */
+/* Cards & Animation (Bài Xanh Lá) */
 .cards-area { display: flex; justify-content: center; gap: 8px; height: 110px; margin-bottom: 5px; }
-
 .card-slot { 
     width: 80px; height: 110px; 
-    border: 1px solid #00ff41; /* Viền xanh */
-    border-radius: 6px; 
-    
-    /* MÀU LƯNG BÀI XANH LÁ */
-    background: #002200; 
-    background-image: repeating-linear-gradient(45deg, #001a00 0, #001a00 5px, #002e00 5px, #002e00 10px);
-    
+    border: 1px solid #00ff41; border-radius: 6px; 
+    background: #002200; background-image: repeating-linear-gradient(45deg, #001a00 0, #001a00 5px, #002e00 5px, #002e00 10px);
     display: flex; justify-content: center; align-items: center; 
     font-size: 2.5rem; font-weight: bold; position: relative; opacity: 0.8; color: transparent; 
     transform-style: preserve-3d; box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
 }
-
 .card-slot.revealed { animation: flipReveal 0.6s ease-out forwards; opacity: 1; }
-
 @keyframes flipReveal {
     0% { transform: perspective(600px) rotateY(0deg); background: #002200; color: transparent; border-color: #00ff41; }
     49% { transform: perspective(600px) rotateY(90deg); background: #002200; color: transparent; }
     50% { transform: perspective(600px) rotateY(90deg); background: linear-gradient(135deg, #fff 0%, #eee 100%); border-color: #fff; color: inherit; }
     100% { transform: perspective(600px) rotateY(0deg); background: linear-gradient(135deg, #fff 0%, #eee 100%); border-color: #fff; box-shadow: 0 0 15px rgba(255,255,255,0.4); color: inherit; }
 }
-/* ------------------------------------- */
-
 .card-slot.hearts, .card-slot.diamonds { color: #d00; } .card-slot.spades, .card-slot.clubs { color: #000; }
 .score-box { font-size: 2.5rem; font-family: var(--font-display); font-weight: bold; text-shadow: 0 0 15px currentColor; }
 
+/* Prediction Bar (Big P/B) */
 .prediction-bar { width: 90%; padding: 10px 20px; position: absolute; bottom: 15px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #333; background: rgba(0,10,0,0.95); transition: 0.3s; overflow: hidden; }
 .prediction-bar.win-p { border: 2px solid var(--neon-cyan); box-shadow: 0 0 25px rgba(0, 243, 255, 0.3); background: linear-gradient(90deg, rgba(0,0,0,0.9) 0%, rgba(0, 243, 255, 0.1) 100%); }
 .prediction-bar.win-b { border: 2px solid var(--neon-red); box-shadow: 0 0 25px rgba(255, 0, 60, 0.3); background: linear-gradient(90deg, rgba(0,0,0,0.9) 0%, rgba(255, 0, 60, 0.1) 100%); }
@@ -90,6 +184,7 @@ body {
 .prediction-bar.win-p .scan-line, .prediction-bar.win-b .scan-line { display: block; }
 @keyframes barScan { 0% { left: -10%; } 100% { left: 110%; } }
 
+/* Panels & Footer */
 .panel-left, .panel-right { background: var(--bg-panel); border: 1px solid var(--neon-green); display: flex; flex-direction: column; padding: 10px; overflow: hidden; }
 .box-title { background: rgba(0, 255, 65, 0.1); color: var(--neon-green); padding: 5px; font-weight: bold; font-size: 0.75rem; margin-bottom: 5px; border-left: 3px solid var(--neon-green); }
 .log-window { flex: 1; overflow-y: auto; font-size: 0.7rem; color: #cfc; font-family: monospace; }
@@ -101,7 +196,7 @@ body {
 .stat-bar-fill { height: 100%; transition: width 0.5s; }
 .p-fill { background: var(--neon-cyan); } .b-fill { background: var(--neon-red); }
 
-/* FOOTER */
+/* Footer (Chart & Road) */
 .sys-footer { display: flex !important; flex-direction: row !important; background: #000; border: 1px solid var(--neon-green); height: 140px; }
 #bigRoadGrid { flex: 1; border-right: 1px solid var(--neon-green); display: flex; height: 100%; overflow-x: auto; scroll-behavior: smooth; }
 .tool-road-col { width: 26px; min-width: 26px; display: flex; flex-direction: column; border-right: 1px solid rgba(0, 255, 65, 0.15); }
@@ -116,81 +211,55 @@ body {
 .fs-stats { display: flex; justify-content: space-between; padding: 4px 10px; background: #001100; border-top: 1px solid #333; font-family: var(--font-main); font-size: 0.7rem; color: #666; }
 
 /* =========================================
-   MOBILE RESPONSIVE (LAYOUT FIX)
+   MOBILE RESPONSIVE (LOBBY + TOOL + MODAL)
    ========================================= */
 @media screen and (max-width: 1024px) {
+    /* CHUNG */
     body { overflow-y: auto; height: auto; }
     
-    .hacker-layout { 
-        display: flex; 
-        flex-direction: column; 
-        height: auto; 
-        gap: 5px; 
-        padding: 5px; 
-    }
+    /* --- LOBBY MOBILE --- */
+    .lobby-header { margin-top: 0; }
+    #authSection { position: static; width: 100%; display: flex; justify-content: center; margin-bottom: 15px; }
+    .user-panel-cyber { width: 100%; max-width: 400px; justify-content: space-between; }
+    .glitch-text { font-size: 1.8rem; }
+    .tables-grid { grid-template-columns: 1fr; }
 
-    /* 1. HEADER (Order 1) */
+    /* --- TOOL MOBILE --- */
+    .hacker-layout { display: flex; flex-direction: column; height: auto; gap: 5px; padding: 5px; }
+
+    /* 1. HEADER */
     .sys-header { order: 1; padding: 5px 10px; flex-direction: row; height: 50px; }
-    .glitch-name { font-size: 1rem; flex: 1; text-align: center; }
+    .glitch-name { font-size: 1rem; flex: 1; text-align: center; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
     .brand-box { display: none; }
     .header-token-box { padding: 2px 5px; font-size: 0.8rem; }
     .btn-exit { font-size: 0.7rem; padding: 3px 8px; }
 
-    /* 2. FOOTER (BẢNG CẦU) - ĐẨY LÊN TRÊN (Order 2) */
-    .sys-footer { 
-        order: 2; 
-        height: auto !important; 
-        flex-direction: column !important; 
-        margin-bottom: 5px; 
-        border: 1px solid #00ff41;
-    }
-    #bigRoadGrid { 
-        height: 120px; /* Tăng chiều cao để soi cầu dễ hơn */
-        width: 100%; 
-        border-right: none; 
-        border-bottom: 1px solid var(--neon-green); 
-    }
-    .footer-side-panel { width: 100%; height: 100px; display: none; /* Ẩn bớt biểu đồ cho gọn nếu muốn, hoặc để display: flex */ }
+    /* 2. FOOTER (Bảng cầu) - ĐẨY LÊN TRÊN */
+    .sys-footer { order: 2; height: auto !important; flex-direction: column !important; margin-bottom: 5px; border: 1px solid #00ff41; }
+    #bigRoadGrid { height: 120px; width: 100%; border-right: none; border-bottom: 1px solid var(--neon-green); }
+    .footer-side-panel { width: 100%; height: 100px; display: none; } /* Ẩn chart trên mobile cho gọn */
 
-    /* 3. GAME CENTER (CÁC LÁ BÀI) - ĐẨY XUỐNG DƯỚI (Order 3) */
-    .game-center { 
-        order: 3; 
-        height: auto; 
-        min-height: 500px; 
-        margin-bottom: 5px; 
-        padding-top: 20px; 
-        padding-bottom: 100px;
-        justify-content: flex-start; 
-    }
-
-    /* 4. SIDE PANELS (Order 4 & 5) */
-    .panel-right { order: 4; padding: 5px; } 
-    .panel-left { order: 5; height: 150px; font-size: 0.6rem; } 
-
-    /* LAYOUT BÀI CHO MOBILE */
+    /* 3. GAME CENTER */
+    .game-center { order: 3; height: auto; min-height: 500px; margin-bottom: 5px; padding-top: 20px; padding-bottom: 100px; justify-content: flex-start; }
     .battle-wrapper { width: 100%; padding: 0 5px; margin-top: 10px; gap: 2px; }
     .side-container { width: 48%; padding: 5px; }
     .side-label { font-size: 1rem; margin-bottom: 5px; }
-    
-    /* Thu nhỏ bài và tăng khoảng cách chút */
     .cards-area { height: 85px; gap: 5px; } 
-    .card-slot { 
-        width: 55px; /* To hơn xíu so với bản trước cho đẹp */
-        height: 80px; 
-        font-size: 1.4rem; 
-    }
+    .card-slot { width: 55px; height: 80px; font-size: 1.4rem; }
     .score-box { font-size: 1.8rem; margin-top: 5px; }
-
-    /* Prediction Bar */
     .prediction-bar { width: 96%; bottom: 10px; padding: 10px; flex-direction: column; text-align: center; gap: 5px; height: auto; }
     .pred-left { width: 100%; border-bottom: 1px dashed #333; padding-bottom: 5px; margin-bottom: 5px; }
     .pred-content { width: 100%; }
     .res-char-p, .res-char-b { font-size: 3.5rem; }
 
-    /* Grid */
-    .tables-grid { grid-template-columns: 1fr; }
-    .tool-road-col { min-width: 22px; width: 22px; } 
-    .tool-bead { width: 15px; height: 15px; border-width: 2px; }
+    /* 4. PANELS KHÁC */
+    .panel-right { order: 4; padding: 5px; } 
+    .panel-left { order: 5; height: 150px; font-size: 0.6rem; }
 }
+
+/* BLINK ANIMATION */
 .blink { animation: blinking 1s infinite; }
 @keyframes blinking { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+@keyframes modalPop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes pulseRate { from { box-shadow: 0 0 5px currentColor; transform: scale(1); } to { box-shadow: 0 0 15px currentColor; transform: scale(1.05); } }
+@keyframes goldPulse { from { box-shadow: 0 0 5px rgba(255, 215, 0, 0.2); transform: translateY(0); } to { box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); transform: translateY(-3px); } }
