@@ -95,14 +95,89 @@
     display: flex; justify-content: space-between; align-items: center;
     margin-bottom: 20px; /* Giảm margin để nhường chỗ cho Prediction to */
 }
+/* =========================================
+   CẬP NHẬT GIAO DIỆN KHUNG BÀI (RGB LED)
+   ========================================= */
+
+/* CONTAINER CHÍNH - ĐỊNH HÌNH KHUNG */
 .side-container {
-    width: 45%; text-align: center;
-    background: rgba(0,0,0,0.6); padding: 15px;
-    border-radius: 10px; border: 2px solid #333;
-    transition: 0.3s; position: relative; overflow: hidden;
+    width: 45%;
+    text-align: center;
+    position: relative;
+    z-index: 1; /* Đưa nội dung lên trên */
+    border-radius: 12px;
+    overflow: hidden; /* Cắt phần LED thừa để tạo viền gọn */
+    padding: 3px; /* ĐỘ DÀY CỦA VIỀN LED RGB */
+    transition: transform 0.3s, box-shadow 0.3s;
+    
+    /* Xóa background cũ mờ mờ, thay bằng trong suốt để hiển thị lớp bên dưới */
+    background: transparent; 
+    border: none; 
+    
+    /* Thêm bóng đổ đen đậm để tách biệt khung khỏi nền web */
+    box-shadow: 0 10px 40px rgba(0,0,0,0.8); 
 }
-.side-container.winner-p { animation: pulseWinP 0.8s infinite alternate; background: rgba(0, 243, 255, 0.1); }
-.side-container.winner-b { animation: pulseWinB 0.8s infinite alternate; background: rgba(255, 0, 60, 0.1); }
+
+/* LỚP 1: LED RGB 7 MÀU CHẠY (Nằm bên dưới) */
+.side-container::before {
+    content: '';
+    position: absolute;
+    /* Làm vùng này to gấp đôi để khi xoay vẫn phủ kín khung */
+    top: -50%; left: -50%; width: 200%; height: 200%;
+    
+    /* Dải màu 7 sắc cầu vồng */
+    background: conic-gradient(
+        #ff0000, #ff7f00, #ffff00, #00ff00, 
+        #0000ff, #4b0082, #9400d3, #ff0000
+    );
+    
+    animation: rotateRGB 3s linear infinite; /* Tốc độ chạy đèn (3s) */
+    z-index: -2;
+}
+
+/* LỚP 2: NỀN ĐEN ĐẬM Ở GIỮA (Làm cho khung rõ nét, hết mờ) */
+.side-container::after {
+    content: '';
+    position: absolute;
+    inset: 3px; /* Khoảng cách này phải bằng padding ở trên để lộ viền LED */
+    background: #0a0a0a; /* Nền đen gần như đặc (99%) giúp bài nổi bật */
+    border-radius: 10px; /* Bo góc nhỏ hơn khung cha một chút */
+    z-index: -1;
+}
+
+/* ANIMATION QUAY ĐÈN LED */
+@keyframes rotateRGB {
+    100% { transform: rotate(360deg); }
+}
+
+/* --- HIỆU ỨNG KHI THẮNG (WINNER) --- */
+/* Khi thắng sẽ phát sáng cực mạnh màu đặc trưng đè lên LED RGB */
+
+/* 1. PLAYER WIN (XANH DƯƠNG) */
+.side-container.winner-p {
+    /* Phát sáng xanh neon ra ngoài */
+    box-shadow: 0 0 20px #00f3ff, 0 0 50px #00f3ff; 
+    transform: scale(1.03); /* Phóng to nhẹ tạo điểm nhấn */
+}
+/* Đổi màu nền bên trong và viền khi thắng */
+.side-container.winner-p::after {
+    background: rgba(0, 20, 30, 0.95); /* Nền xanh đen đậm */
+    border: 2px solid #00f3ff; /* Viền cứng màu xanh */
+    box-shadow: inset 0 0 20px rgba(0, 243, 255, 0.5); /* Sáng từ trong ra */
+}
+
+/* 2. BANKER WIN (ĐỎ) */
+.side-container.winner-b {
+    /* Phát sáng đỏ neon ra ngoài */
+    box-shadow: 0 0 20px #ff003c, 0 0 50px #ff003c;
+    transform: scale(1.03);
+}
+/* Đổi màu nền bên trong và viền khi thắng */
+.side-container.winner-b::after {
+    background: rgba(30, 0, 10, 0.95); /* Nền đỏ đen đậm */
+    border: 2px solid #ff003c; /* Viền cứng màu đỏ */
+    box-shadow: inset 0 0 20px rgba(255, 0, 60, 0.5);
+}
 
 @keyframes pulseWinP { 0% { border-color: #00f3ff; box-shadow: 0 0 10px #00f3ff; } 100% { border-color: #fff; box-shadow: 0 0 40px #00f3ff, inset 0 0 20px #00f3ff; } }
 @keyframes pulseWinB { 0% { border-color: #ff003c; box-shadow: 0 0 10px #ff003c; } 100% { border-color: #fff; box-shadow: 0 0 40px #ff003c, inset 0 0 20px #ff003c; } }
@@ -219,12 +294,32 @@
     overflow: hidden;
 }
 #matrixCode {
-    flex-grow: 1; margin-top: 15px; margin-bottom: 5px;
-    font-size: 0.7rem; color: #0f0; opacity: 0.8; font-family: monospace; 
-    overflow: hidden; background: rgba(0, 10, 0, 0.5); padding: 10px; 
-    border-radius: 4px; border: 1px dashed #333;
-    line-height: 1.6; word-break: break-all;
-    display: flex; flex-direction: column-reverse;
+    /* QUAN TRỌNG: Lệnh này giúp khung tự giãn hết khoảng trống còn lại */
+    flex: 1; 
+    height: auto !important; /* Bắt buộc bỏ chiều cao cố định cũ */
+    margin-top: 20px !important; /* Cách thanh phần trăm ra một chút */
+    margin-bottom: 0;
+
+    /* Giao diện khung */
+    background: rgba(0, 10, 0, 0.5); 
+    padding: 10px; 
+    border-radius: 4px; 
+    border: 1px dashed #333;
+    
+    /* Xử lý nội dung tràn */
+    overflow: hidden; 
+
+    /* Font chữ */
+    font-size: 0.65rem; /* Tăng nhẹ size chữ cho dễ đọc hơn */
+    color: #0f0; 
+    opacity: 0.8; 
+    font-family: monospace; 
+    line-height: 1.6;
+    word-break: break-all;
+    
+    /* Giữ chữ luôn hiển thị dồn từ dưới lên (nếu muốn) */
+    display: flex; 
+    flex-direction: column-reverse;
 }
 
 /* --- FOOTER 4 CỘT (NO SCROLL) --- */
@@ -265,3 +360,71 @@
 .trans-log-content { flex: 1; overflow-y: hidden; padding: 0 5px; font-family: monospace; font-size: 0.7rem; display: flex; flex-direction: column-reverse; }
 .trans-item { display: flex; justify-content: space-between; border-bottom: 1px solid #222; padding: 3px 0; animation: fadeIn 0.3s ease-out; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+/* =========================================
+   HIỆU ỨNG CHỮ VS (SIÊU CẤP VIP)
+   ========================================= */
+
+.vs-badge {
+    /* 1. KÍCH THƯỚC & VỊ TRÍ */
+    font-family: 'Orbitron', sans-serif;
+    font-size: 4rem; /* To gấp 3 lần cũ */
+    font-weight: 900; /* Siêu đậm */
+    font-style: italic; /* Nghiêng tạo cảm giác tốc độ */
+    margin-top: -40px; /* Căn chỉnh lại vị trí cho cân */
+    position: relative;
+    z-index: 20; /* Luôn nổi lên trên cùng */
+    
+    /* 2. MÀU SẮC & ÁNH SÁNG */
+    color: #fff; /* Chữ gốc màu trắng sáng */
+    
+    /* Đổ bóng kép: Xanh bên trái (Player), Đỏ bên phải (Banker) */
+    text-shadow: 
+        -3px 0 10px #00f3ff, /* Bóng xanh */
+         3px 0 10px #ff003c, /* Bóng đỏ */
+         0 0 20px #fff;      /* Bóng trắng tỏa sáng */
+
+    /* 3. HIỆU ỨNG ĐỘNG */
+    animation: vsPulse 0.8s infinite alternate; /* Nhịp đập liên tục */
+}
+
+/* TẠO LUỒNG ĐIỆN CHẠY NGANG (OPTIONAL - TẠO GẠCH NGANG PHÁ CÁCH) */
+.vs-badge::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: -20px; right: -20px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #00f3ff, #ff003c, transparent);
+    z-index: -1;
+    opacity: 0.7;
+}
+
+/* KHUNG HÌNH THOI MỜ BAO QUANH */
+.vs-badge::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) rotate(45deg);
+    width: 60px; height: 60px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.5);
+    z-index: -2;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+}
+
+/* ANIMATION NHỊP ĐẬP & ĐỔI MÀU */
+@keyframes vsPulse {
+    0% {
+        transform: scale(1);
+        text-shadow: -2px 0 5px #00f3ff, 2px 0 5px #ff003c;
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1.15); /* Phóng to lên */
+        text-shadow: 
+            -5px 0 20px #00f3ff, 
+             5px 0 20px #ff003c,
+             0 0 30px #fff; /* Phát sáng rực rỡ */
+        opacity: 1;
+        letter-spacing: 5px; /* Giãn chữ ra khi đập */
+    }
+}

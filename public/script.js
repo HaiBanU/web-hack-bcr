@@ -353,7 +353,9 @@ function generateMatrixCode() {
         div.style.marginBottom = "2px";
         div.innerText = "> " + lines[Math.floor(Math.random()*lines.length)] + " [" + Math.random().toString(16).substring(2,6).toUpperCase() + "]";
         el.prepend(div); 
-        if(el.children.length > 12) el.lastChild.remove();
+        
+        // --- SỬA SỐ 12 THÀNH 25 ĐỂ LẤP ĐẦY KHUNG CAO ---
+        if(el.children.length > 25) el.lastChild.remove();
     }
 }
 function startFakeTransactions() {
