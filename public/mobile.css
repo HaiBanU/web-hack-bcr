@@ -104,3 +104,11 @@
     #matrixCode { height: 100px !important; flex: none !important; }
     .footer-panel { border: 1px solid #333; background: #050505; }
 }
+.bead-grid {
+        /* Mobile: 6 Dòng (Dọc) - 5 Cột (Ngang) */
+        grid-template-rows: repeat(6, 1fr) !important;
+        grid-template-columns: repeat(5, 1fr) !important;
+        
+        /* Đảm bảo vẫn giữ hướng chảy dọc */
+        grid-auto-flow: column !important;
+    }

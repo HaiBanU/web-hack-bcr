@@ -328,21 +328,51 @@ function renderBigRoadGrid(rawHistory) {
 }
 
 // --- BEAD PLATE (36) ---
+/* --- TRONG FILE script.js --- */
+
+// --- BEAD PLATE (CẬP NHẬT: DỌC TRƯỚC NGANG SAU, MOBILE 6x5) ---
 function renderBeadPlate(res) {
     const grid = document.getElementById('beadPlateGrid');
-    if(!grid) return;
-    let displayData = res.slice(-36); 
+    if (!grid) return;
+
+    // 1. Xác định số cột dựa vào màn hình
+    // Nếu màn hình nhỏ hơn 1024px (Mobile/Tablet dọc) thì 5 cột, ngược lại 6 cột
+    const isMobile = window.innerWidth <= 1024;
+    const rows = 6; // Cố định 6 dòng
+    const cols = isMobile ? 5 : 6; 
+    const totalCells = rows * cols; // Mobile: 30, Desktop: 36
+
+    // 2. Lấy đúng số lượng kết quả mới nhất
+    let displayData = res.slice(-totalCells); 
+    
+    // Nếu dữ liệu ít hơn số ô, ta cần padding (đẩy dữ liệu về phía sau hoặc giữ nguyên tùy logic)
+    // Ở đây ta giữ nguyên, Grid CSS sẽ tự sắp xếp
+    
     let html = '';
+    
+    // Render các ô có dữ liệu
     displayData.forEach(item => {
         let cls = ''; let txt = '';
         if (item === 'P') { cls = 'bead-p'; txt = 'P'; }
         else if (item === 'B') { cls = 'bead-b'; txt = 'B'; }
         else if (item === 'T') { cls = 'bead-t'; txt = 'T'; }
+        
         html += `<div class="bead-cell"><div class="bead-circle ${cls}">${txt}</div></div>`;
     });
-    for(let i = displayData.length; i < 36; i++) { html += `<div class="bead-cell"></div>`; }
+
+    // Render các ô trống còn thiếu để lấp đầy bảng (để giữ khung đẹp)
+    const emptyCount = totalCells - displayData.length;
+    for (let i = 0; i < emptyCount; i++) {
+        html += `<div class="bead-cell"></div>`;
+    }
+
     grid.innerHTML = html;
 }
+
+// Bắt sự kiện resize để vẽ lại bảng khi xoay màn hình hoặc đổi kích thước
+window.addEventListener('resize', () => {
+    if(history && history.length > 0) renderBeadPlate(history);
+});
 
 // --- MATRIX & TRANS ---
 function generateMatrixCode() {
