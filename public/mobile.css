@@ -1,8 +1,9 @@
 /* =========================================
-   MOBILE.CSS - RESPONSIVE
+   MOBILE.CSS - OPTIMIZED V22 (FIXED LAYOUT)
    ========================================= */
 
 @media screen and (max-width: 1024px) {
+    /* 1. RESET LAYOUT CHÍNH */
     .hacker-layout {
         display: flex; 
         flex-direction: column;
@@ -11,33 +12,132 @@
         padding: 5px;
         gap: 10px;
         background: #000;
-        overflow-y: auto;
+        overflow-x: hidden; /* Chặn cuộn ngang tuyệt đối */
     }
 
-    .sys-header { order: 1; flex-wrap: wrap; height: auto; padding: 10px; justify-content: center; gap: 5px; }
-    .brand-box { width: 100%; text-align: center; }
-    .glitch-text { font-size: 1.1rem !important; margin: 5px 0; }
-    
-    .game-center { order: 2; width: 100%; min-height: auto; padding: 15px 5px; }
-    .battle-wrapper { margin-top: 5px; padding: 0; width: 100%; margin-bottom: 10px; }
-    .side-container { width: 48% !important; margin: 0; padding: 8px; }
-    .cards-area { height: 55px; gap: 3px; margin-top: 5px; }
-    .card-slot { width: 32px; height: 48px; font-size: 0.8rem; }
-    
-    .prediction-wrapper { width: 100%; height: 70px; margin-top: 10px; padding: 5px; border-radius: 35px; }
-    .ai-box { width: 55px; height: 55px; margin-right: 10px; }
-    .pred-result { font-size: 1.8rem; } 
-
-    /* PANEL PHẢI & TRÁI */
-    .panel-right { order: 4; margin-top: 0; padding: 10px; }
-    .panel-left { order: 5; height: 150px; }
-
-    /* FOOTER MOBILE - CHUYỂN VỀ DẠNG 2 CỘT CHO DỄ NHÌN */
-    .sys-footer {
-        order: 3;
-        grid-template-columns: 1fr 1fr; /* 2 cột trên mobile */
-        height: auto;
+    /* 2. HEADER GỌN GÀNG */
+    .sys-header {
+        order: 1; 
+        flex-wrap: wrap; 
+        height: auto; 
+        padding: 10px 5px; 
+        justify-content: center;
         gap: 5px;
     }
-    .footer-panel { height: 150px; }
+    .brand-box { width: 100%; text-align: center; margin-bottom: 2px; }
+    .glitch-text { font-size: 1.2rem !important; margin: 5px 0; }
+    .sys-status { width: 100%; justify-content: center; display: flex; gap: 10px; font-size: 0.8rem; }
+
+    /* 3. GAME CENTER */
+    .game-center {
+        order: 2;
+        width: 100%;
+        min-height: auto;
+        padding: 10px 2px;
+        margin: 0;
+        box-shadow: none;
+        background: none; /* Bỏ nền cầu kỳ trên mobile cho nhẹ */
+    }
+
+    /* KHU VỰC BÀI */
+    .battle-wrapper {
+        margin-top: 5px;
+        padding: 0;
+        justify-content: space-between;
+        width: 100%;
+        margin-bottom: 15px;
+        gap: 5px;
+    }
+    .side-container { 
+        width: 48% !important; 
+        margin: 0; 
+        padding: 5px;
+    }
+    .cards-area { 
+        height: 50px; 
+        gap: 2px; 
+        margin-top: 5px;
+    }
+    /* Thu nhỏ lá bài */
+    .card-slot { width: 30px; height: 45px; font-size: 0.7rem; }
+    .score-box { font-size: 2rem !important; margin-top: 5px; }
+
+    /* 4. KHUNG DỰ ĐOÁN (QUAN TRỌNG: THU NHỎ ĐỂ KHÔNG VỠ) */
+    .prediction-wrapper {
+        width: 100%; 
+        max-width: none;
+        height: auto; /* Chiều cao tự động */
+        min-height: 80px;
+        margin-top: 5px;
+        padding: 10px 5px; /* Giảm padding 2 bên */
+        border-radius: 15px; /* Bo góc nhỏ hơn */
+        justify-content: center;
+        gap: 5px;
+    }
+
+    /* Robot nhỏ lại */
+    .ai-box {
+        width: 50px; height: 50px; 
+        border-width: 2px;
+        margin-right: 0;
+    }
+
+    /* Chữ kết quả nhỏ lại */
+    .pred-info { margin: 0 5px; }
+    .pred-label { font-size: 0.6rem; letter-spacing: 1px; margin-bottom: 0; }
+    .pred-result { font-size: 2rem; } /* Giảm từ 4.5rem xuống 2rem */
+    .res-wait { font-size: 1.5rem; }
+
+    /* Vòng tròn % nhỏ lại */
+    .pred-gauge { width: 55px; height: 55px; }
+    .gauge-text { font-size: 0.9rem; }
+    .circle-bg, .circle { stroke-width: 4; } /* Viền đậm lên cho dễ nhìn ở size nhỏ */
+
+    /* 5. FOOTER: CHIA LƯỚI 2x2 (2 Cột, 2 Hàng) */
+    .sys-footer {
+        order: 3;
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* 2 cột đều nhau */
+        grid-template-rows: 130px 130px; /* 2 hàng, mỗi hàng cao 130px */
+        gap: 5px;
+        height: auto;
+        margin-bottom: 10px;
+    }
+
+    .footer-panel {
+        height: 100%; /* Full chiều cao ô grid */
+        background: #080808;
+    }
+
+    /* Chỉnh lại font chữ trong footer cho nhỏ */
+    .panel-label { font-size: 0.55rem; padding: 1px 3px; }
+    
+    /* Bead Plate & Big Road cần fit grid */
+    .bead-cell { width: 100%; height: 100%; }
+    .bead-circle { width: 16px; height: 16px; font-size: 0.6rem; }
+    .tool-road-col { max-width: none; } /* Bỏ giới hạn max-width trên mobile */
+
+    /* 6. PANEL PHẢI (MATRIX & THANH TỶ LỆ) -> ĐẨY XUỐNG CUỐI */
+    .panel-right {
+        order: 4;
+        margin-top: 0;
+        padding: 10px;
+        height: auto;
+    }
+    #matrixCode { height: 80px; font-size: 0.55rem; }
+
+    /* 7. ẨN PANEL TRÁI (LOG) ĐỂ TIẾT KIỆM DIỆN TÍCH */
+    /* Hoặc hiển thị ở cuối cùng nếu cần */
+    .panel-left {
+        order: 5;
+        height: 120px;
+        display: flex; /* Hiện lại để xem log trừ tiền */
+    }
+}
+
+/* Fix riêng cho màn hình cực nhỏ (iPhone SE, Fold...) */
+@media screen and (max-width: 360px) {
+    .pred-result { font-size: 1.6rem; }
+    .ai-box { width: 40px; height: 40px; }
+    .pred-gauge { width: 45px; height: 45px; }
 }
