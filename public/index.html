@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CỔNG XÂM NHẬP - SYSTEM LOBBY</title>
+    <!-- Link CSS Gốc -->
     <link rel="stylesheet" href="style.css">
+    <!-- Link CSS Mobile (Mới) -->
+    <link rel="stylesheet" href="mobile.css">
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@500;900&display=swap" rel="stylesheet">
     <script src="/socket.io/socket.io.js"></script>
     <style>
@@ -21,13 +24,16 @@
     </style>
 </head>
 <body class="lobby-body">
-    <!-- --- [MỚI] KHUNG POPUP XÁC NHẬN --- -->
+    <!-- HIỆU ỨNG NỀN CYBERPUNK (MỚI) -->
+    <div class="cyber-grid-bg"></div>
+
+    <!-- KHUNG POPUP XÁC NHẬN -->
     <div id="confirmModal" class="custom-modal-overlay">
         <div class="custom-modal-box">
             <div class="modal-title">⚠️ XÁC NHẬN XÂM NHẬP</div>
             <div class="modal-content">
                 Xác nhận vào bàn?<br><br>
-                <div style="border:1px dashed #333; padding:10px; border-radius:4px;">
+                <div style="border:1px dashed #333; padding:10px; border-radius:4px; background:rgba(0,0,0,0.5);">
                     <div style="display:flex; justify-content:space-between;">
                         <span style="color:#aaa">Phí vào cửa:</span>
                         <span style="color:#00ff41; font-weight:bold;">3 Token</span>
@@ -44,16 +50,14 @@
             </div>
         </div>
     </div>
-    <!-- ---------------------------------- -->
 
     <div id="toast-container"></div>
+    <!-- Canvas ma trận cũ vẫn giữ để tạo hiệu ứng mưa code mờ -->
     <canvas id="matrixCanvas"></canvas>
-    <div class="crt-overlay"></div>
-    <div class="scan-bar"></div>
-
+    
     <div class="lobby-content">
         <header class="lobby-header">
-            <!-- Auth Section: Vị trí của Khung User -->
+            <!-- Auth Section -->
             <div id="authSection"></div>
 
             <h1 class="glitch-text">HỆ THỐNG GIẢI MÃ SE.XY</h1>
@@ -75,10 +79,7 @@
         const username = localStorage.getItem('username');
 
         async function fetchLiveBalance() {
-            if (!token) {
-                renderGuest();
-                return;
-            }
+            if (!token) { renderGuest(); return; }
             try {
                 const res = await fetch('/api/me', { headers: { 'Authorization': token } });
                 if (res.ok) {
@@ -86,8 +87,7 @@
                     renderUser(data.username, data.tokens);
                     localStorage.setItem('tokens', data.tokens);
                 } else {
-                    localStorage.clear();
-                    renderGuest();
+                    localStorage.clear(); renderGuest();
                 }
             } catch (e) {
                 console.error("Lỗi lấy thông tin user", e);
@@ -95,7 +95,6 @@
             }
         }
 
-        // --- SỬA LẠI GIAO DIỆN USER Ở ĐÂY ---
         function renderUser(name, tokens) {
             authSection.innerHTML = `
                 <div class="user-panel-cyber">
@@ -103,13 +102,10 @@
                         <div class="user-name">${name.toUpperCase()}</div>
                         <div class="token-badge">TOKEN: ${tokens}</div>
                     </div>
-                    <button onclick="logout()" class="btn-logout-cyber">
-                        THOÁT
-                    </button>
+                    <button onclick="logout()" class="btn-logout-cyber">THOÁT</button>
                 </div>
             `;
         }
-        // ------------------------------------
 
         function renderGuest() {
             authSection.innerHTML = `
@@ -119,16 +115,8 @@
             `;
         }
 
-        function logout() {
-            localStorage.clear();
-            window.location.href = 'login.html';
-        }
-        
-        // Hàm đóng modal
-        function closeModal() {
-            document.getElementById('confirmModal').style.display = 'none';
-        }
-
+        function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+        function closeModal() { document.getElementById('confirmModal').style.display = 'none'; }
         fetchLiveBalance();
 
         window.showToast = function(msg, type='success') {

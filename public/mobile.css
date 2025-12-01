@@ -1,0 +1,172 @@
+/* =========================================
+   MOBILE.CSS - SMARTPHONE LAYOUT & OVERRIDES
+   ========================================= */
+
+@media screen and (max-width: 1024px) {
+    body { 
+        overflow-y: auto; 
+        -webkit-overflow-scrolling: touch; 
+        background: transparent; /* Để lộ nền Cyberpunk */
+    }
+    
+    .hacker-layout {
+        display: flex; 
+        flex-direction: column;
+        height: auto; 
+        min-height: 100vh;
+        padding: 0; 
+        gap: 0;
+    }
+
+    /* --- ORDERING LOGIC (SẮP XẾP LẠI VỊ TRÍ) --- */
+    
+    /* 1. Header: Trên cùng */
+    .sys-header { 
+        order: 1; 
+        position: sticky; top: 0; z-index: 999;
+        background: rgba(0, 5, 0, 0.95);
+        border-bottom: 1px solid #00ff41;
+        box-shadow: 0 5px 20px rgba(0,255,65,0.1);
+        height: 50px; padding: 0 10px;
+    }
+
+    /* 2. Footer Wrapper: Dùng display:contents để con của nó (Cầu & Chart)
+       trở thành phần tử trực tiếp của .hacker-layout, dễ dàng sắp xếp */
+    .sys-footer {
+        display: contents !important; 
+    }
+
+    /* 3. Bảng Cầu (Con của Footer): Xếp thứ 2 */
+    #bigRoadGrid {
+        order: 2;
+        width: 100%; height: 110px;
+        border-bottom: 1px solid #333;
+        background: rgba(0, 10, 0, 0.8);
+        margin-bottom: 5px;
+    }
+
+    /* 4. Game Center (Bài + Dự đoán): Xếp thứ 3 */
+    .game-center {
+        order: 3;
+        min-height: auto;
+        background: transparent; border: none;
+        padding: 10px 0; margin: 0;
+        display: flex; flex-direction: column;
+    }
+
+    /* 5. Panel Phải (Tỷ lệ thắng): Xếp thứ 4 */
+    .panel-right {
+        order: 4;
+        background: transparent; border: none;
+        padding: 5px 10px;
+    }
+
+    /* 6. Biểu đồ (Con của Footer): Xếp thứ 5 (Cuối cùng) */
+    .footer-side-panel {
+        order: 5;
+        display: flex !important;
+        width: 100%; height: 150px;
+        border-left: none; border-top: 1px solid #333;
+        margin-top: 10px; margin-bottom: 20px;
+    }
+
+    /* Ẩn các thành phần không cần thiết trên Mobile */
+    .panel-left { display: none; }
+    .matrix-box { display: none; }
+    .scan-bar, .crt-overlay { display: none; }
+
+    /* --- STYLING CHI TIẾT CHO MOBILE --- */
+
+    /* Header text nhỏ lại */
+    .glitch-name { font-size: 1rem; }
+    .brand-box { display: none; }
+
+    /* Game Center: Bài nhỏ lại */
+    .battle-wrapper { margin-top: 0; width: 100%; padding: 0 5px; }
+    .side-container { width: 48%; padding: 5px; background: rgba(0,0,0,0.6); }
+    .card-slot { width: 45px; height: 65px; font-size: 1.2rem; }
+    .cards-area { height: 70px; gap: 3px; }
+    .score-box { font-size: 1.5rem; margin-top: 5px; }
+
+    /* Thanh dự đoán: Đưa lên ngay dưới bài */
+    .prediction-bar {
+        position: relative; /* Không dùng absolute */
+        width: 96%; margin: 10px auto 0 auto;
+        background: rgba(0, 20, 0, 0.9);
+        bottom: auto; left: auto;
+        border: 1px solid #444;
+        display: flex; flex-direction: row;
+        height: 60px; padding: 5px 10px; gap: 10px;
+    }
+    .pred-left { 
+        width: 40%; border-bottom: none; border-right: 1px dashed #333; 
+        display: flex; flex-direction: column; justify-content: center;
+        text-align: right; padding-right: 10px; margin: 0;
+    }
+    .pred-content { width: 60%; display: flex; align-items: center; justify-content: center; }
+    .res-char-p, .res-char-b { font-size: 3rem; margin: 0; }
+
+    /* Bảng cầu mobile: Kích thước hạt */
+    .tool-road-col { min-width: 20px; width: 20px; } 
+    .tool-bead { width: 14px; height: 14px; border-width: 2px; }
+
+    /* Chart Mobile: Ẩn bớt text header để dành chỗ cho sóng */
+    .fs-header, .fs-stats { display: none; }
+    .chart-wrapper { background: rgba(0, 5, 0, 0.5); }
+}
+/* ... (Giữ nguyên code phần trước của file mobile.css) ... */
+
+/* =========================================
+   LOBBY MOBILE STYLES (SẢNH CHỜ)
+   ========================================= */
+@media screen and (max-width: 1024px) {
+    /* Điều chỉnh Layout Sảnh */
+    .lobby-content {
+        padding: 10px;
+        padding-bottom: 50px;
+        max-width: 100%;
+    }
+
+    .lobby-header {
+        margin-bottom: 20px;
+        padding-top: 0;
+    }
+
+    /* Tiêu đề nhỏ lại */
+    .glitch-text {
+        font-size: 1.5rem;
+        margin-top: 15px;
+    }
+
+    /* Panel User trên Mobile */
+    #authSection {
+        position: relative;
+        top: 0; right: 0;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        margin-bottom: 10px;
+    }
+    .user-panel-cyber {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    /* Lưới Card Bàn chơi: Chuyển thành 1 cột */
+    .tables-grid {
+        grid-template-columns: 1fr; /* 1 cột duy nhất */
+        gap: 15px;
+    }
+
+    /* Card Bàn chơi */
+    .casino-card {
+        border-width: 1px;
+    }
+    .cc-body {
+        height: 100px;
+    }
+    
+    /* Chỉnh lại kích thước hạt cầu trong Lobby cho vừa màn hình */
+    .road-col { width: 13px; }
+    .bead { width: 9px; height: 9px; border-width: 2px; }
+}
