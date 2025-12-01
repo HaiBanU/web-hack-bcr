@@ -1,7 +1,7 @@
 /* --- START OF FILE lobby.css --- */
 
 /* =========================================
-   LOBBY.CSS - V3 (NEON UPGRADE & FIXES)
+   LOBBY.CSS - FINAL VERSION (NEON & MODAL FIX)
    ========================================= */
 
 /* --- CẤU TRÚC CHÍNH --- */
@@ -9,12 +9,12 @@
     position: relative; 
     z-index: 10; 
     padding: 20px; 
-    max-width: 1600px; /* Mở rộng chiều ngang cho thoáng */
+    max-width: 1600px; 
     margin: 0 auto; 
     padding-bottom: 80px; 
 }
 
-/* --- HEADER & TITLE (FIX LỖI ĐÈ) --- */
+/* --- HEADER & TITLE --- */
 .lobby-header { 
     display: flex; 
     flex-direction: column; 
@@ -24,15 +24,13 @@
     z-index: 20; 
 }
 
-/* Khu vực Auth chuyển sang Flex để không đè chữ */
+/* Khu vực Auth (User/Token) */
 #authSection { 
-    position: relative; /* Bỏ absolute để không đè */
-    margin-bottom: 15px;
     width: 100%;
     display: flex;
     justify-content: flex-end; /* Căn phải */
     padding-right: 20px;
-    top: auto; right: auto;
+    margin-bottom: 10px;
 }
 
 .glitch-text { 
@@ -78,7 +76,7 @@
     gap: 30px; 
 }
 
-/* --- THIẾT KẾ CARD (HIỆU ỨNG ĐỘNG MỚI) --- */
+/* --- CARD BÀN (HIỆU ỨNG VIỀN CHẠY) --- */
 .casino-card { 
     background: #000; 
     border: 1px solid #333; 
@@ -89,14 +87,12 @@
     box-shadow: 0 0 15px rgba(0,0,0,0.8);
 }
 
-/* Hiệu ứng viền chạy (Glowing Border) */
 .casino-card::before {
     content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
     border-radius: 12px; padding: 2px;
     background: linear-gradient(45deg, transparent, #333, transparent);
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
+    -webkit-mask-composite: xor; mask-composite: exclude;
     pointer-events: none;
 }
 
@@ -127,11 +123,11 @@
 /* BODY CỦA CARD */
 .cc-body { display: flex; height: calc(100% - 50px); background: #0b0b0b; }
 
-/* --- GRID CẦU (STYLE BIG ROAD CHUẨN) --- */
+/* --- BẢNG CẦU (GRID AREA) --- */
 .cc-grid-area { 
     flex: 1; 
     position: relative; 
-    background: #fff; /* Nền trắng như yêu cầu */
+    background: #fff; /* Nền trắng */
     display: flex; 
     justify-content: flex-start;
     align-items: flex-start;
@@ -150,7 +146,7 @@
     flex: 1; 
     border-bottom: 1px solid #ccc; 
     display: flex; justify-content: center; align-items: center; 
-    position: relative; /* Để vẽ Tie */
+    position: relative; 
 }
 
 /* --- HẠT CẦU (BEAD) --- */
@@ -164,19 +160,17 @@
 .bead.p { border-color: #007bff; } /* Player - Xanh Dương */
 .bead.b { border-color: #dc3545; } /* Banker - Đỏ */
 
-/* --- HIỆU ỨNG HÒA (GẠCH CHÉO XANH LÁ) --- */
+/* HIỆU ỨNG GẠCH CHÉO CHO HÒA (TIE) */
 .bead.has-tie::after {
     content: '';
     position: absolute;
-    width: 3px; height: 24px; /* Dài hơn chút để cắt chéo */
-    background-color: #28a745; /* Màu xanh lá */
+    width: 3px; height: 24px;
+    background-color: #28a745; /* Vạch xanh lá */
     top: 50%; left: 50%;
     transform: translate(-50%, -50%) rotate(-45deg); /* Xoay chéo */
-    box-shadow: 0 0 2px #fff;
 }
-/* Nếu có 2 tie thì thêm vạch nữa (optional, ở đây làm 1 vạch đại diện) */
 
-/* --- PHẦN DỰ ĐOÁN --- */
+/* --- PHẦN DỰ ĐOÁN (BÊN PHẢI CARD) --- */
 .cc-predict-area { 
     width: 110px; 
     background: #000; 
@@ -192,5 +186,55 @@
 }
 @keyframes glowRate { from { box-shadow: 0 0 10px var(--neon-green); } to { box-shadow: 0 0 25px var(--neon-green); } }
 
-/* --- MODAL --- */
-.custom-modal-box { border: 2px solid var(--neon-green); background: #051005; box-shadow: 0 0 50px rgba(0,255,65,0.2); }
+/* =========================================
+   MODAL POPUP (FIXED CENTER) - QUAN TRỌNG
+   ========================================= */
+
+.custom-modal-overlay {
+    display: none; /* Mặc định ẩn, JS sẽ chuyển thành flex */
+    position: fixed; /* Ghim cứng màn hình */
+    top: 0; left: 0; 
+    width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.9); /* Nền đen mờ */
+    backdrop-filter: blur(5px); /* Làm mờ phía sau */
+    z-index: 99999; 
+    justify-content: center; /* Căn giữa ngang */
+    align-items: center; /* Căn giữa dọc */
+}
+
+.custom-modal-box {
+    background: #000; 
+    border: 2px solid var(--neon-green);
+    padding: 30px; 
+    width: 90%; max-width: 450px;
+    box-shadow: 0 0 50px rgba(0, 255, 65, 0.3);
+    border-radius: 12px;
+    text-align: center;
+    position: relative;
+    animation: zoomIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes zoomIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+.modal-title { 
+    font-family: var(--font-display); font-size: 1.8rem; 
+    color: var(--neon-green); margin-bottom: 15px; 
+    text-transform: uppercase; border-bottom: 1px solid #333; 
+    padding-bottom: 10px; text-shadow: 0 0 10px var(--neon-green);
+}
+.modal-content { 
+    color: #ddd; font-size: 1rem; margin-bottom: 25px; 
+    text-align: left; line-height: 1.6; 
+}
+.modal-actions { display: flex; justify-content: space-between; gap: 15px; }
+
+.btn-modal { 
+    flex: 1; padding: 12px; border: none; font-weight: bold; cursor: pointer; 
+    font-family: var(--font-display); font-size: 1rem; border-radius: 4px; 
+    text-transform: uppercase; transition: 0.2s;
+}
+.btn-cancel { background: #333; color: #fff; border: 1px solid #555; }
+.btn-cancel:hover { background: #555; }
+
+.btn-confirm { background: var(--neon-green); color: #000; box-shadow: 0 0 15px var(--neon-green); }
+.btn-confirm:hover { transform: scale(1.05); background: #fff; box-shadow: 0 0 30px #fff; }

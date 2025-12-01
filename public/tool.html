@@ -1,123 +1,119 @@
+<!-- --- START OF FILE tool.html --- -->
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HACKER AI - SYSTEM V11</title>
-    <link rel="stylesheet" href="style.css"> <!-- Load cái chung trước -->
-<link rel="stylesheet" href="tool.css">  <!-- Load cái riêng của tool -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HACKER AI - SYSTEM V12</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="tool.css">
     <link rel="stylesheet" href="mobile.css">
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@500;900&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- Nền Matrix -->
     <canvas id="matrixCanvas"></canvas>
     <div class="cyber-grid-bg"></div>
 
     <div class="hacker-layout">
         
-        <!-- HEADER -->
+        <!-- HEADER: Logo, Tên bàn, Token -->
         <header class="sys-header">
             <div class="brand-box">
                 <span style="background:#ff003c; color:#fff; padding:3px 8px; font-weight:bold; border-radius:2px; font-size:0.8rem;">SEXY</span>
-                <span style="color:#fff; font-family:'Orbitron'; font-size:1.1rem; margin-left:5px;">// SYSTEM V11</span>
+                <span style="color:#fff; font-family:'Orbitron'; font-size:1.1rem; margin-left:5px;">// SYSTEM V12</span>
             </div>
             
             <h1 id="tableNameDisplay" class="glitch-text" style="font-size:1.4rem; margin:0;">CONNECTING...</h1>
             
             <div class="sys-status">
                 <span style="border:1px solid #00ff41; padding:5px 10px; color:#00ff41; font-size:0.8rem; border-radius:4px; background:rgba(0,50,0,0.5);">
-                    TOKEN: <span id="headerTokenDisplay" style="font-weight:bold; color:#fff;">---</span>
+                    TOKEN: <span id="headerTokenDisplay" style="font-weight:bold; color:#fff;">LOADING...</span>
                 </span>
                 <button onclick="window.location.href='index.html'" style="background:#333; color:#fff; border:1px solid #555; padding:6px 15px; cursor:pointer; margin-left:10px; border-radius:4px; font-weight:bold; font-family:'Orbitron';">EXIT</button>
             </div>
         </header>
 
-        <!-- PANEL TRÁI -->
+        <!-- PANEL TRÁI: LOG HỆ THỐNG -->
         <aside class="panel-left">
             <div style="color:#00ff41; border-bottom:1px solid #333; margin-bottom:5px; font-weight:bold; font-size:0.9rem;">>> SYSTEM LOG</div>
             <div class="log-window" id="systemLog" style="flex:1; overflow-y:auto; font-size:0.7rem; color:#cfc;"></div>
         </aside>
 
-        <!-- GAME CENTER -->
+        <!-- GAME CENTER: Khu vực bài và Robot -->
         <main class="game-center">
-            
-            <!-- Matrix Rain -->
             <canvas id="cardRain"></canvas>
 
+            <!-- Khu vực bài (Player vs Banker) -->
             <div class="battle-wrapper">
                 <!-- PLAYER -->
-                <div class="side-container p-side" style="text-align:center; width:45%;">
-                    <div style="color:#00f3ff; font-family:'Orbitron'; font-size:1.2rem; margin-bottom:10px; text-shadow:0 0 10px #00f3ff; letter-spacing:2px;">PLAYER</div>
-                    <div class="cards-area" style="display:flex; gap:5px; justify-content:center;">
-                        <div class="card-slot" id="p1"></div>
-                        <div class="card-slot" id="p2"></div>
-                        <div class="card-slot" id="p3" style="opacity:0.6; transform:scale(0.9);"></div>
+                <div class="side-container p-side">
+                    <div style="color:#00f3ff; font-family:'Orbitron'; font-size:1.2rem; margin-bottom:10px;">PLAYER</div>
+                    <div class="cards-area">
+                        <div class="card-slot" id="p1"><div class="card-back"></div><div class="card-front"></div></div>
+                        <div class="card-slot" id="p2"><div class="card-back"></div><div class="card-front"></div></div>
+                        <div class="card-slot" id="p3"><div class="card-back"></div><div class="card-front"></div></div>
                     </div>
-                    <div class="score-box" id="playerScore" style="color:#00f3ff; font-size:3rem; font-weight:bold; margin-top:5px; text-shadow:0 0 20px #00f3ff;">-</div>
+                    <div class="score-box" id="playerScore" style="color:#00f3ff;">0</div>
                 </div>
                 
-                <div style="color:#444; font-style:italic; align-self:center; font-size:1rem; font-family:'Orbitron';">VS</div>
+                <div style="color:#444; font-family:'Orbitron'; font-size:1.5rem; margin-top:-50px;">VS</div>
 
                 <!-- BANKER -->
-                <div class="side-container b-side" style="text-align:center; width:45%;">
-                    <div style="color:#ff003c; font-family:'Orbitron'; font-size:1.2rem; margin-bottom:10px; text-shadow:0 0 10px #ff003c; letter-spacing:2px;">BANKER</div>
-                    <div class="cards-area" style="display:flex; gap:5px; justify-content:center;">
-                        <div class="card-slot" id="b1"></div>
-                        <div class="card-slot" id="b2"></div>
-                        <div class="card-slot" id="b3" style="opacity:0.6; transform:scale(0.9);"></div>
+                <div class="side-container b-side">
+                    <div style="color:#ff003c; font-family:'Orbitron'; font-size:1.2rem; margin-bottom:10px;">BANKER</div>
+                    <div class="cards-area">
+                        <div class="card-slot" id="b1"><div class="card-back"></div><div class="card-front"></div></div>
+                        <div class="card-slot" id="b2"><div class="card-back"></div><div class="card-front"></div></div>
+                        <div class="card-slot" id="b3"><div class="card-back"></div><div class="card-front"></div></div>
                     </div>
-                    <div class="score-box" id="bankerScore" style="color:#ff003c; font-size:3rem; font-weight:bold; margin-top:5px; text-shadow:0 0 20px #ff003c;">-</div>
+                    <div class="score-box" id="bankerScore" style="color:#ff003c;">0</div>
                 </div>
             </div>
 
-            <!-- THANH DỰ ĐOÁN ROBOT (PILL SHAPE) -->
+            <!-- KHUNG DỰ ĐOÁN & ROBOT -->
             <div class="prediction-wrapper">
                 <div class="ai-box">
-                    <div class="ai-scan-line"></div>
-                    <!-- Dùng SVG trực tiếp nếu không có ảnh png, đảm bảo luôn hiện đẹp -->
-                    <svg class="ai-img" viewBox="0 0 24 24" fill="none" stroke="#00ff41" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="11" width="18" height="10" rx="2"></rect>
-                        <circle cx="12" cy="16" r="2"></circle>
-                        <path d="M12 11V7"></path>
-                        <path d="M7 7h10"></path>
-                        <path d="M5 3h14"></path>
-                    </svg>
+                    <!-- ĐƯỜNG DẪN ẢNH ĐÚNG CỦA BẠN -->
+                    <img src="robot.png" class="ai-img" alt="AI">
                 </div>
                 <div class="pred-info">
                     <div class="pred-label" id="aiAdvice">SYSTEM ANALYZING...</div>
                     <div class="pred-result blink-wait" id="aiPredText">WAITING</div>
                 </div>
             </div>
-
         </main>
 
-        <!-- PANEL PHẢI -->
+        <!-- PANEL PHẢI: TỶ LỆ & MATRIX CODE -->
         <aside class="panel-right">
             <div style="margin-bottom:15px;">
                 <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:5px;">
-                    <span style="color:#00f3ff;">PLAYER</span> <span id="confP">0%</span>
+                    <span style="color:#00f3ff;">PLAYER</span> <span id="confP">50%</span>
                 </div>
-                <div style="background:#222; height:8px; border-radius:4px;"><div id="barP" style="height:100%; background:#00f3ff; width:0%; border-radius:4px; box-shadow:0 0 5px #00f3ff;"></div></div>
+                <div style="background:#222; height:8px; border-radius:4px;"><div id="barP" style="height:100%; background:#00f3ff; width:50%;"></div></div>
             </div>
             <div>
                 <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:5px;">
-                    <span style="color:#ff003c;">BANKER</span> <span id="confB">0%</span>
+                    <span style="color:#ff003c;">BANKER</span> <span id="confB">50%</span>
                 </div>
-                <div style="background:#222; height:8px; border-radius:4px;"><div id="barB" style="height:100%; background:#ff003c; width:0%; border-radius:4px; box-shadow:0 0 5px #ff003c;"></div></div>
+                <div style="background:#222; height:8px; border-radius:4px;"><div id="barB" style="height:100%; background:#ff003c; width:50%;"></div></div>
             </div>
-            <div id="matrixCode" style="margin-top:auto; font-size:0.6rem; color:#0f0; word-break:break-all; opacity:0.5; font-family:monospace; height:100px; overflow:hidden;"></div>
+            <!-- Matrix Code chạy -->
+            <div id="matrixCode" style="margin-top:auto; font-size:0.6rem; color:#0f0; word-break:break-all; opacity:0.5; font-family:monospace; height:150px; overflow:hidden;"></div>
         </aside>
 
-        <!-- FOOTER -->
+        <!-- FOOTER: CHART, ROAD, TRANS LOG -->
         <footer class="sys-footer">
             <div class="footer-panel footer-chart">
-                <canvas id="trendChart" style="width:100%; height:100%;"></canvas>
+                <div style="position:absolute; top:5px; left:5px; font-size:0.7rem; color:#666;">TREND CHART</div>
+                <canvas id="trendChart"></canvas>
             </div>
             <div class="footer-panel footer-road">
                 <div class="road-container" id="bigRoadGrid"></div>
             </div>
             <div class="footer-panel">
-                <div id="transLog" style="padding:5px; font-size:0.7rem;"></div>
+                <div style="position:absolute; top:5px; left:5px; font-size:0.7rem; color:#666;">LIVE TRANSACTIONS</div>
+                <div id="transLog" style="padding:20px 5px 5px 5px; font-size:0.7rem; overflow:hidden;"></div>
             </div>
         </footer>
     </div>

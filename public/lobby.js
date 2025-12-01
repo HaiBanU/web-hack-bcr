@@ -1,7 +1,7 @@
 /* --- START OF FILE lobby.js --- */
 
 /* =========================================
-   LOBBY MANAGER - V12 (TIE LOGIC FIX)
+   LOBBY MANAGER - FULL LOGIC & POPUP HANDLE
    ========================================= */
 
 let rateManager = {
@@ -10,6 +10,10 @@ let rateManager = {
     goldTables: [] 
 };
 
+// Biến lưu URL bàn sắp vào
+let pendingTableUrl = "";
+
+// Cập nhật tỷ lệ thắng giả lập
 function updateWinRates(tables) {
     const now = Date.now();
     if (Object.keys(rateManager.rates).length === 0 || now - rateManager.lastUpdate > 120000) {
@@ -37,73 +41,50 @@ function updateWinRates(tables) {
     }
 }
 
-// --- LOGIC VẼ CẦU ĐẠI LỘ (BIG ROAD) ---
+// Logic vẽ bảng cầu (Big Road) có xử lý Tie
 function generateGridHTML(resultStr) {
-    // 1. Phân tích chuỗi kết quả (Xử lý logic Hòa - Tie)
     let rawData = resultStr.split('');
-    let processedData = []; // Mảng chứa object { type: 'P'|'B', hasTie: boolean }
+    let processedData = []; 
     
-    // Nếu ván đầu tiên là Tie, Big Road thường bỏ qua hoặc đánh dấu đặc biệt.
-    // Ở đây ta tạm bỏ qua các Tie đầu tiên cho đến khi có P hoặc B.
-    
+    // Logic Tie: Gạch chéo lên hạt trước
     rawData.forEach(char => {
         if (char === 'T') { 
-            // Nếu đã có hạt trước đó, gán Tie vào hạt đó (Vạch chéo)
             if (processedData.length > 0) {
                 processedData[processedData.length - 1].hasTie = true; 
             }
-            // Nếu là Tie ngay đầu, có thể xử lý riêng, nhưng để đơn giản ta bỏ qua hoặc không vẽ
         } else { 
             processedData.push({ type: char, hasTie: false }); 
         }
     });
 
-    // 2. Cắt dữ liệu để hiển thị vừa khung (Lấy khoảng 72 kết quả cuối ~ 12 cột)
-    // Mỗi cột 6 dòng.
-    let maxCols = 12; // Số cột hiển thị trên card
-    let maxItems = maxCols * 6;
-    
-    // Logic vẽ Big Road (Xuống dòng khi đổi màu)
+    // Big Road Logic
+    let maxCols = 12; // Số cột hiển thị trên Lobby
     let columns = []; 
     let currentCol = []; 
     let lastType = null;
     
-    // Thuật toán Big Road đơn giản (không có Dragon Tail ngoặt sang phải)
-    // Chỉ đơn giản: Khác màu -> cột mới. Cùng màu -> xuống dòng. Đầy 6 dòng -> cột mới.
-    
     processedData.forEach(item => {
         if (lastType !== null && item.type !== lastType) {
-            // Đổi màu -> Sang cột mới
-            columns.push(currentCol); 
-            currentCol = []; 
+            columns.push(currentCol); currentCol = []; 
         }
-        
         if (currentCol.length >= 6) {
-            // Đầy cột -> Sang cột mới (dù cùng màu)
-            columns.push(currentCol); 
-            currentCol = []; 
+            columns.push(currentCol); currentCol = []; 
         }
-
         currentCol.push(item); 
         lastType = item.type;
     });
     if (currentCol.length > 0) columns.push(currentCol);
 
-    // Cắt lấy số cột cuối cùng để hiển thị mới nhất
-    if (columns.length > maxCols) {
-        columns = columns.slice(-maxCols);
-    }
-    // Fill cột trống cho đẹp
-    while(columns.length < maxCols) { columns.push([]); }
+    // Cắt lấy dữ liệu mới nhất
+    if (columns.length > maxCols) columns = columns.slice(-maxCols);
+    while(columns.length < maxCols) columns.push([]);
 
-    // 3. Render HTML
+    // Render HTML
     let html = '<div class="road-grid-wrapper">';
     columns.forEach(col => {
         html += '<div class="road-col">';
         for (let r = 0; r < 6; r++) {
-            let cellContent = ''; 
             let node = col[r];
-            
             if (node) {
                 let colorClass = (node.type === 'P') ? 'p' : 'b';
                 let tieClass = (node.hasTie) ? 'has-tie' : '';
@@ -118,6 +99,7 @@ function generateGridHTML(resultStr) {
     return html;
 }
 
+// Kết nối Socket
 const grid = document.getElementById('tablesGrid');
 let socket;
 try { socket = io(); } catch(e) {}
@@ -159,9 +141,16 @@ function renderTables(data) {
         const card = document.createElement('div');
         card.className = cardClass;
         
+        // --- SỰ KIỆN CLICK BÀN (HIỆN POPUP) ---
         card.onclick = () => {
             if (isInterrupted) return;
-            window.location.href = `tool.html?tableId=${table_id}&tableName=${encodeURIComponent(displayName)}`;
+            
+            // 1. Lưu địa chỉ bàn
+            pendingTableUrl = `tool.html?tableId=${table_id}&tableName=${encodeURIComponent(displayName)}`;
+            
+            // 2. Hiện Modal (display: flex để căn giữa)
+            const modal = document.getElementById('confirmModal');
+            if(modal) modal.style.display = 'flex';
         };
 
         const rateDisplay = isInterrupted ? 'N/A' : `WIN ${winRate}%`;
@@ -188,3 +177,45 @@ function renderTables(data) {
         grid.appendChild(card);
     });
 }
+
+// --- LOGIC XỬ LÝ NÚT TRONG POPUP ---
+document.addEventListener('DOMContentLoaded', () => {
+    // Nút Hủy
+    const btnCancel = document.querySelector('.btn-cancel');
+    if(btnCancel) {
+        btnCancel.onclick = () => {
+            document.getElementById('confirmModal').style.display = 'none';
+        };
+    }
+
+    // Nút Xác Nhận (Hack Ngay)
+    const btnConfirm = document.getElementById('btnConfirmAction');
+    if(btnConfirm) {
+        btnConfirm.onclick = async () => {
+            const token = localStorage.getItem('token');
+            if(token) {
+                try {
+                    // Gọi API trừ tiền
+                    const res = await fetch('/api/enter-table', {
+                        method: 'POST',
+                        headers: { 'Authorization': token, 'Content-Type': 'application/json' }
+                    });
+                    const data = await res.json();
+                    
+                    if(data.status === 'success') {
+                        // Thành công -> Vào bàn
+                        window.location.href = pendingTableUrl;
+                    } else {
+                        alert("❌ " + (data.message || "Lỗi: Không đủ Token!"));
+                        document.getElementById('confirmModal').style.display = 'none';
+                    }
+                } catch(e) {
+                    // Lỗi mạng -> Vẫn cho vào (test) hoặc chặn
+                    window.location.href = pendingTableUrl;
+                }
+            } else {
+                window.location.href = 'login.html';
+            }
+        };
+    }
+});

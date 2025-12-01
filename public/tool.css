@@ -1,13 +1,15 @@
+/* --- START OF FILE tool.css --- */
+
 /* =========================================
-   TOOL.CSS - VERSION 12 (ULTRA CYBER UI)
+   TOOL.CSS - V14 (FULL FEATURES)
    ========================================= */
 
 /* --- LAYOUT GRID --- */
 .hacker-layout {
     display: grid;
-    grid-template-columns: 320px 1fr 320px;
-    grid-template-rows: 60px 1fr 220px; 
-    height: 100vh; gap: 15px; padding: 15px;
+    grid-template-columns: 300px 1fr 300px;
+    grid-template-rows: 60px 1fr 180px; /* Footer cố định 180px */
+    height: 100vh; gap: 10px; padding: 10px;
     max-width: 1920px; margin: 0 auto;
     background: #020202;
 }
@@ -19,185 +21,122 @@
     padding: 0 20px; box-shadow: 0 5px 20px rgba(0,255,65,0.1); border-radius: 6px; 
 }
 
-/* --- PANELS (Left/Right) --- */
+/* --- PANELS --- */
 .panel-left, .panel-right { 
     background: rgba(5, 10, 5, 0.95); border: 1px solid #333; padding: 15px; 
     border-radius: 8px; display: flex; flex-direction: column; 
-    box-shadow: 0 0 15px rgba(0,0,0,0.8);
+    box-shadow: 0 0 10px #000;
 }
 
-/* --- GAME CENTER (MAIN AREA - QUAN TRỌNG) --- */
+/* --- GAME CENTER --- */
 .game-center {
     position: relative; 
     border: 1px solid var(--neon-green);
     border-radius: 12px;
-    background: radial-gradient(circle at center, #0a1f0a 0%, #000 70%); 
+    background: radial-gradient(circle at center, #0a1f0a 0%, #000 80%); 
     display: flex; flex-direction: column; 
-    justify-content: center; /* Căn giữa dọc */
-    align-items: center;     /* Căn giữa ngang */
+    justify-content: center; align-items: center;     
     overflow: hidden; 
-    box-shadow: 0 0 50px rgba(0, 50, 0, 0.2), inset 0 0 100px rgba(0,20,0,0.9);
+    box-shadow: 0 0 50px rgba(0, 50, 0, 0.2);
 }
+#cardRain { position: absolute; top:0; left:0; width:100%; height:100%; z-index: 0; opacity: 0.2; }
 
-/* Hiệu ứng mưa ma trận mờ phía sau */
-#cardRain {
-    position: absolute; top:0; left:0; width:100%; height:100%; z-index: 0; opacity: 0.3;
-}
-
-/* --- KHUNG BÀI (CARD AREA) --- */
+/* --- CARD AREA --- */
 .battle-wrapper { 
     position: relative; z-index: 10; 
-    width: 90%; 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center;
-    margin-bottom: 30px; /* Đẩy lên trên khung dự đoán */
+    width: 95%; 
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px;
 }
-
 .side-container {
-    width: 45%;
-    text-align: center;
-    background: rgba(0,0,0,0.5);
-    padding: 15px;
-    border-radius: 10px;
-    border: 1px solid #333;
+    width: 45%; text-align: center;
+    background: rgba(0,0,0,0.6); padding: 10px;
+    border-radius: 10px; border: 1px solid #333;
     transition: 0.3s;
 }
+.side-container.winner-p { border-color: #00f3ff; box-shadow: 0 0 20px rgba(0, 243, 255, 0.3); }
+.side-container.winner-b { border-color: #ff003c; box-shadow: 0 0 20px rgba(255, 0, 60, 0.3); }
 
-/* Hiệu ứng khi bên nào thắng */
-.side-container.winner-p { border-color: #00f3ff; box-shadow: 0 0 20px rgba(0, 243, 255, 0.2); }
-.side-container.winner-b { border-color: #ff003c; box-shadow: 0 0 20px rgba(255, 0, 60, 0.2); }
-
-/* --- LÁ BÀI 3D (QUAN TRỌNG) --- */
-.cards-area {
-    display: flex; gap: 10px; justify-content: center; margin-top: 10px; perspective: 1000px;
-}
-
+/* LÁ BÀI 3D */
+.cards-area { display: flex; gap: 5px; justify-content: center; margin-top: 10px; perspective: 1000px; }
 .card-slot { 
-    width: 90px; height: 125px; 
-    position: relative;
-    transform-style: preserve-3d;
-    transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    width: 70px; height: 100px; 
+    position: relative; transform-style: preserve-3d;
+    transition: transform 0.6s;
 }
-
-/* Mặt sau (Màu xanh - Úp) */
 .card-back, .card-front {
     position: absolute; width: 100%; height: 100%;
-    backface-visibility: hidden;
-    border-radius: 6px;
+    backface-visibility: hidden; border-radius: 5px;
     display: flex; justify-content: center; align-items: center;
     font-family: 'Orbitron'; font-weight: bold;
 }
-
 .card-back {
     background: linear-gradient(135deg, #003b0f, #001a00);
-    border: 2px solid var(--neon-green);
-    color: var(--neon-green);
-    font-size: 2rem;
-    box-shadow: 0 0 10px var(--neon-green);
-    transform: rotateY(0deg); /* Mặc định hiện mặt lưng */
+    border: 1px solid var(--neon-green);
+    transform: rotateY(0deg);
 }
-/* Họa tiết mặt lưng */
-.card-back::after { content: '?'; opacity: 0.5; }
+/* Hoạ tiết lưng bài */
+.card-back::after { content: '?'; font-size: 2rem; color: #005500; }
 
-/* Mặt trước (Màu trắng - Ngửa) */
 .card-front {
-    background: #fff;
-    color: #000;
-    font-size: 2.5rem;
-    border: 2px solid #fff;
-    transform: rotateY(180deg); /* Mặc định giấu mặt số */
-    box-shadow: 0 0 25px rgba(255,255,255,0.5);
+    background: #fff; color: #000; font-size: 2rem;
+    border: 2px solid #fff; transform: rotateY(180deg);
 }
-
-/* Class kích hoạt lật bài */
 .card-slot.flipped { transform: rotateY(180deg); }
-
 .card-front.hearts, .card-front.diamonds { color: #d00; }
-.card-front.spades, .card-front.clubs { color: #000; }
 
-/* --- ĐIỂM SỐ --- */
-.score-box { 
-    font-size: 3.5rem; font-weight: 900; margin-top: 10px; 
-    text-shadow: 0 0 20px currentColor; font-family: 'Orbitron';
-}
+.score-box { font-size: 3rem; font-weight: 900; margin-top: 5px; font-family: 'Orbitron'; }
 
-/* --- KHUNG DỰ ĐOÁN ROBOT --- */
+/* --- DỰ ĐOÁN ROBOT --- */
 .prediction-wrapper {
     position: relative; z-index: 10; 
-    width: 600px; height: 100px;
-    background: rgba(0, 10, 0, 0.9); 
-    border: 1px solid #444;
-    border-radius: 50px;
-    display: flex; align-items: center;
-    padding: 10px;
-    margin-top: 20px;
-    transition: 0.3s;
+    width: 550px; height: 100px;
+    background: rgba(0, 10, 0, 0.9); border: 1px solid #444; border-radius: 50px;
+    display: flex; align-items: center; padding: 10px;
 }
-
-/* Robot AI Box */
 .ai-box {
-    width: 90px; height: 90px;
-    border-radius: 50%;
-    background: #000;
-    border: 2px solid var(--neon-green);
-    position: relative;
+    width: 90px; height: 90px; border-radius: 50%;
+    background: #000; border: 2px solid var(--neon-green);
     display: flex; justify-content: center; align-items: center;
-    box-shadow: 0 0 20px var(--neon-green);
-    margin-right: 20px;
+    margin-right: 15px; position: relative; overflow: hidden;
+    box-shadow: 0 0 15px var(--neon-green);
 }
-
-/* Vòng Radar xoay quanh Robot */
-.ai-box::before {
-    content: ''; position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px;
+/* Hiệu ứng Radar quét */
+.ai-box::after {
+    content: ''; position: absolute; top:0; left:0; width:100%; height:100%;
     border-radius: 50%;
-    border: 2px solid transparent;
-    border-top-color: var(--neon-green);
-    border-bottom-color: var(--neon-green);
-    animation: radarSpin 2s linear infinite;
+    background: linear-gradient(to bottom, rgba(0,255,65,0.3) 0%, transparent 50%);
+    animation: scanRadar 2s linear infinite;
 }
-@keyframes radarSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes scanRadar { 0% { transform: translateY(-100%); } 100% { transform: translateY(100%); } }
 
-/* Ảnh Robot / SVG */
 .ai-img { 
-    width: 60px; height: 60px; 
-    fill: var(--neon-green);
-    filter: drop-shadow(0 0 5px var(--neon-green));
-    animation: pulseEye 1s infinite alternate;
-}
-@keyframes pulseEye { from { transform: scale(1); opacity: 0.8; } to { transform: scale(1.1); opacity: 1; } }
-
-/* Text Dự Đoán */
-.pred-info { flex: 1; text-align: left; }
-.pred-label { font-size: 0.8rem; color: #888; letter-spacing: 2px; margin-bottom: 5px; }
-.pred-result { 
-    font-size: 3rem; font-family: 'Orbitron'; font-weight: 900; 
-    line-height: 1; text-transform: uppercase; 
+    width: 90%; height: 90%; 
+    object-fit: contain; /* Giữ tỷ lệ ảnh robot */
+    z-index: 2;
 }
 
-/* Màu kết quả dự đoán */
+.pred-result { font-size: 2.5rem; font-family: 'Orbitron'; font-weight: 900; line-height: 1; text-transform: uppercase; }
 .res-wait { color: #fff; animation: blink 0.5s infinite; }
-.res-p { color: #00f3ff; text-shadow: 0 0 20px #00f3ff; }
-.res-b { color: #ff003c; text-shadow: 0 0 20px #ff003c; }
+.res-p { color: #00f3ff; text-shadow: 0 0 15px #00f3ff; }
+.res-b { color: #ff003c; text-shadow: 0 0 15px #ff003c; }
 
-/* --- FOOTER & BIG ROAD --- */
-.sys-footer { grid-column: 1 / -1; display: grid; grid-template-columns: 320px 1fr 320px; gap: 15px; }
-.footer-panel { background: rgba(5,10,5,0.95); border: 1px solid #333; overflow: hidden; display: flex; flex-direction: column; border-radius: 6px; }
+/* --- FOOTER --- */
+.sys-footer { grid-column: 1 / -1; display: grid; grid-template-columns: 300px 1fr 300px; gap: 10px; }
+.footer-panel { 
+    background: rgba(5,10,5,0.95); border: 1px solid #333; 
+    border-radius: 6px; overflow: hidden; position: relative;
+}
 
-/* Road Grid Style */
+#trendChart { width: 100%; height: 100%; display: block; }
+
 .road-container { display: flex; height: 100%; background: #000; }
 .tool-road-col { width: 25px; border-right: 1px solid #333; display: flex; flex-direction: column; }
 .tool-road-cell { height: 16.66%; border-bottom: 1px solid #333; display: flex; justify-content: center; align-items: center; position: relative; }
-
-/* Hạt cầu rỗng (Hollow) */
-.tool-bead { width: 16px; height: 16px; border-radius: 50%; border: 2px solid; background: transparent; }
+.tool-bead { width: 14px; height: 14px; border-radius: 50%; border: 2px solid; background: transparent; }
 .tool-p { border-color: #00f3ff; } 
 .tool-b { border-color: #ff003c; }
-.tool-bead.has-tie::after {
-    content: ''; position: absolute; width: 2px; height: 20px; background: #00ff41;
-    top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg);
-}
+.tool-bead.has-tie::after { content: ''; position: absolute; width: 2px; height: 18px; background: #00ff41; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 5px; }
-::-webkit-scrollbar-thumb { background: var(--neon-green); }
+.trans-item { display: flex; justify-content: space-between; border-bottom: 1px solid #222; padding: 3px 0; font-family: monospace; }
+@keyframes blink { 50% { opacity: 0.3; } }
