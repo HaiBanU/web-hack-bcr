@@ -104,11 +104,19 @@
     #matrixCode { height: 100px !important; flex: none !important; }
     .footer-panel { border: 1px solid #333; background: #050505; }
 }
-.bead-grid {
-        /* Mobile: 6 Dòng (Dọc) - 5 Cột (Ngang) */
-        grid-template-rows: repeat(5, 1fr) !important;
+ .bead-grid {
+        /* Cố định 6 dòng - 5 cột */
+        grid-template-rows: repeat(6, 1fr) !important;
         grid-template-columns: repeat(5, 1fr) !important;
         
-        /* Đảm bảo vẫn giữ hướng chảy dọc */
+        /* Chảy theo cột dọc */
         grid-auto-flow: column !important;
+        
+        /* --- THÊM DÒNG NÀY ĐỂ ĐẢO CHIỀU TỪ PHẢI SANG TRÁI --- */
+        direction: rtl !important; 
+    }
+    
+    /* Đảm bảo chữ bên trong (P/B/T) không bị ngược (nếu có) */
+    .bead-cell {
+        direction: ltr !important;
     }

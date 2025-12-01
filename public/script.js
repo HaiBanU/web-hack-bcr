@@ -6,7 +6,7 @@ let isProcessing = false;
 let tokenInterval = null;
 const socket = io();
 
-// --- INIT ---
+// --- 1. INIT & SETUP ---
 window.addEventListener('DOMContentLoaded', () => {
     initCardRain();
     
@@ -27,11 +27,11 @@ window.addEventListener('DOMContentLoaded', () => {
 
     setInterval(generateMatrixCode, 100); 
     resetCardsUI();      
-    startWaveChartLoop();
+    startWaveChartLoop(); // Khởi chạy biểu đồ sóng mới
     startFakeTransactions();
 });
 
-// --- TOKEN LOGIC ---
+// --- 2. TOKEN LOGIC ---
 async function deductToken(type) {
     const token = localStorage.getItem('token');
     if (!token) window.location.href = 'login.html';
@@ -66,17 +66,22 @@ function updateTokenUI(amount) {
     document.getElementById('headerTokenDisplay').innerText = displayAmt;
 }
 
-// --- SOCKET LISTENER ---
+// --- 3. SOCKET LISTENER ---
 socket.on('server_update', (allTables) => {
     if (isProcessing || !currentTableId) return;
     const tableData = allTables.find(t => t.table_id == currentTableId);
     
     if (tableData) {
         const serverRes = (tableData.result || "").split('');
+        // Chỉ cập nhật khi có kết quả mới hoặc lần đầu load
         if (serverRes.length > history.length || history.length === 0) {
             history = serverRes;
+            
+            // Render các bảng cầu
             renderBigRoadGrid(history);
             renderBeadPlate(history);
+            
+            // Cập nhật biểu đồ sóng
             updateChartData(history); 
 
             if (history.length > 0) {
@@ -89,7 +94,7 @@ socket.on('server_update', (allTables) => {
     }
 });
 
-// --- PREDICTION LOGIC (SYSTEM AI V1.0.26) ---
+// --- 4. PREDICTION LOGIC (SYSTEM AI) ---
 function runPredictionSystem(historyArr) {
     isProcessing = true;
     resetCardsUI();
@@ -109,7 +114,7 @@ function runPredictionSystem(historyArr) {
     const cleanHist = historyArr.filter(x => x !== 'T');
     let prediction = 'B'; let confidence = 50; let reason = "MATRIX SCANNING";
 
-    // Fake Logic
+    // Fake AI Logic
     if (cleanHist.length >= 3) {
         const len = cleanHist.length;
         const last1 = cleanHist[len-1]; const last2 = cleanHist[len-2];
@@ -158,7 +163,7 @@ function runPredictionSystem(historyArr) {
     }, 1500);
 }
 
-// --- CARD SIMULATION ---
+// --- 5. CARD SIMULATION ---
 function getCardValue(card) { if (card.raw >= 10) return 0; return card.raw; }
 function calculateHandScore(hand) { return hand.reduce((sum, card) => sum + getCardValue(card), 0) % 10; }
 function generateFakeHand(targetWinner) {
@@ -231,6 +236,8 @@ function getCard() {
     const raw = Math.floor(Math.random()*13)+1;
     return { raw, value: raw>=10?0:raw, suit: ['spades','hearts','clubs','diamonds'][Math.floor(Math.random()*4)] };
 }
+
+// --- 6. VISUAL HELPERS ---
 function addLog(msg) {
     const box = document.getElementById('systemLog');
     const time = new Date().toLocaleTimeString('vi-VN', { hour12: false });
@@ -244,47 +251,48 @@ function addLog(msg) {
 function initCardRain() {
     const c = document.getElementById('cardRain'); 
     if(!c) return;
-    
     const ctx = c.getContext('2d');
-    
-    function resize() { 
-        if(c.parentElement) { 
-            c.width = c.parentElement.clientWidth; 
-            c.height = c.parentElement.clientHeight; 
-        } 
-    }
-    window.addEventListener('resize', resize); 
-    resize();
-
-    // Ký tự muốn hiển thị (Số, Tiền, Win...)
-    const chars = "01_XY_WIN_$$__HACK_$$"; 
-    const fontSize = 14; // Tăng size chữ lên 14px cho rõ
+    function resize() { if(c.parentElement) { c.width = c.parentElement.clientWidth; c.height = c.parentElement.clientHeight; } }
+    window.addEventListener('resize', resize); resize();
+    const chars = "01_XY_WIN_$$__HACK_$$"; const fontSize = 14; 
     const drops = Array(Math.floor(c.width / fontSize)).fill(1);
-
     setInterval(() => {
-        // Tạo lớp phủ mờ để tạo hiệu ứng đuôi dài
-        ctx.fillStyle = "rgba(0, 0, 0, 0.1)"; 
-        ctx.fillRect(0, 0, c.width, c.height);
-
-        // MÀU CHỮ: Đổi từ tối sang XANH NEON SÁNG
-        ctx.fillStyle = "#00ff41"; 
-        ctx.font = fontSize + "px monospace";
-        ctx.shadowBlur = 0; // Bỏ bóng mờ để chữ sắc nét hơn
-
+        ctx.fillStyle = "rgba(0, 0, 0, 0.1)"; ctx.fillRect(0, 0, c.width, c.height);
+        ctx.fillStyle = "#00ff41"; ctx.font = fontSize + "px monospace"; ctx.shadowBlur = 0;
         for(let i = 0; i < drops.length; i++){
             const text = chars[Math.floor(Math.random() * chars.length)];
             ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-
-            // Reset giọt mưa khi chạm đáy ngẫu nhiên
-            if(drops[i] * fontSize > c.height && Math.random() > 0.98) {
-                drops[i] = 0;
-            }
+            if(drops[i] * fontSize > c.height && Math.random() > 0.98) drops[i] = 0;
             drops[i]++;
         }
-    }, 40); // Tốc độ rơi (càng nhỏ càng nhanh)
+    }, 40);
+}
+function generateMatrixCode() {
+    const el = document.getElementById('matrixCode');
+    if(el) {
+        const lines = ["DECRYPTING PACKET...", "BYPASS_FIREWALL...", "CALCULATING_ODDS...", "PACKET_SNIFFING...", "inject_sql_v2... OK", "SCANNING TABLE DATA...", "AI PREDICTION: LOADING", "SERVER RESPONSE: 200 OK"];
+        const div = document.createElement('div');
+        div.style.marginBottom = "2px";
+        div.innerText = "> " + lines[Math.floor(Math.random()*lines.length)] + " [" + Math.random().toString(16).substring(2,6).toUpperCase() + "]";
+        el.prepend(div); 
+        if(el.children.length > 25) el.lastChild.remove();
+    }
+}
+function startFakeTransactions() {
+    const box = document.getElementById('transLog'); if(!box) return;
+    const names = ["User99", "HackerVN", "ProPlayer", "Bot_AI", "Winner88", "Master_B", "Dragon_X"];
+    setInterval(() => {
+        const n = names[Math.floor(Math.random()*names.length)];
+        const side = Math.random()>0.5 ? "PLAYER" : "BANKER";
+        const amt = Math.floor(Math.random()*900)+100;
+        const color = side==="PLAYER"?"#00f3ff":"#ff003c";
+        const div = document.createElement('div'); div.className = "trans-item";
+        div.innerHTML = `<span style="color:#888">${n}</span><span style="color:${color}; font-weight:bold;">${side}</span><span style="color:#fff">$${amt}k</span>`;
+        box.prepend(div); if(box.children.length > 8) box.lastChild.remove();
+    }, 1500);
 }
 
-// --- BIG ROAD LOGIC (FIXED) ---
+// --- 7. BIG ROAD LOGIC ---
 function renderBigRoadGrid(rawHistory) {
     const grid = document.getElementById('bigRoadGrid'); 
     if(!grid) return;
@@ -327,127 +335,117 @@ function renderBigRoadGrid(rawHistory) {
     grid.innerHTML = html;
 }
 
-// --- BEAD PLATE (36) ---
-/* --- TRONG FILE script.js --- */
-
-// --- BEAD PLATE (CẬP NHẬT: DỌC TRƯỚC NGANG SAU, MOBILE 6x5) ---
+// --- 8. BEAD PLATE (UPDATED: AUTO SIZE FOR MOBILE/DESKTOP) ---
 function renderBeadPlate(res) {
     const grid = document.getElementById('beadPlateGrid');
-    if (!grid) return;
+    if(!grid) return;
 
-    // 1. Xác định số cột dựa vào màn hình
-    // Nếu màn hình nhỏ hơn 1024px (Mobile/Tablet dọc) thì 5 cột, ngược lại 6 cột
+    // Logic: Mobile 30 ô (6x5), Desktop 36 ô (6x6)
     const isMobile = window.innerWidth <= 1024;
-    const rows = 6; // Cố định 6 dòng
-    const cols = isMobile ? 5 : 6; 
-    const totalCells = rows * cols; // Mobile: 30, Desktop: 36
+    const totalCells = isMobile ? 30 : 36; 
 
-    // 2. Lấy đúng số lượng kết quả mới nhất
+    // Cắt dữ liệu đúng số lượng
     let displayData = res.slice(-totalCells); 
     
-    // Nếu dữ liệu ít hơn số ô, ta cần padding (đẩy dữ liệu về phía sau hoặc giữ nguyên tùy logic)
-    // Ở đây ta giữ nguyên, Grid CSS sẽ tự sắp xếp
-    
     let html = '';
-    
-    // Render các ô có dữ liệu
     displayData.forEach(item => {
         let cls = ''; let txt = '';
         if (item === 'P') { cls = 'bead-p'; txt = 'P'; }
         else if (item === 'B') { cls = 'bead-b'; txt = 'B'; }
         else if (item === 'T') { cls = 'bead-t'; txt = 'T'; }
-        
         html += `<div class="bead-cell"><div class="bead-circle ${cls}">${txt}</div></div>`;
     });
-
-    // Render các ô trống còn thiếu để lấp đầy bảng (để giữ khung đẹp)
+    
+    // Lấp đầy ô trống nếu chưa đủ
     const emptyCount = totalCells - displayData.length;
-    for (let i = 0; i < emptyCount; i++) {
-        html += `<div class="bead-cell"></div>`;
-    }
-
+    for(let i = 0; i < emptyCount; i++) { html += `<div class="bead-cell"></div>`; }
+    
     grid.innerHTML = html;
 }
+// Vẽ lại khi resize
+window.addEventListener('resize', () => { if(history.length > 0) renderBeadPlate(history); });
 
-// Bắt sự kiện resize để vẽ lại bảng khi xoay màn hình hoặc đổi kích thước
-window.addEventListener('resize', () => {
-    if(history && history.length > 0) renderBeadPlate(history);
-});
+/* =========================================
+   9. NEW WAVE CHART (DOUBLE SINE WAVE)
+   ========================================= */
+let waveCanvas, waveCtx;
+let waveFrame = 0;
+let waveW, waveH;
 
-// --- MATRIX & TRANS ---
-function generateMatrixCode() {
-    const el = document.getElementById('matrixCode');
-    if(el) {
-        const lines = ["DECRYPTING PACKET...", "BYPASS_FIREWALL...", "CALCULATING_ODDS...", "PACKET_SNIFFING...", "inject_sql_v2... OK", "SCANNING TABLE DATA...", "AI PREDICTION: LOADING", "SERVER RESPONSE: 200 OK"];
-        const div = document.createElement('div');
-        div.style.marginBottom = "2px";
-        div.innerText = "> " + lines[Math.floor(Math.random()*lines.length)] + " [" + Math.random().toString(16).substring(2,6).toUpperCase() + "]";
-        el.prepend(div); 
-        
-        // --- SỬA SỐ 12 THÀNH 25 ĐỂ LẤP ĐẦY KHUNG CAO ---
-        if(el.children.length > 25) el.lastChild.remove();
-    }
-}
-function startFakeTransactions() {
-    const box = document.getElementById('transLog'); if(!box) return;
-    const names = ["User99", "HackerVN", "ProPlayer", "Bot_AI", "Winner88", "Master_B", "Dragon_X"];
-    setInterval(() => {
-        const n = names[Math.floor(Math.random()*names.length)];
-        const side = Math.random()>0.5 ? "PLAYER" : "BANKER";
-        const amt = Math.floor(Math.random()*900)+100;
-        const color = side==="PLAYER"?"#00f3ff":"#ff003c";
-        const div = document.createElement('div'); div.className = "trans-item";
-        div.innerHTML = `<span style="color:#888">${n}</span><span style="color:${color}; font-weight:bold;">${side}</span><span style="color:#fff">$${amt}k</span>`;
-        box.prepend(div); if(box.children.length > 8) box.lastChild.remove();
-    }, 1500);
-}
+let waveConfig = {
+    pAmp: 20, // Biên độ sóng Player
+    bAmp: 20, // Biên độ sóng Banker
+    baseAmp: 20, 
+    surgeAmp: 70, // Độ cao khi Win
+    speed: 0.05, 
+    pColor: "rgba(0, 243, 255, 0.6)", 
+    bColor: "rgba(255, 0, 60, 0.6)"   
+};
 
-// --- WAVE CHART ---
-let chartPoints = []; let waveOffset = 0; let ctxChart = null; let canvasChart = null;
-function updateChartData(hist) {
-    if(!hist || hist.length < 2) return;
-    let dataSlice = hist.slice(-30);
-    let currentVal = 0; chartPoints = [{val: 0, type: 'start'}];
-    dataSlice.forEach(r => { if(r === 'P') currentVal += 1; else if(r === 'B') currentVal -= 1; chartPoints.push({val: currentVal, type: r}); });
-}
 function startWaveChartLoop() {
-    canvasChart = document.getElementById('trendChart'); if(!canvasChart) return;
-    ctxChart = canvasChart.getContext('2d');
-    function resize() { if(canvasChart.parentElement) { canvasChart.width = canvasChart.parentElement.clientWidth; canvasChart.height = canvasChart.parentElement.clientHeight; } }
-    window.addEventListener('resize', resize); resize();
-    function loop() { drawWaveChart(); waveOffset += 0.08; requestAnimationFrame(loop); }
-    loop();
-}
-function drawWaveChart() {
-    if(!ctxChart || chartPoints.length < 2) return;
-    const w = canvasChart.width; const h = canvasChart.height;
-    ctxChart.clearRect(0,0,w,h);
-    const grd = ctxChart.createLinearGradient(0, 0, 0, h);
-    grd.addColorStop(0, "rgba(0, 243, 255, 0.1)"); grd.addColorStop(1, "rgba(255, 0, 60, 0.1)");
-    ctxChart.beginPath(); ctxChart.moveTo(0, h);
-    for(let i=0; i<=w; i+=10) { let y = h/2 + Math.sin(i * 0.02 + waveOffset) * 20; ctxChart.lineTo(i, y); }
-    ctxChart.lineTo(w, h); ctxChart.fillStyle = grd; ctxChart.fill();
-    const vals = chartPoints.map(p => p.val);
-    let min = Math.min(...vals); let max = Math.max(...vals); let range = max - min; if(range < 4) range = 4; 
-    let padding = 20; let stepX = w / (chartPoints.length - 1);
-    const getY = (v) => h - padding - ((v - min) / range) * (h - 2*padding);
-    let breathe = Math.sin(waveOffset) * 2; 
-    ctxChart.beginPath();
-    chartPoints.forEach((p, i) => {
-        let x = i * stepX; let y = getY(p.val) + breathe;
-        if(i===0) ctxChart.moveTo(x, y);
-        else {
-            let prevX = (i-1) * stepX; let prevY = getY(chartPoints[i-1].val) + breathe;
-            let cpX = (prevX + x) / 2; ctxChart.quadraticCurveTo(prevX, prevY, cpX, (prevY+y)/2); ctxChart.lineTo(x, y);
+    waveCanvas = document.getElementById('trendChart');
+    if (!waveCanvas) return;
+    waveCtx = waveCanvas.getContext('2d');
+
+    function resize() {
+        if (waveCanvas.parentElement) {
+            waveCanvas.width = waveCanvas.parentElement.clientWidth;
+            waveCanvas.height = waveCanvas.parentElement.clientHeight;
+            waveW = waveCanvas.width;
+            waveH = waveCanvas.height;
         }
-    });
-    ctxChart.lineWidth = 3; ctxChart.strokeStyle = "#fff"; ctxChart.shadowBlur = 10; ctxChart.shadowColor = "#00ff41"; ctxChart.stroke();
-    chartPoints.forEach((p, i) => {
-        if(i===0) return; let x = i * stepX; let y = getY(p.val) + breathe;
-        ctxChart.beginPath(); ctxChart.arc(x, y, 4, 0, Math.PI*2);
-        if(p.type === 'P') { ctxChart.fillStyle = '#00f3ff'; ctxChart.shadowColor = '#00f3ff'; }
-        else if(p.type === 'B') { ctxChart.fillStyle = '#ff003c'; ctxChart.shadowColor = '#ff003c'; }
-        else { ctxChart.fillStyle = '#0f0'; }
-        ctxChart.fill();
-    });
+    }
+    window.addEventListener('resize', resize);
+    resize();
+    animateWave();
+}
+
+function animateWave() {
+    if (!waveCtx) return;
+    waveCtx.clearRect(0, 0, waveW, waveH);
+    
+    // Hiệu ứng "Thở" (Decay)
+    waveConfig.pAmp += (waveConfig.baseAmp - waveConfig.pAmp) * 0.05;
+    waveConfig.bAmp += (waveConfig.baseAmp - waveConfig.bAmp) * 0.05;
+
+    waveCtx.globalCompositeOperation = 'screen';
+    // Vẽ 2 sóng
+    drawSineWave(waveConfig.bAmp, 0.02, 1.5, waveConfig.bColor);
+    drawSineWave(waveConfig.pAmp, 0.025, 0, waveConfig.pColor);
+    waveCtx.globalCompositeOperation = 'source-over';
+
+    waveFrame += waveConfig.speed;
+    requestAnimationFrame(animateWave);
+}
+
+function drawSineWave(amplitude, frequency, phaseShift, color) {
+    waveCtx.beginPath();
+    waveCtx.moveTo(0, waveH);
+    let grad = waveCtx.createLinearGradient(0, 0, 0, waveH);
+    grad.addColorStop(0, color.replace("0.6", "0.8")); 
+    grad.addColorStop(1, "rgba(0,0,0,0)"); 
+
+    waveCtx.fillStyle = grad;
+    for (let x = 0; x <= waveW; x += 5) {
+        let y = (waveH / 1.5) + Math.sin(x * frequency + waveFrame + phaseShift) * -amplitude;
+        waveCtx.lineTo(x, y);
+    }
+    waveCtx.lineTo(waveW, waveH);
+    waveCtx.lineTo(0, waveH);
+    waveCtx.closePath();
+    waveCtx.fill();
+}
+
+function updateChartData(hist) {
+    if (!hist || hist.length === 0) return;
+    const lastResult = hist[hist.length - 1];
+    if (lastResult === 'P') {
+        waveConfig.pAmp = waveConfig.surgeAmp; 
+        waveConfig.bAmp = 10; 
+    } else if (lastResult === 'B') {
+        waveConfig.bAmp = waveConfig.surgeAmp; 
+        waveConfig.pAmp = 10; 
+    } else {
+        waveConfig.pAmp = 40; waveConfig.bAmp = 40;
+    }
 }
