@@ -154,29 +154,62 @@
 /* Khi thắng sẽ phát sáng cực mạnh màu đặc trưng đè lên LED RGB */
 
 /* 1. PLAYER WIN (XANH DƯƠNG) */
+/* 1. PLAYER WIN (XANH DƯƠNG) */
 .side-container.winner-p {
-    /* Phát sáng xanh neon ra ngoài */
-    box-shadow: 0 0 20px #00f3ff, 0 0 50px #00f3ff; 
-    transform: scale(1.03); /* Phóng to nhẹ tạo điểm nhấn */
+    /* Kích hoạt Animation nhấp nháy cực nhanh (0.4s) */
+    animation: flashWinPlayer 0.4s ease-in-out infinite alternate;
+    z-index: 100 !important; /* Đè lên tất cả */
 }
-/* Đổi màu nền bên trong và viền khi thắng */
-.side-container.winner-p::after {
-    background: rgba(0, 20, 30, 0.95); /* Nền xanh đen đậm */
-    border: 2px solid #00f3ff; /* Viền cứng màu xanh */
-    box-shadow: inset 0 0 20px rgba(0, 243, 255, 0.5); /* Sáng từ trong ra */
+
+/* Định nghĩa hiệu ứng chớp tắt cho Player */
+@keyframes flashWinPlayer {
+    0% {
+        /* Trạng thái bình thường */
+        border: 2px solid #00f3ff;
+        box-shadow: 0 0 20px #00f3ff, inset 0 0 10px #00f3ff;
+        background: rgba(0, 20, 30, 0.8);
+        transform: scale(1.02);
+    }
+    100% {
+        /* TRẠNG THÁI CHÓI LÒA (BÙNG NỔ) */
+        border: 2px solid #ffffff; /* Viền chuyển sang trắng tinh */
+        box-shadow: 
+            0 0 40px #00f3ff,      /* Bóng gần */
+            0 0 80px #00f3ff,      /* Bóng xa */
+            0 0 150px #ffffff,     /* Bóng trắng lóa mắt */
+            inset 0 0 50px #00f3ff; /* Sáng rực từ bên trong */
+        background: rgba(0, 243, 255, 0.3); /* Nền sáng lên */
+        transform: scale(1.05); /* Phóng to thêm chút nữa */
+    }
 }
 
 /* 2. BANKER WIN (ĐỎ) */
 .side-container.winner-b {
-    /* Phát sáng đỏ neon ra ngoài */
-    box-shadow: 0 0 20px #ff003c, 0 0 50px #ff003c;
-    transform: scale(1.03);
+    /* Kích hoạt Animation nhấp nháy cực nhanh (0.4s) */
+    animation: flashWinBanker 0.4s ease-in-out infinite alternate;
+    z-index: 100 !important;
 }
-/* Đổi màu nền bên trong và viền khi thắng */
-.side-container.winner-b::after {
-    background: rgba(30, 0, 10, 0.95); /* Nền đỏ đen đậm */
-    border: 2px solid #ff003c; /* Viền cứng màu đỏ */
-    box-shadow: inset 0 0 20px rgba(255, 0, 60, 0.5);
+
+/* Định nghĩa hiệu ứng chớp tắt cho Banker */
+@keyframes flashWinBanker {
+    0% {
+        /* Trạng thái bình thường */
+        border: 2px solid #ff003c;
+        box-shadow: 0 0 20px #ff003c, inset 0 0 10px #ff003c;
+        background: rgba(30, 0, 10, 0.8);
+        transform: scale(1.02);
+    }
+    100% {
+        /* TRẠNG THÁI CHÓI LÒA (BÙNG NỔ) */
+        border: 2px solid #ffffff; /* Viền chuyển sang trắng tinh */
+        box-shadow: 
+            0 0 40px #ff003c, 
+            0 0 80px #ff003c, 
+            0 0 150px #ffffff, /* Bóng trắng lóa mắt */
+            inset 0 0 50px #ff003c;
+        background: rgba(255, 0, 60, 0.3);
+        transform: scale(1.05);
+    }
 }
 
 @keyframes pulseWinP { 0% { border-color: #00f3ff; box-shadow: 0 0 10px #00f3ff; } 100% { border-color: #fff; box-shadow: 0 0 40px #00f3ff, inset 0 0 20px #00f3ff; } }
