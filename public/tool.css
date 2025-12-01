@@ -437,3 +437,109 @@
     0% { transform: translate(-50%, -50%) rotate(0deg); }
     100% { transform: translate(-50%, -50%) rotate(360deg); }
 }
+/* =========================================
+   SUPER VS EFFECT - NEON GLITCH
+   ========================================= */
+
+/* 1. Căn chỉnh khung cha để VS nằm chính giữa */
+.battle-wrapper {
+    position: relative; /* Bắt buộc có để VS căn theo khung này */
+    min-height: 250px; /* Đảm bảo đủ cao */
+}
+
+/* 2. Khung chứa VS (Nằm đè lên trên tất cả) */
+.vs-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Căn giữa tuyệt đối */
+    z-index: 100;
+    width: 100px;
+    height: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 3. Vòng tròn năng lượng xoay quanh */
+.vs-ring {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    border-top-color: #00f3ff; /* Xanh */
+    border-bottom-color: #ff003c; /* Đỏ */
+    box-shadow: 0 0 20px rgba(0, 243, 255, 0.5), 0 0 20px rgba(255, 0, 60, 0.5);
+    animation: ringSpin 2s linear infinite;
+}
+
+.vs-ring::before {
+    content: '';
+    position: absolute;
+    top: 5px; left: 5px; right: 5px; bottom: 5px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    border-left-color: #fff;
+    border-right-color: #fff;
+    opacity: 0.5;
+    animation: ringSpin 3s linear infinite reverse;
+}
+
+/* 4. Chữ VS chính */
+.vs-text {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 3.5rem;
+    font-weight: 900;
+    font-style: italic;
+    color: #fff;
+    text-shadow: 
+        2px 2px 0px #00f3ff, 
+        -2px -2px 0px #ff003c;
+    position: relative;
+    animation: glitchPulse 0.3s infinite alternate; /* Hiệu ứng rung giật */
+}
+
+/* 5. Hiệu ứng bóng ma (Glitch) */
+.vs-text::before, .vs-text::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    opacity: 0.8;
+}
+
+.vs-text::before {
+    color: #00f3ff;
+    z-index: -1;
+    transform: translate(-3px, -3px);
+    animation: glitchShift 2s infinite;
+}
+
+.vs-text::after {
+    color: #ff003c;
+    z-index: -2;
+    transform: translate(3px, 3px);
+    animation: glitchShift 2s infinite reverse;
+}
+
+/* --- ANIMATIONS --- */
+@keyframes ringSpin {
+    0% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(180deg) scale(1.1); }
+    100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes glitchPulse {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.05); opacity: 0.9; }
+}
+
+@keyframes glitchShift {
+    0% { clip-path: inset(0 0 0 0); }
+    20% { clip-path: inset(20% 0 0 0); transform: translate(-3px, 2px); }
+    40% { clip-path: inset(0 0 40% 0); transform: translate(3px, -2px); }
+    60% { clip-path: inset(60% 0 0 0); transform: translate(-2px, 3px); }
+    80% { clip-path: inset(0 20% 0 0); transform: translate(2px, -3px); }
+    100% { clip-path: inset(0 0 0 0); }
+}
