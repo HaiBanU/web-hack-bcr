@@ -340,11 +340,11 @@ function renderBeadPlate(res) {
     const grid = document.getElementById('beadPlateGrid');
     if(!grid) return;
 
-    // Logic: Mobile 30 ô (6x5), Desktop 36 ô (6x6)
-    const isMobile = window.innerWidth <= 1024;
-    const totalCells = isMobile ? 30 : 36; 
+    // --- SỬA ĐOẠN NÀY ---
+    // Cố định luôn là 25 ô (5x5) cho to đẹp
+    const totalCells = 25; 
 
-    // Cắt dữ liệu đúng số lượng
+    // Cắt dữ liệu lấy 25 kết quả gần nhất
     let displayData = res.slice(-totalCells); 
     
     let html = '';
@@ -353,10 +353,16 @@ function renderBeadPlate(res) {
         if (item === 'P') { cls = 'bead-p'; txt = 'P'; }
         else if (item === 'B') { cls = 'bead-b'; txt = 'B'; }
         else if (item === 'T') { cls = 'bead-t'; txt = 'T'; }
-        html += `<div class="bead-cell"><div class="bead-circle ${cls}">${txt}</div></div>`;
+        
+        // Thêm shadow màu tương ứng để hạt phát sáng nhẹ
+        let glowStyle = "";
+        if(item === 'P') glowStyle = "box-shadow: 0 0 10px rgba(0, 123, 255, 0.6), inset 0 0 5px rgba(255,255,255,0.4);";
+        if(item === 'B') glowStyle = "box-shadow: 0 0 10px rgba(220, 53, 69, 0.6), inset 0 0 5px rgba(255,255,255,0.4);";
+        
+        html += `<div class="bead-cell"><div class="bead-circle ${cls}" style="${glowStyle}">${txt}</div></div>`;
     });
     
-    // Lấp đầy ô trống nếu chưa đủ
+    // Lấp đầy ô trống
     const emptyCount = totalCells - displayData.length;
     for(let i = 0; i < emptyCount; i++) { html += `<div class="bead-cell"></div>`; }
     

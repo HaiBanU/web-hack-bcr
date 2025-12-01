@@ -399,64 +399,49 @@
 }
 
 /* Lưới hiển thị cầu */
+/* --- TRONG FILE tool.css --- */
+
+/* 1. Sửa lưới thành 5 dòng x 5 cột */
 .bead-grid {
     display: grid;
-    /* CỐ ĐỊNH: 6 Dòng x 6 Cột = 36 Ô */
-    grid-template-rows: repeat(6, 1fr);
-    grid-template-columns: repeat(6, 1fr);
+    /* SỬA SỐ 6 THÀNH SỐ 5 */
+    grid-template-rows: repeat(5, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     
-    /* Logic: Điền dọc từ trên xuống (Column flow) */
     grid-auto-flow: column;
-    
-    /* Hướng: Từ Trái sang Phải (Mặc định PC) */
     direction: ltr; 
-
     gap: 2px;
     height: 100%;
     width: 100%;
     justify-content: center;
 }
 
-/* Ô chứa từng hạt */
-.bead-cell {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    /* Kẻ viền mờ để dễ nhìn ô */
-    border: 1px solid #111; 
-}
-
-/* Hình tròn (Hạt cầu) */
+/* 2. Tăng kích thước hạt lên cho to và đẹp */
 .bead-circle {
-    /* --- SỬA ĐOẠN NÀY --- */
-    /* Bỏ width: 80% cũ đi */
+    /* Đặt auto để nó tự giãn theo ô lưới */
     width: auto; 
     height: auto; 
     
-    /* Thêm giới hạn để hạt không bao giờ to hơn ô chứa nó */
-    max-width: 85%; 
-    max-height: 85%;
+    /* Tăng từ 85% lên 92% để hạt to gần kín ô */
+    max-width: 92%; 
+    max-height: 92%;
     
-    /* Giữ tỉ lệ 1:1 để luôn là hình tròn */
     aspect-ratio: 1/1; 
-    
-    /* --- CÁC PHẦN DƯỚI GIỮ NGUYÊN --- */
     border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
     
-    font-family: Arial, sans-serif;
-    font-weight: bold;
-    /* Giảm font size một chút cho gọn */
-    font-size: clamp(8px, 1.2cqw, 11px); 
+    font-family: 'Orbitron', sans-serif; /* Đổi font sang Orbitron cho ngầu */
+    font-weight: 900;
+    
+    /* Tăng cỡ chữ lên */
+    font-size: clamp(10px, 2cqw, 14px); 
     color: #fff;
     
-    /* Hiệu ứng bóng */
-    box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
-    }
+    /* Thêm bóng đổ cho nổi khối 3D */
+    box-shadow: inset 0 0 5px rgba(255,255,255,0.3), 0 2px 4px rgba(0,0,0,0.5);
+}
 
 /* Màu sắc hạt */
 .bead-p { background: #007bff; border: 1px solid #0056b3; }
