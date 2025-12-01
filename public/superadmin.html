@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>SUPER ADMIN - BOSS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@500;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { background: #050000; padding: 20px; font-family: 'Share Tech Mono'; }
+        .admin-box { max-width: 1000px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; border-bottom: 2px solid #ff003c; padding-bottom: 10px; margin-bottom: 20px; }
+        .title { color: #ff003c; font-family: 'Orbitron'; font-size: 1.5rem; text-shadow: 0 0 10px #ff003c; }
+        .panel { background: #1a0005; border: 1px solid #ff003c; padding: 20px; margin-bottom: 20px; }
+        input { background: #000; border: 1px solid #666; color: #fff; padding: 8px; width: 100px; outline:none; font-family: monospace; }
+        button { cursor: pointer; font-family: 'Orbitron'; font-weight: bold; padding: 8px 15px; border: none; margin-left: 5px; }
+        .btn-create { background: #ff003c; color: #fff; box-shadow: 0 0 10px #ff003c; width: auto; }
+        
+        /* CARD STYLE */
+        .item-card { 
+            background: #111; border: 1px solid #333; padding: 15px; margin-bottom: 10px; 
+            display: flex; justify-content: space-between; align-items: center; color: #fff; 
+        }
+        .tag { background: #ff003c; color: #fff; padding: 2px 5px; font-size: 0.8rem; margin-left: 5px; }
+        .token-display { color: #ff003c; font-weight: bold; font-family: 'Orbitron'; margin-right: 15px; font-size: 1.1rem; }
+        
+        .btn-add { background: #00ff41; color: #000; }
+        .btn-revoke { background: #ff9800; color: #000; } /* Nút thu hồi màu cam */
+        .btn-del { background: #333; color: #aaa; border: 1px solid #555; }
+        .btn-del:hover { background: #f00; color: #fff; border-color: #f00; }
+    </style>
+</head>
+<body>
+    <div class="admin-box">
+        <div class="header">
+            <div class="title">SUPER ADMIN CONTROL</div>
+            <button onclick="logout()" style="background:#333; color:#fff;">ĐĂNG XUẤT</button>
+        </div>
+
+        <div class="panel">
+            <h3 style="color:#fff; margin-top:0;">⚡ TẠO ĐẠI LÝ MỚI (ADMIN)</h3>
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="newAdmin" placeholder="Tên Đại lý..." style="width:200px;">
+                <input type="text" id="newPass" placeholder="Mật khẩu..." style="width:200px;">
+                <button onclick="createAdmin()" class="btn-create">KHỞI TẠO</button>
+            </div>
+        </div>
+
+        <h3 style="color:#fff;">DANH SÁCH ĐẠI LÝ</h3>
+        <div id="list">Loading...</div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        const role = localStorage.getItem('role');
+        if (!token || role !== 'superadmin') window.location.href = 'login.html';
+
+        async function loadData() {
+            const res = await fetch('/api/users', { headers: { 'Authorization': token } });
+            const list = await res.json();
+            const container = document.getElementById('list');
+            container.innerHTML = '';
+            
+            list.forEach(u => {
+                container.innerHTML += `
+                    <div class="item-card">
+                        <div style="flex:1;">
+                            <span style="font-weight:bold; font-size:1.2rem;">${u.username}</span>
+                            <span class="tag">ĐẠI LÝ</span>
+                        </div>
+                        <div style="display:flex; align-items:center;">
+                            <span class="token-display">TOKEN: ${u.tokens}</span>
+                            
+                            <input type="number" id="amt-${u._id}" placeholder="Số lượng">
+                            
+                            <button onclick="modifyToken('${u._id}', 'add')" class="btn-add">NẠP</button>
+                            <button onclick="modifyToken('${u._id}', 'revoke')" class="btn-revoke">THU HỒI</button>
+                            <button onclick="delUser('${u._id}')" class="btn-del">XÓA</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        async function createAdmin() {
+            const u = document.getElementById('newAdmin').value;
+            const p = document.getElementById('newPass').value;
+            if(!u || !p) return alert("Nhập đủ thông tin!");
+            
+            const res = await fetch('/api/create-admin', {
+                method:'POST', headers: { 'Content-Type': 'application/json', 'Authorization': token },
+                body: JSON.stringify({ username: u, password: p })
+            });
+            const data = await res.json();
+            alert(data.message);
+            if(data.status === 'success') loadData();
+        }
+
+        // HÀM XỬ LÝ NẠP/RÚT CHUNG
+        async function modifyToken(uid, type) {
+            const amt = document.getElementById(`amt-${uid}`).value;
+            if(!amt || amt <= 0) return alert("Vui lòng nhập số lượng hợp lệ!");
+
+            const endpoint = (type === 'add') ? '/api/add-tokens' : '/api/revoke-tokens';
+            
+            try {
+                const res = await fetch(endpoint, {
+                    method:'POST', headers: { 'Content-Type': 'application/json', 'Authorization': token },
+                    body: JSON.stringify({ targetUserId: uid, amount: amt })
+                });
+                const data = await res.json();
+                
+                if(data.status === 'success') {
+                    alert((type==='add' ? "✅ Đã nạp thành công!" : "⚠️ Đã thu hồi thành công!"));
+                    loadData();
+                } else {
+                    alert("❌ Lỗi: " + data.message);
+                }
+            } catch(e) { alert("Lỗi kết nối server"); }
+        }
+
+        async function delUser(uid) {
+            if(!confirm('Xóa đại lý này?')) return;
+            await fetch('/api/delete-user', {
+                method:'POST', headers: { 'Content-Type': 'application/json', 'Authorization': token },
+                body: JSON.stringify({ targetId: uid })
+            });
+            loadData();
+        }
+
+        function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+        loadData();
+    </script>
+</body>
+</html>

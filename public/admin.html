@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>AGENCY ADMIN</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@500;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { background: #000500; padding: 20px; font-family: 'Share Tech Mono'; }
+        .admin-box { max-width: 1000px; margin: 0 auto; }
+        
+        .header { display: flex; justify-content: space-between; border-bottom: 2px solid #00ff41; padding-bottom: 10px; margin-bottom: 20px; }
+        .title { color: #00ff41; font-family: 'Orbitron'; font-size: 1.5rem; text-shadow: 0 0 10px #00ff41; }
+        
+        /* VÍ ĐẠI LÝ */
+        .my-wallet {
+            background: rgba(0, 255, 65, 0.05); border: 1px solid #00ff41;
+            padding: 20px; margin-bottom: 20px; text-align: center;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.1);
+        }
+        .wallet-amount { font-family: 'Orbitron'; font-size: 2.5rem; color: #fff; text-shadow: 0 0 15px #00ff41; margin: 10px 0; }
+        .wallet-label { color: #00ff41; font-size: 0.9rem; letter-spacing: 2px; }
+
+        .panel { background: #051005; border: 1px solid #00ff41; padding: 20px; margin-bottom: 20px; }
+        
+        /* INPUT STYLES */
+        input { 
+            background: #000; border: 1px solid #444; color: #fff; 
+            padding: 10px; outline: none; transition: 0.3s;
+        }
+        input:focus { border-color: #00ff41; box-shadow: 0 0 5px #00ff41; }
+
+        /* SEARCH BAR */
+        .search-bar { margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        .search-input { width: 100%; border: 1px solid #333; padding: 12px; font-family: 'Share Tech Mono'; color: #00ff41; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 15px; }
+        .card { background: #111; border: 1px solid #333; padding: 15px; position: relative; transition: 0.3s; }
+        .card:hover { border-color: #00ff41; transform: translateY(-2px); }
+        .tk-box { color: #00ff41; font-size: 1.2rem; margin: 10px 0; font-family: 'Orbitron'; }
+
+        button { cursor: pointer; font-family: 'Orbitron'; font-weight: bold; padding: 5px 10px; border: none; margin-left:2px; }
+        .btn-add-main { background: #00ff41; color: #000; padding: 10px 20px; }
+        .btn-nap { background:#00ff41; color:#000; }
+        .btn-rut { background:#ff9800; color:#000; }
+        .btn-xoa { background:#333; color:#f00; border:1px solid #555; }
+    </style>
+</head>
+<body>
+    <div class="admin-box">
+        <div class="header">
+            <div class="title">AGENCY PANEL (ĐẠI LÝ)</div>
+            <button onclick="logout()" style="background:#333; color:#fff; padding:10px;">ĐĂNG XUẤT</button>
+        </div>
+
+        <!-- HIỂN THỊ VÍ CỦA BẠN -->
+        <div class="my-wallet">
+            <div class="wallet-label">KHO TOKEN CỦA BẠN</div>
+            <div id="myBalance" class="wallet-amount">Loading...</div>
+            <div style="font-size: 0.8rem; color: #888;">(Liên hệ Super Admin để nhập thêm hàng)</div>
+        </div>
+
+        <!-- PANEL THÊM KHÁCH -->
+        <div class="panel">
+            <h3 style="color:#fff; margin-top:0;">➕ THÊM KHÁCH VÀO QUẢN LÝ</h3>
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="targetUser" placeholder="Tên User..." style="width:250px;">
+                <button onclick="importUser()" class="btn-add-main">KÍCH HOẠT</button>
+            </div>
+            <p style="color:#666; font-size:0.8rem;">* Nhập tên User đã đăng ký để quản lý họ.</p>
+        </div>
+
+        <h3 style="color:#fff; margin-bottom: 10px;">DANH SÁCH KHÁCH HÀNG</h3>
+        
+        <!-- THANH TÌM KIẾM MỚI -->
+        <div class="search-bar">
+            <span style="color:#00ff41;">🔍</span>
+            <input type="text" id="searchInput" class="search-input" 
+                   placeholder="Tìm kiếm khách hàng (nhập tên)..." 
+                   maxlength="20"
+                   onkeyup="filterUsers()">
+        </div>
+
+        <div id="grid" class="grid">Loading...</div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        const role = localStorage.getItem('role');
+        if (!token || role !== 'admin') window.location.href = 'login.html';
+
+        // Lấy số dư của chính mình
+        async function loadMyBalance() {
+            try {
+                const res = await fetch('/api/me', { headers: { 'Authorization': token } });
+                const me = await res.json();
+                if (me.username) {
+                    document.getElementById('myBalance').innerText = me.tokens.toLocaleString();
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        // Tải danh sách User
+        async function loadData() {
+            loadMyBalance();
+
+            const res = await fetch('/api/users', { headers: { 'Authorization': token } });
+            const list = await res.json();
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+
+            if(list.length === 0) {
+                grid.innerHTML = '<div style="color:#666;">Chưa có khách hàng nào.</div>';
+                return;
+            }
+
+            list.forEach(u => {
+                grid.innerHTML += `
+                    <div class="card user-item">
+                        <div style="display:flex; justify-content:space-between; color:#fff; font-size:1.1rem;">
+                            <!-- Thêm class username-text để tìm kiếm -->
+                            <span class="username-text">${u.username}</span>
+                            <span style="border:1px solid #00ff41; color:#00ff41; padding:2px 5px; font-size:0.7rem;">MEMBER</span>
+                        </div>
+                        <div class="tk-box">KHÁCH CÒN: ${u.tokens}</div>
+                        
+                        <div style="display:flex; gap:5px; margin-top:10px;">
+                            <!-- Input Token giới hạn 20 ký tự -->
+                            <input type="number" id="amt-${u._id}" placeholder="SL" 
+                                   style="width:70px; padding:5px;"
+                                   oninput="if(this.value.length > 20) this.value = this.value.slice(0, 20);">
+                            
+                            <button onclick="modifyToken('${u._id}', 'add')" class="btn-nap">NẠP</button>
+                            <button onclick="modifyToken('${u._id}', 'revoke')" class="btn-rut">THU HỒI</button>
+                            <button onclick="delUser('${u._id}')" class="btn-xoa">XÓA</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            // Nếu đang tìm kiếm dở thì lọc lại ngay
+            filterUsers();
+        }
+
+        // --- CHỨC NĂNG TÌM KIẾM ---
+        function filterUsers() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toLowerCase();
+            const cards = document.getElementsByClassName('user-item');
+
+            for (let i = 0; i < cards.length; i++) {
+                const nameSpan = cards[i].getElementsByClassName('username-text')[0];
+                const txtValue = nameSpan.textContent || nameSpan.innerText;
+                if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                    cards[i].style.display = "";
+                } else {
+                    cards[i].style.display = "none";
+                }
+            }
+        }
+
+        async function importUser() {
+            const u = document.getElementById('targetUser').value;
+            if(!u) return alert("Nhập tên User!");
+            const res = await fetch('/api/import-member', {
+                method:'POST', headers: { 'Content-Type': 'application/json', 'Authorization': token },
+                body: JSON.stringify({ username: u })
+            });
+            const data = await res.json();
+            alert(data.message);
+            if(data.status === 'success') loadData();
+        }
+
+        async function modifyToken(uid, type) {
+            const amt = document.getElementById(`amt-${uid}`).value;
+            if(!amt || amt <= 0) return alert("Số lượng không hợp lệ!");
+
+            const myBalText = document.getElementById('myBalance').innerText.replace(/,/g,'');
+            const myBal = parseInt(myBalText) || 0;
+            
+            // Kiểm tra số dư kho
+            if(type === 'add' && myBal < amt) {
+                return alert("❌ BẠN KHÔNG ĐỦ HÀNG TRONG KHO!\nCòn lại: " + myBal);
+            }
+
+            const endpoint = (type === 'add') ? '/api/add-tokens' : '/api/revoke-tokens';
+            
+            try {
+                const res = await fetch(endpoint, {
+                    method:'POST', headers: { 'Content-Type': 'application/json', 'Authorization': token },
+                    body: JSON.stringify({ targetUserId: uid, amount: amt })
+                });
+                const data = await res.json();
+                
+                if(data.status === 'success') {
+                    alert(data.message);
+                    loadData(); 
+                } else {
+                    alert("❌ Lỗi: " + data.message);
+                }
+            } catch(e) { alert("Lỗi kết nối server"); }
+        }
+
+        async function delUser(uid) {
+            if(!confirm('Xóa khách này?')) return;
+            await fetch('/api/delete-user', {
+                method:'POST', headers: { 'Content-Type': 'application/json', 'Authorization': token },
+                body: JSON.stringify({ targetId: uid })
+            });
+            loadData();
+        }
+
+        function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+        
+        loadData();
+    </script>
+</body>
+</html>
