@@ -345,10 +345,7 @@
     grid-template-rows: repeat(5, 1fr);
     grid-template-columns: repeat(5, 1fr);
     
-    /* QUAN TRỌNG: direction LTR để đi từ Trái sang Phải */
-    direction: ltr !important; 
-    
-    /* Điền hết cột 1 rồi mới sang cột 2 (Vertical Flow) */
+    /* QUAN TRỌNG: Điền hết cột 1 rồi mới sang cột 2 (Vertical Flow) */
     grid-auto-flow: column; 
     
     gap: 0; 
@@ -379,7 +376,7 @@
 /* 4. HẠT CẦU (THU NHỎ CÒN 60%) -> ĐẢM BẢO KHÔNG VỠ */
 .bead-circle {
     /* Kích thước an toàn tuyệt đối */
-    width: 40%; 
+    width: 30%; 
     height: auto;
     aspect-ratio: 1/1; 
     

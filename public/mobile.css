@@ -105,15 +105,14 @@
     .footer-panel { border: 1px solid #333; background: #050505; }
 }
  .bead-grid {
-        /* Cố định 6 dòng - 5 cột */
-        grid-template-rows: repeat(6, 1fr) !important;
+        /* SỬA: Cố định 5 dòng - 5 cột */
+        grid-template-rows: repeat(5, 1fr) !important;
         grid-template-columns: repeat(5, 1fr) !important;
         
         /* Chảy theo cột dọc */
         grid-auto-flow: column !important;
         
-        /* --- THÊM DÒNG NÀY ĐỂ ĐẢO CHIỀU TỪ PHẢI SANG TRÁI --- */
-        direction: rtl !important; 
+        /* ĐÃ XÓA `direction: rtl` */
     }
     
     /* Đảm bảo chữ bên trong (P/B/T) không bị ngược (nếu có) */
