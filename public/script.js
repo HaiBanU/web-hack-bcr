@@ -336,16 +336,16 @@ function renderBigRoadGrid(rawHistory) {
 }
 
 // --- 8. BEAD PLATE (UPDATED: 5x5 - TRÁI SANG PHẢI) ---
+/* --- TRONG FILE script.js --- */
+
 function renderBeadPlate(res) {
     const grid = document.getElementById('beadPlateGrid');
     if(!grid) return;
 
-    // CHUẨN: 6 dòng x 6 cột = 36 ô
-    const ROWS = 6;
-    const COLS = 6;
-    const totalCells = 36; 
+    // QUAY VỀ 25 Ô (5x5)
+    const totalCells = 25; 
 
-    // Lấy 36 kết quả mới nhất
+    // Lấy 25 kết quả mới nhất
     let displayData = [];
     if (res.length > totalCells) {
         displayData = res.slice(res.length - totalCells, res.length);
@@ -355,7 +355,7 @@ function renderBeadPlate(res) {
     
     let html = '';
 
-    // Render 36 ô theo thứ tự (CSS sẽ tự xếp dọc nhờ grid-auto-flow: column)
+    // Vòng lặp vẽ 25 ô
     for(let i = 0; i < totalCells; i++) {
         const item = displayData[i]; 
         
@@ -367,7 +367,7 @@ function renderBeadPlate(res) {
             
             html += `<div class="bead-cell"><div class="bead-circle ${cls}">${txt}</div></div>`;
         } else {
-            // Render ô trống có viền kẻ
+            // Ô trống
             html += `<div class="bead-cell"></div>`;
         }
     }

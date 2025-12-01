@@ -326,14 +326,10 @@
 
 /* 1. KHUNG CHỨA BẢNG CẦU (SỬA LẠI MÀU ĐEN) */
 .bead-panel {
-    /* Quay về nền đen để đồng bộ với các ô khác */
     background: #000; 
     border: 1px solid #333; 
     border-radius: 4px;
-    
-    /* Xóa padding để tận dụng tối đa diện tích cho lưới */
     padding: 0; 
-    
     display: flex;
     justify-content: center;
     align-items: center;
@@ -342,28 +338,29 @@
     box-shadow: inset 0 0 10px #000;
 }
 
-/* 2. LƯỚI 6 DÒNG x 6 CỘT (Căn chỉnh để không bị vỡ) */
+/* 2. LƯỚI 5x5 (CỐ ĐỊNH) */
 .bead-grid {
     display: grid;
-    /* Cố định 6 dòng - 6 cột */
-    grid-template-rows: repeat(6, 1fr);
-    grid-template-columns: repeat(6, 1fr);
+    /* Cố định 5 dòng - 5 cột */
+    grid-template-rows: repeat(5, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     
-    /* Điền dọc: Trên -> Dưới, Trái -> Phải */
-    grid-auto-flow: column; 
+    /* QUAN TRỌNG: Ép buộc hiển thị từ TRÁI SANG PHẢI */
+    direction: ltr !important; 
     
-    /* Không có khoảng cách giữa các ô (kẻ bảng) */
+    /* Điền hết hàng ngang rồi mới xuống dòng */
+    grid-auto-flow: row; 
+    
     gap: 0; 
-    
     width: 100%;
     height: 100%;
     
-    /* Kẻ viền trên và trái màu xám tối (thay vì màu nâu) */
+    /* Viền bao quanh */
     border-top: 1px solid #333;
     border-left: 1px solid #333;
 }
 
-/* 3. Ô CHỨA HẠT (KẺ Ô LY MÀU XÁM) */
+/* 3. Ô CHỨA (KẺ Ô LY) */
 .bead-cell {
     width: 100%;
     height: 100%;
@@ -371,20 +368,18 @@
     justify-content: center;
     align-items: center;
     
-    /* Kẻ viền phải và dưới màu xám tối */
+    /* Viền ngăn cách các ô */
     border-right: 1px solid #333;
     border-bottom: 1px solid #333;
     
     background: transparent;
-    /* Đảm bảo ô không bị co giãn lung tung */
-    min-width: 0; 
-    min-height: 0; 
+    min-width: 0; min-height: 0;
 }
 
-/* 4. HẠT CẦU (THU NHỎ LẠI ĐỂ KHÔNG BỊ VỠ) */
+/* 4. HẠT CẦU (THU NHỎ LẠI CÒN 65%) -> KHÔNG BAO GIỜ VỠ */
 .bead-circle {
-    /* Giảm kích thước xuống 70% - 75% để hạt nằm lọt thỏm trong ô, không bị chạm viền */
-    width: 75%; 
+    /* Quan trọng: Giảm xuống 65% để có khoảng trống xung quanh */
+    width: 65%; 
     height: auto;
     aspect-ratio: 1/1; /* Luôn tròn */
     
@@ -396,27 +391,17 @@
     font-family: Arial, sans-serif; 
     font-weight: bold;
     
-    /* Chỉnh font nhỏ lại một chút để vừa vặn */
+    /* Font chữ tự co giãn */
     font-size: clamp(8px, 1.5vh, 12px); 
     color: #fff;
     
-    /* Style phẳng (Flat) cho dễ nhìn, không bóng bẩy */
-    box-shadow: none; 
+    box-shadow: none; /* Phẳng, sạch sẽ */
 }
 
-/* 5. MÀU SẮC HẠT (FLAT COLORS - CHUẨN CASINO) */
-.bead-p { 
-    background-color: #007bff; /* Xanh dương chuẩn */
-    border: none;
-}
-.bead-b { 
-    background-color: #dc3545; /* Đỏ chuẩn */
-    border: none;
-}
-.bead-t { 
-    background-color: #28a745; /* Xanh lá chuẩn */
-    border: none;
-}
+/* 5. MÀU SẮC (CHUẨN HÌNH 2) */
+.bead-p { background-color: #007bff; } /* Xanh */
+.bead-b { background-color: #dc3545; } /* Đỏ */
+.bead-t { background-color: #28a745; } /* Hòa */
 
 /* 3. BIG ROAD */
 .road-panel { background: #000; padding-top: 20px; }
