@@ -1,97 +1,114 @@
 /* =========================================
-   MOBILE.CSS - FIX LỖI TRÀN MÀN HÌNH & VS
+   MOBILE.CSS - FINAL FIX (XẾP CHỒNG DỌC)
    ========================================= */
 
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 1024px) {
 
-    /* 1. ĐIỀU CHỈNH KHUNG CHỨA (Battle Wrapper) */
+    /* 1. RESET LAYOUT CHÍNH: CHUYỂN TỪ GRID SANG FLEX DỌC */
+    .hacker-layout {
+        display: flex !important;
+        flex-direction: column !important; /* Xếp theo chiều dọc */
+        height: auto !important; /* Cho phép cuộn trang */
+        min-height: 100vh;
+        overflow-y: auto !important; /* Bật thanh cuộn dọc */
+        overflow-x: hidden; /* Tắt cuộn ngang */
+        padding: 5px !important;
+        gap: 10px !important;
+    }
+
+    /* 2. SẮP XẾP THỨ TỰ HIỂN THỊ (ORDER) */
+    /* Header lên đầu */
+    .sys-header {
+        order: 1;
+        flex-wrap: wrap !important; /* Cho phép xuống dòng nếu tên dài */
+        height: auto !important;
+        padding: 10px 5px !important;
+        gap: 5px;
+    }
+    
+    /* Khu vực chơi game (Bài + Dự đoán) quan trọng nhất -> Lên thứ 2 */
+    .game-center {
+        order: 2;
+        width: 100% !important;
+        height: auto !important;
+        margin: 0 !important;
+        flex: none !important; /* Không co giãn tự động */
+        padding-bottom: 20px !important;
+    }
+
+    /* Khung Matrix/Tỷ lệ -> Xuống thứ 3 */
+    .panel-right {
+        order: 3;
+        width: 100% !important;
+        height: auto !important;
+        min-height: 150px;
+        margin-top: 5px !important;
+    }
+    
+    /* System Log (Ít quan trọng) -> Xuống thứ 4 */
+    .panel-left {
+        order: 4;
+        width: 100% !important;
+        height: 150px !important; /* Giới hạn chiều cao log */
+    }
+
+    /* Footer -> Xuống cuối cùng */
+    .sys-footer {
+        order: 5;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important; /* Chia thành 2 cột */
+        grid-template-rows: auto auto !important;   /* 2 hàng */
+        height: auto !important;
+        gap: 5px !important;
+        margin-bottom: 20px;
+    }
+
+    /* 3. FIX LỖI HIỂN THỊ HEADER */
+    .brand-box { width: 100%; text-align: center; margin-bottom: 5px; }
+    .sys-header h1 { font-size: 1.1rem !important; text-align: center; width: 100%; }
+    .sys-status { width: 100%; justify-content: center; }
+
+    /* 4. FIX LỖI LÁ BÀI & KHUNG VS (Code cũ đã sửa, giữ lại) */
     .battle-wrapper {
         width: 100% !important;
-        padding: 0 5px !important;
-        gap: 2px !important; /* Giảm khoảng cách giữa 2 bên */
-        margin-bottom: 10px !important;
+        padding: 0 !important;
+        gap: 5px !important;
     }
 
-    /* 2. THU NHỎ KHUNG PLAYER / BANKER */
     .side-container {
-        width: 49% !important; /* Mở rộng tối đa */
-        padding: 5px 2px !important; /* Giảm padding để có chỗ cho bài */
-        border-radius: 8px !important;
+        width: 48% !important;
+        padding: 5px 2px !important;
     }
     
-    /* Chỉnh tiêu đề PLAYER/BANKER nhỏ lại */
-    .side-container > div:first-child {
-        font-size: 0.9rem !important; 
-        margin-bottom: 5px !important;
-    }
+    .cards-area { gap: 2px !important; margin-top: 5px !important; }
+    .card-slot { width: 30px !important; height: 45px !important; }
+    .card-front, .card-back { font-size: 0.7rem !important; }
+    .score-box { font-size: 1.5rem !important; margin-top: 5px !important; }
 
-    /* 3. THU NHỎ LÁ BÀI (QUAN TRỌNG NHẤT) */
-    .cards-area {
-        gap: 2px !important; /* Các lá bài xích lại gần nhau */
-        margin-top: 5px !important;
-    }
+    /* Fix VS nhỏ lại */
+    .vs-container { width: 50px !important; height: 50px !important; }
+    .vs-text { font-size: 1.5rem !important; }
+    .vs-ring { border-width: 1px !important; }
 
-    .card-slot {
-        width: 32px !important;  /* Chiều rộng bé lại */
-        height: 48px !important; /* Chiều cao bé lại */
-    }
-
-    /* Chỉnh cỡ chữ/icon bên trong lá bài */
-    .card-front, .card-back {
-        font-size: 0.7rem !important; 
-        border-radius: 4px !important;
-    }
-    
-    /* Icon chất bài (Cơ, Rô...) bé lại */
-    .card-front div:nth-child(2) {
-        font-size: 1rem !important; 
-    }
-
-    /* 4. THU NHỎ SỐ ĐIỂM TỔNG (Ví dụ: 2 - 8) */
-    .score-box {
-        font-size: 1.8rem !important; /* Giảm từ 3rem xuống */
-        margin-top: 5px !important;
-    }
-
-    /* 5. FIX LỖI VS QUÁ TO ĐÈ LÊN KHUNG */
-    .vs-container {
-        width: 50px !important;  /* Giảm từ 100px xuống 50px */
-        height: 50px !important;
-    }
-    
-    .vs-text {
-        font-size: 1.5rem !important; /* Chữ VS nhỏ lại */
-        text-shadow: 1px 1px 0px #00f3ff, -1px -1px 0px #ff003c !important; /* Giảm bóng đổ cho đỡ rối */
-    }
-    
-    /* Thu nhỏ vòng tròn xoay quanh VS */
-    .vs-ring {
-        border-width: 1px !important;
-        box-shadow: 0 0 10px rgba(0, 243, 255, 0.5) !important;
-    }
-
-    /* 6. TINH CHỈNH CÁC PHẦN KHÁC CHO CÂN ĐỐI */
-    .sys-header h1 {
-        font-size: 1rem !important; /* Tên bàn nhỏ lại */
-    }
-    
+    /* 5. FIX KHUNG DỰ ĐOÁN (ROBOT) */
     .prediction-wrapper {
+        width: 100% !important;
+        height: auto !important;
+        min-height: 80px;
+        padding: 10px 5px !important;
         margin-top: 10px !important;
-        padding: 5px !important;
-        height: 100px !important;
         border-radius: 15px !important;
     }
     
-    .ai-box, .pred-gauge {
-        width: 70px !important;
-        height: 70px !important;
-    }
-    
-    .pred-result {
-        font-size: 2.5rem !important;
-    }
-    
-    .pred-label {
-        font-size: 0.7rem !important;
+    .ai-box, .pred-gauge { width: 60px !important; height: 60px !important; }
+    .ai-img { width: 80% !important; height: 80% !important; }
+    .pred-result { font-size: 2rem !important; }
+    .pred-label { font-size: 0.6rem !important; }
+    .gauge-text { font-size: 0.9rem !important; }
+
+    /* 6. FIX MATRIX CODE DÀI XUỐNG */
+    #matrixCode {
+        height: 100px !important; /* Đặt chiều cao cố định cho mobile */
+        flex: none !important;
     }
 }
