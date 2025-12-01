@@ -366,18 +366,19 @@ function renderBeadPlate(res) {
 window.addEventListener('resize', () => { if(history.length > 0) renderBeadPlate(history); });
 
 /* =========================================
-   9. NEW WAVE CHART (DOUBLE SINE WAVE)
+   NEW WAVE CHART: STATEFUL (GIỮ TRẠNG THÁI CAO)
    ========================================= */
 let waveCanvas, waveCtx;
 let waveFrame = 0;
 let waveW, waveH;
 
+// Cấu hình sóng (Thêm target để giữ trạng thái)
 let waveConfig = {
-    pAmp: 20, // Biên độ sóng Player
-    bAmp: 20, // Biên độ sóng Banker
-    baseAmp: 20, 
-    surgeAmp: 70, // Độ cao khi Win
-    speed: 0.05, 
+    pAmp: 20,       // Độ cao hiện tại Player
+    bAmp: 20,       // Độ cao hiện tại Banker
+    targetP: 20,    // Đích đến Player (Sẽ giữ ở đây)
+    targetB: 20,    // Đích đến Banker
+    speed: 0.08,    // Tốc độ trôi nhanh hơn chút cho mượt
     pColor: "rgba(0, 243, 255, 0.6)", 
     bColor: "rgba(255, 0, 60, 0.6)"   
 };
@@ -404,14 +405,33 @@ function animateWave() {
     if (!waveCtx) return;
     waveCtx.clearRect(0, 0, waveW, waveH);
     
-    // Hiệu ứng "Thở" (Decay)
-    waveConfig.pAmp += (waveConfig.baseAmp - waveConfig.pAmp) * 0.05;
-    waveConfig.bAmp += (waveConfig.baseAmp - waveConfig.bAmp) * 0.05;
+    // LOGIC MỚI: Di chuyển từ từ đến mức đích (Lerp) thay vì tự giảm
+    // 0.05 là tốc độ thay đổi độ cao (càng lớn càng nhanh)
+    waveConfig.pAmp += (waveConfig.targetP - waveConfig.pAmp) * 0.05;
+    waveConfig.bAmp += (waveConfig.targetB - waveConfig.bAmp) * 0.05;
 
     waveCtx.globalCompositeOperation = 'screen';
-    // Vẽ 2 sóng
+
+    // 1. VẼ SÓNG ĐỎ (BANKER)
+    // Nếu Banker đang cao hơn -> Thêm hiệu ứng Glow (Bóng phát sáng)
+    if(waveConfig.bAmp > waveConfig.pAmp) {
+        waveCtx.shadowBlur = 20; waveCtx.shadowColor = "#ff003c";
+    } else {
+        waveCtx.shadowBlur = 0;
+    }
     drawSineWave(waveConfig.bAmp, 0.02, 1.5, waveConfig.bColor);
+
+    // 2. VẼ SÓNG XANH (PLAYER)
+    // Nếu Player đang cao hơn -> Glow Xanh
+    if(waveConfig.pAmp > waveConfig.bAmp) {
+        waveCtx.shadowBlur = 20; waveCtx.shadowColor = "#00f3ff";
+    } else {
+        waveCtx.shadowBlur = 0;
+    }
     drawSineWave(waveConfig.pAmp, 0.025, 0, waveConfig.pColor);
+
+    // Reset
+    waveCtx.shadowBlur = 0;
     waveCtx.globalCompositeOperation = 'source-over';
 
     waveFrame += waveConfig.speed;
@@ -422,12 +442,13 @@ function drawSineWave(amplitude, frequency, phaseShift, color) {
     waveCtx.beginPath();
     waveCtx.moveTo(0, waveH);
     let grad = waveCtx.createLinearGradient(0, 0, 0, waveH);
-    grad.addColorStop(0, color.replace("0.6", "0.8")); 
+    grad.addColorStop(0, color.replace("0.6", "0.9")); // Đỉnh sóng đậm hơn
     grad.addColorStop(1, "rgba(0,0,0,0)"); 
 
     waveCtx.fillStyle = grad;
     for (let x = 0; x <= waveW; x += 5) {
-        let y = (waveH / 1.5) + Math.sin(x * frequency + waveFrame + phaseShift) * -amplitude;
+        // Vẽ sóng Sin
+        let y = (waveH / 1.3) + Math.sin(x * frequency + waveFrame + phaseShift) * -amplitude;
         waveCtx.lineTo(x, y);
     }
     waveCtx.lineTo(waveW, waveH);
@@ -436,16 +457,22 @@ function drawSineWave(amplitude, frequency, phaseShift, color) {
     waveCtx.fill();
 }
 
+// LOGIC CẬP NHẬT KẾT QUẢ
 function updateChartData(hist) {
     if (!hist || hist.length === 0) return;
     const lastResult = hist[hist.length - 1];
+
+    // Set ĐÍCH ĐẾN (Target) thay vì set trực tiếp
+    // Sóng thắng sẽ cao 80, sóng thua thấp xuống 15
     if (lastResult === 'P') {
-        waveConfig.pAmp = waveConfig.surgeAmp; 
-        waveConfig.bAmp = 10; 
+        waveConfig.targetP = 80; 
+        waveConfig.targetB = 15; 
     } else if (lastResult === 'B') {
-        waveConfig.bAmp = waveConfig.surgeAmp; 
-        waveConfig.pAmp = 10; 
+        waveConfig.targetB = 80; 
+        waveConfig.targetP = 15; 
     } else {
-        waveConfig.pAmp = 40; waveConfig.bAmp = 40;
+        // Hòa thì cả 2 bằng nhau ở mức trung bình
+        waveConfig.targetP = 40; 
+        waveConfig.targetB = 40;
     }
 }
