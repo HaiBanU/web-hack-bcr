@@ -1,5 +1,5 @@
 /* =========================================
-   LOBBY MANAGER - UPDATED V4.0
+   LOBBY MANAGER - V5.0 (STABLE RATE & OVERLAY FIX)
    ========================================= */
 
 // --- 1. HIỆU ỨNG NỀN MATRIX ---
@@ -7,25 +7,17 @@ const canvas = document.getElementById('matrixCanvas');
 const ctx = canvas ? canvas.getContext('2d') : null;
 
 function resizeCanvas() { 
-    if(canvas) { 
-        canvas.width = window.innerWidth; 
-        canvas.height = window.innerHeight; 
-    } 
+    if(canvas) { canvas.width = window.innerWidth; canvas.height = window.innerHeight; } 
 }
-resizeCanvas(); 
-window.addEventListener('resize', resizeCanvas);
+resizeCanvas(); window.addEventListener('resize', resizeCanvas);
 
-const chars = "01_XY_HACK_99_SYSTEM_CONNECT"; 
+const chars = "01_XY_HACK_99_SYSTEM"; 
 const drops = canvas ? Array(Math.floor(canvas.width / 20)).fill(1) : [];
 
 function drawMatrix() {
     if(!ctx) return;
-    ctx.fillStyle = "rgba(0, 0, 0, 0.1)"; 
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    ctx.fillStyle = "#0F0"; 
-    ctx.font = "14px monospace"; 
-    
+    ctx.fillStyle = "rgba(0, 0, 0, 0.1)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#0F0"; ctx.font = "14px monospace"; 
     for (let i = 0; i < drops.length; i++) {
         const text = chars[Math.floor(Math.random() * chars.length)];
         ctx.fillText(text, i * 20, drops[i] * 20);
@@ -35,7 +27,35 @@ function drawMatrix() {
 }
 setInterval(drawMatrix, 50);
 
-// --- 2. HÀM VẼ CẦU (GRID) ---
+// --- 2. HÀM TẠO TỶ LỆ ỔN ĐỊNH (1p30s ĐỔI 1 LẦN) ---
+function getStableWinRate(tableId) {
+    const CACHE_KEY = 'table_rates_cache';
+    const CACHE_DURATION = 90 * 1000; // 1 phút 30 giây (90000ms)
+    
+    let cache = {};
+    try {
+        cache = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}');
+    } catch(e) { cache = {}; }
+
+    const now = Date.now();
+    const cachedItem = cache[tableId];
+
+    // Nếu đã có tỷ lệ và chưa hết hạn 90s -> Dùng lại
+    if (cachedItem && (now - cachedItem.timestamp < CACHE_DURATION)) {
+        return cachedItem.rate;
+    }
+
+    // Nếu chưa có hoặc đã hết hạn -> Random mới (70% - 95%)
+    const newRate = Math.floor(Math.random() * (95 - 70 + 1)) + 70;
+    
+    // Lưu lại
+    cache[tableId] = { rate: newRate, timestamp: now };
+    localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+    
+    return newRate;
+}
+
+// --- 3. HÀM VẼ GRID ---
 function generateGridHTML(resultStr) {
     let processedData = [];
     let rawData = resultStr.split('');
@@ -44,41 +64,24 @@ function generateGridHTML(resultStr) {
     rawData.forEach(char => {
         if (char === 'T') { 
             if (processedData.length > 0) processedData[processedData.length - 1].hasTie = true; 
-        } else { 
-            processedData.push({ type: char, hasTie: false }); 
-        }
+        } else { processedData.push({ type: char, hasTie: false }); }
     });
 
-    let columns = []; 
-    let currentCol = []; 
-    let lastType = null;
-
+    let columns = []; let currentCol = []; let lastType = null;
     processedData.forEach(item => {
-        if (lastType !== null && item.type !== lastType) { 
-            columns.push(currentCol); 
-            currentCol = []; 
-        }
-        currentCol.push(item); 
-        lastType = item.type;
-        
-        if (currentCol.length >= 6) { 
-            columns.push(currentCol); 
-            currentCol = []; 
-            lastType = null; 
-        }
+        if (lastType !== null && item.type !== lastType) { columns.push(currentCol); currentCol = []; }
+        currentCol.push(item); lastType = item.type;
+        if (currentCol.length >= 6) { columns.push(currentCol); currentCol = []; lastType = null; }
     });
-    
     if (currentCol.length > 0) columns.push(currentCol);
     while(columns.length < 25) { columns.push([]); }
 
     let html = '<div class="road-grid-wrapper">';
     let displayCols = columns.slice(-25); 
-    
     displayCols.forEach(col => {
         html += '<div class="road-col">';
         for (let r = 0; r < 6; r++) {
-            let cellContent = ''; 
-            let node = col[r];
+            let cellContent = ''; let node = col[r];
             if (node) {
                 let colorClass = (node.type === 'P') ? 'p' : 'b';
                 let tieClass = node.hasTie ? 'tie-slash' : '';
@@ -92,7 +95,7 @@ function generateGridHTML(resultStr) {
     return html;
 }
 
-// --- 3. KẾT NỐI SOCKET & RENDER ---
+// --- 4. RENDER VÀ XỬ LÝ DỮ LIỆU ---
 const grid = document.getElementById('tablesGrid');
 let socket;
 try { socket = io(); } catch(e) { console.log('Socket err'); }
@@ -104,136 +107,125 @@ if (socket) {
     });
 }
 
-// --- [LOGIC MỚI] RENDER TABLE CẬP NHẬT ---
 function renderTables(data) {
     if(!grid) return;
     grid.innerHTML = ''; 
 
-    // BƯỚC 1: XỬ LÝ DỮ LIỆU (Tạo Win Rate & Kiểm tra lỗi)
     let processedData = data.map(item => {
         const resultStr = item.result || "";
         
-        // Logic 1: Xác định bàn lỗi/gián đoạn (Nếu dữ liệu rỗng hoặc quá ngắn < 3 ký tự)
-        const isInterrupted = (!resultStr || resultStr.length < 3);
+        // --- LOGIC PHÁT HIỆN BÀN LỖI/GIÁN ĐOẠN ---
+        // Kiểm tra nhiều trường hợp có thể xảy ra trong JSON nhà cái
+        // 1. Chuỗi kết quả quá ngắn
+        // 2. Có trường status = 0 hoặc '0' (Thường là Shuffling/Closed)
+        // 3. Có trường is_active = false
+        // 4. Có trường state = 0
+        let isInterrupted = false;
+        
+        if (!resultStr || resultStr.length < 2) isInterrupted = true;
+        if (item.status === 0 || item.status === '0') isInterrupted = true;
+        if (item.state === 0 || item.state === '0') isInterrupted = true;
+        if (item.is_shuffle === true || item.is_shuffle === 'true') isInterrupted = true;
 
-        // Logic 2: Random tỷ lệ thắng từ 70% đến 95%
-        // Công thức: Math.floor(Math.random() * (Max - Min + 1)) + Min
-        let winRate = Math.floor(Math.random() * (95 - 70 + 1)) + 70;
+        // Lấy tỷ lệ ổn định (1p30s đổi 1 lần)
+        let winRate = getStableWinRate(item.table_id);
 
-        // Nếu bàn bị gián đoạn, set tỷ lệ về -1 để nó chìm xuống dưới cùng khi sort
+        // Nếu gián đoạn, set tỷ lệ hiển thị về 0 để sort xuống dưới (nhưng vẫn có thể hiện số ảo nếu muốn)
         let sortRate = isInterrupted ? -1 : winRate;
 
-        // Làm đẹp tên bàn
         let displayName = item.table_name.toUpperCase().replace("BACCARAT", "BÀN").trim();
         if (!displayName.includes("BÀN")) displayName = "BÀN " + displayName;
 
         return { ...item, resultStr, isInterrupted, winRate, sortRate, displayName };
     });
 
-    // BƯỚC 2: SẮP XẾP (Win Rate cao xếp trên)
+    // Sắp xếp: Tỷ lệ cao lên đầu, bàn lỗi xuống dưới
     processedData.sort((a, b) => b.sortRate - a.sortRate);
 
-    // BƯỚC 3: RENDER HTML
     processedData.forEach(item => {
         const { table_id, resultStr, isInterrupted, winRate, displayName } = item;
 
-        // Tạo thẻ Card
-        const card = document.createElement('div');
-        
-        // Thêm class 'high-rate' nếu tỷ lệ >= 90% (Bàn VIP)
-        // Thêm class 'interrupted-card' nếu lỗi
+        // Class
         let cardClass = 'casino-card';
+        // Chỉ highlight Vàng nếu KHÔNG lỗi và tỷ lệ >= 90
         if (!isInterrupted && winRate >= 90) cardClass += ' high-rate';
         if (isInterrupted) cardClass += ' interrupted-card';
         
+        const card = document.createElement('div');
         card.className = cardClass;
 
-        // --- SỰ KIỆN CLICK ---
         card.onclick = () => {
             if (isInterrupted) {
-                // Không cho vào bàn lỗi
-                // alert("⚠️ Bàn này đang mất tín hiệu, vui lòng chọn bàn khác!");
+                // Có thể alert hoặc không, tùy trải nghiệm
+                // alert("⚠️ Bàn này đang bảo trì/gián đoạn!");
                 return;
             }
-            
             const token = localStorage.getItem('token');
-            // 1. CHƯA ĐĂNG NHẬP
             if (!token) {
-                if(confirm("⛔ YÊU CẦU ĐĂNG NHẬP!\nBạn cần đăng nhập để xem dữ liệu.")) {
-                    window.location.href = 'login.html';
-                }
+                if(confirm("⛔ YÊU CẦU ĐĂNG NHẬP!\nBạn cần đăng nhập để xem dữ liệu.")) window.location.href = 'login.html';
                 return;
             }
-
-            // 2. MỞ POPUP XÁC NHẬN
+            // Logic vào bàn
             const modal = document.getElementById('confirmModal');
             const btnYes = document.getElementById('btnConfirmAction');
-            
             if(modal) {
                 modal.style.display = 'flex'; 
                 btnYes.onclick = async () => {
                     modal.style.display = 'none';
                     try {
                         const res = await fetch('/api/enter-table', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json', 'Authorization': token }
+                            method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': token }
                         });
                         const respData = await res.json();
-
                         if (respData.status === 'success') {
                             window.location.href = `tool.html?tableId=${table_id}&tableName=${encodeURIComponent(displayName)}`;
                         } else {
-                            alert("⚠️ CẢNH BÁO HẾT TOKEN!\n\nVui lòng liên hệ Admin để nạp thêm.");
+                            alert("⚠️ CẢNH BÁO HẾT TOKEN!");
                         }
                     } catch (e) { alert("Lỗi kết nối!"); }
                 };
             }
         };
 
-        // --- NỘI DUNG CARD ---
-        
-        // Hiển thị tỷ lệ thắng
+        // Header
         const rateDisplay = isInterrupted ? 'N/A' : `WIN ${winRate}%`;
         const rateClass = isInterrupted ? 'rate-error' : 'cc-rate';
+        const liveStatus = isInterrupted ? 'OFFLINE ●' : 'LIVE ●';
+        const liveColor = isInterrupted ? '#666' : '#0f0';
 
-        // Nội dung Body: Grid hoặc Thông báo lỗi
-        let bodyContent = '';
+        // --- PHẦN BODY MỚI: LUÔN VẼ GRID, NẾU LỖI THÌ THÊM OVERLAY ---
+        let overlayHTML = '';
         if (isInterrupted) {
-            bodyContent = `
-                <div class="interrupted-box">
-                    <div class="warn-icon">⚠️</div>
-                    <div class="warn-text">MẤT TÍN HIỆU</div>
-                    <div class="warn-sub">Đang dò tìm tần số máy chủ...</div>
-                </div>
-            `;
-        } else {
-            bodyContent = `
-                <div class="cc-grid-area">${generateGridHTML(resultStr)}</div>
-                <div class="cc-predict-area">
-                    <span style="color:#aaa; font-size:0.6rem;">AI GỢI Ý</span>
-                    <span style="color:#0f0; font-weight:bold;">Cầu Đẹp</span>
+            overlayHTML = `
+                <div class="interrupted-overlay">
+                    <div class="int-content">
+                        <div style="font-size:1.2rem; margin-bottom:5px;">⚠️</div>
+                        <div style="font-weight:bold; color:#ff9800; font-family:'Orbitron';">CẦU ĐẸP ĐANG<br>BỊ GIÁN ĐOẠN</div>
+                        <div style="font-size:0.6rem; color:#aaa; margin-top:5px;">CHỜ LÀM MỚI...</div>
+                    </div>
                 </div>
             `;
         }
 
-        // Render Card HTML
         card.innerHTML = `
             <div class="cc-header">
-                <div>
-                    <span class="cc-name">${displayName}</span>
-                    <span class="${rateClass}">${rateDisplay}</span>
-                </div>
-                <div style="color:${isInterrupted ? '#666' : '#0f0'}; font-size:0.7rem;">
-                    ${isInterrupted ? 'OFFLINE ●' : 'LIVE ●'}
-                </div>
+                <div><span class="cc-name">${displayName}</span><span class="${rateClass}">${rateDisplay}</span></div>
+                <div style="color:${liveColor}; font-size:0.7rem;">${liveStatus}</div>
             </div>
             <div class="cc-body">
-                ${bodyContent}
+                <div class="cc-grid-area">
+                    ${generateGridHTML(resultStr)} <!-- Luôn vẽ Grid -->
+                    ${overlayHTML} <!-- Đè Overlay lên nếu lỗi -->
+                </div>
+                <div class="cc-predict-area">
+                    <span style="color:#aaa; font-size:0.6rem;">AI GỢI Ý</span>
+                    <span style="color:${isInterrupted ? '#555' : '#0f0'}; font-weight:bold;">${isInterrupted ? '---' : 'Cầu Đẹp'}</span>
+                </div>
             </div>
             <div class="cc-footer">
-                <span>Dữ liệu: ${isInterrupted ? '0' : resultStr.length}</span>
-                <button class="btn-join" ${isInterrupted ? 'disabled style="opacity:0.5; background:#555; color:#aaa; cursor:not-allowed;"' : ''}>
-                    ${isInterrupted ? 'CHỜ KẾT NỐI' : 'XÂM NHẬP'}
+                <span>Dữ liệu: ${resultStr.length}</span>
+                <button class="btn-join" ${isInterrupted ? 'disabled style="opacity:0.5; background:#555; cursor:not-allowed;"' : ''}>
+                    ${isInterrupted ? 'BẢO TRÌ' : 'XÂM NHẬP'}
                 </button>
             </div>
         `;

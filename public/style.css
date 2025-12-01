@@ -1,12 +1,12 @@
 /* =========================================
-   STYLE.CSS - UPDATED V4.0 (FULL)
+   STYLE.CSS - FULL VERSION (CARD FLIP + LOBBY V5)
    ========================================= */
 :root {
     --neon-green: #00ff41;
     --neon-green-dim: rgba(0, 255, 65, 0.1);
     --neon-red: #ff003c;
     --neon-cyan: #00f3ff;
-    --neon-gold: #ffd700;
+    --neon-gold: #ffd700; /* Màu vàng VIP */
     --bg-dark: #050a05;
     --bg-panel: rgba(0, 20, 0, 0.9);
     --font-main: 'Share Tech Mono', monospace;
@@ -113,43 +113,34 @@ body.lobby-body {
 }
 .casino-card:hover { transform: translateY(-5px); box-shadow: 0 0 15px rgba(0,255,65,0.3); border-color: var(--neon-green); }
 
-/* --- [MỚI] HIỆU ỨNG BÀN VIP (TỶ LỆ CAO) --- */
+/* --- HIỆU ỨNG BÀN VIP --- */
 .high-rate {
     border-color: var(--neon-gold) !important;
     box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
     animation: goldPulse 2s infinite alternate;
 }
 .high-rate .cc-rate {
-    background: var(--neon-gold);
-    color: #000;
-    box-shadow: 0 0 10px var(--neon-gold);
+    background: var(--neon-gold); color: #000; box-shadow: 0 0 10px var(--neon-gold);
 }
 @keyframes goldPulse {
     from { box-shadow: 0 0 5px rgba(255, 215, 0, 0.2); transform: translateY(0); }
     to { box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); transform: translateY(-3px); }
 }
 
-/* --- [MỚI] GIAO DIỆN BÀN BỊ GIÁN ĐOẠN --- */
-.interrupted-card {
-    border-color: #555 !important;
-    opacity: 0.8;
+/* --- HIỆU ỨNG BÀN GIÁN ĐOẠN --- */
+.interrupted-card { border-color: #555 !important; opacity: 0.9; }
+.rate-error { background: #333; color: #888; padding: 2px 6px; margin-left: 10px; font-size: 0.8rem; }
+.cc-grid-area { position: relative; background: #fff; flex: 1; overflow: hidden; } /* Relative để overlay con */
+
+.interrupted-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.75); display: flex; justify-content: center; align-items: center;
+    z-index: 5; backdrop-filter: blur(1px);
 }
-.rate-error {
-    background: #333; color: #888;
-    padding: 2px 6px; margin-left: 10px; 
-    font-size: 0.8rem; font-family: var(--font-display);
+.int-content {
+    text-align: center; border: 1px dashed #ff9800; padding: 5px 10px;
+    background: rgba(0,0,0,0.8); transform: rotate(-5deg); box-shadow: 0 0 10px rgba(255, 152, 0, 0.3);
 }
-.interrupted-box {
-    width: 100%; height: 100%;
-    display: flex; flex-direction: column;
-    justify-content: center; align-items: center;
-    background: #0a0a00;
-    color: #ff9800; /* Màu cam cảnh báo */
-    font-family: var(--font-display);
-}
-.warn-icon { font-size: 1.5rem; margin-bottom: 5px; animation: blink 1s infinite; }
-.warn-text { font-size: 1rem; font-weight: bold; letter-spacing: 1px; }
-.warn-sub { font-size: 0.6rem; color: #666; font-family: var(--font-main); margin-top: 2px; }
 
 /* CARD INNER STRUCTURE */
 .cc-header { background: #111; padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; }
@@ -162,7 +153,6 @@ body.lobby-body {
 @keyframes pulseRate { from { box-shadow: 0 0 5px currentColor; transform: scale(1); } to { box-shadow: 0 0 15px currentColor; transform: scale(1.05); } }
 
 .cc-body { display: flex; height: 97px; background: #000; border-bottom: 1px solid #222; }
-.cc-grid-area { flex: 1; background: #fff; overflow: hidden; position: relative; } /* Nền trắng cho cầu */
 .cc-predict-area { width: 80px; background: #051005; border-left: 1px solid #333; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 5px; }
 
 .cc-footer { background: #000; padding: 5px 10px; display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: #888; }
@@ -207,11 +197,68 @@ body.lobby-body {
 @keyframes sidePulseP { from { box-shadow: 0 0 10px var(--neon-cyan); } to { box-shadow: 0 0 30px var(--neon-cyan); } }
 @keyframes sidePulseB { from { box-shadow: 0 0 10px var(--neon-red); } to { box-shadow: 0 0 30px var(--neon-red); } }
 
+/* =========================================
+   3. CARD FLIP ANIMATION (LẬT BÀI 3D)
+   ========================================= */
 .cards-area { display: flex; justify-content: center; gap: 8px; height: 110px; margin-bottom: 5px; }
-.card-slot { width: 80px; height: 110px; border: 1px dashed #444; border-radius: 6px; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; font-size: 2.5rem; font-weight: bold; position: relative; opacity: 0.3; transform-style: preserve-3d; }
-.card-slot.revealed { background: linear-gradient(135deg, #fff 0%, #ddd 100%); border: 2px solid #fff; color: #000; opacity: 1; box-shadow: 0 0 15px rgba(255,255,255,0.5); animation: cyberFlip 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-@keyframes cyberFlip { 0% { transform: perspective(400px) rotateY(90deg) scale(0.8); opacity: 0; } 40% { transform: perspective(400px) rotateY(-10deg) scale(1.1); opacity: 1; } 100% { transform: perspective(400px) rotateY(0deg) scale(1); opacity: 1; } }
-.card-slot.hearts, .card-slot.diamonds { color: #d00; } .card-slot.spades, .card-slot.clubs { color: #000; }
+
+.card-slot { 
+    width: 80px; height: 110px; 
+    border: 1px solid #444; border-radius: 6px; 
+    /* MẶT LƯNG BÀI: Họa tiết Carbon */
+    background: #0b0f19;
+    background-image: repeating-linear-gradient(45deg, #111 0, #111 5px, #1a1a1a 5px, #1a1a1a 10px);
+    
+    display: flex; justify-content: center; align-items: center; 
+    font-size: 2.5rem; font-weight: bold; 
+    position: relative; 
+    opacity: 0.5; 
+    color: transparent; /* Ẩn số lúc đầu */
+    transform-style: preserve-3d; 
+    box-shadow: 0 2px 5px #000;
+}
+
+/* Khi có class .revealed thì chạy animation lật */
+.card-slot.revealed { 
+    animation: flipReveal 0.6s ease-out forwards;
+    opacity: 1;
+}
+
+@keyframes flipReveal {
+    0% {
+        transform: perspective(600px) rotateY(0deg);
+        background: #0b0f19; /* Giữ mặt lưng */
+        color: transparent; 
+        border-color: #444;
+    }
+    49% {
+        transform: perspective(600px) rotateY(90deg); /* Xoay ngang 90 độ */
+        background: #0b0f19;
+        color: transparent; 
+    }
+    50% {
+        transform: perspective(600px) rotateY(90deg);
+        /* ĐỔI SANG MẶT TRƯỚC */
+        background: linear-gradient(135deg, #fff 0%, #eee 100%);
+        border-color: #fff;
+        /* Màu chữ sẽ được hiện ra, class .hearts/.spades sẽ quyết định màu đỏ/đen */
+        color: inherit; 
+    }
+    100% {
+        transform: perspective(600px) rotateY(0deg); /* Xoay về 0 độ (đã lật xong) */
+        background: linear-gradient(135deg, #fff 0%, #eee 100%);
+        border-color: #fff;
+        box-shadow: 0 0 15px rgba(255,255,255,0.4);
+        color: inherit; 
+    }
+}
+
+/* Màu quân bài */
+.card-slot.hearts, .card-slot.diamonds { color: #d00; } 
+.card-slot.spades, .card-slot.clubs { color: #000; }
+
+/* ----------------------------------------- */
+
 .score-box { font-size: 2.5rem; font-family: var(--font-display); font-weight: bold; text-shadow: 0 0 15px currentColor; }
 
 .prediction-bar { width: 90%; padding: 10px 20px; position: absolute; bottom: 15px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #333; background: rgba(0,10,0,0.95); transition: 0.3s; overflow: hidden; }
