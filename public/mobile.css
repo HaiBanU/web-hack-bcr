@@ -1,96 +1,91 @@
 /* =========================================
-   MOBILE.CSS - FINAL FIX (XẾP CHỒNG DỌC)
+   MOBILE.CSS - FINAL LAYOUT (4 BẢNG DƯỚI DỰ ĐOÁN)
    ========================================= */
 
 @media screen and (max-width: 1024px) {
 
-    /* 1. RESET LAYOUT CHÍNH: CHUYỂN TỪ GRID SANG FLEX DỌC */
+    /* 1. CẤU TRÚC FLEX DỌC (Cho phép sắp xếp lại thứ tự) */
     .hacker-layout {
         display: flex !important;
-        flex-direction: column !important; /* Xếp theo chiều dọc */
-        height: auto !important; /* Cho phép cuộn trang */
+        flex-direction: column !important;
+        height: auto !important;
         min-height: 100vh;
-        overflow-y: auto !important; /* Bật thanh cuộn dọc */
-        overflow-x: hidden; /* Tắt cuộn ngang */
+        overflow-y: auto !important;
         padding: 5px !important;
         gap: 10px !important;
     }
 
-    /* 2. SẮP XẾP THỨ TỰ HIỂN THỊ (ORDER) */
-    /* Header lên đầu */
+    /* --- SẮP XẾP THỨ TỰ HIỂN THỊ (ORDER) --- */
+    
+    /* Vị trí 1: Header */
     .sys-header {
         order: 1;
-        flex-wrap: wrap !important; /* Cho phép xuống dòng nếu tên dài */
+        flex-wrap: wrap !important;
         height: auto !important;
         padding: 10px 5px !important;
         gap: 5px;
     }
-    
-    /* Khu vực chơi game (Bài + Dự đoán) quan trọng nhất -> Lên thứ 2 */
+
+    /* Vị trí 2: Game Center (Bài + Robot Dự đoán) */
     .game-center {
         order: 2;
         width: 100% !important;
         height: auto !important;
         margin: 0 !important;
-        flex: none !important; /* Không co giãn tự động */
-        padding-bottom: 20px !important;
+        flex: none !important;
+        padding-bottom: 15px !important;
     }
 
-    /* Khung Matrix/Tỷ lệ -> Xuống thứ 3 */
-    .panel-right {
+    /* Vị trí 3: FOOTER (4 BẢNG THỐNG KÊ) -> ĐƯA LÊN ĐÂY */
+    .sys-footer {
         order: 3;
-        width: 100% !important;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important; /* Chia 2 cột */
+        grid-template-rows: 150px 150px !important; /* Chiều cao cố định cho đẹp */
         height: auto !important;
-        min-height: 150px;
+        gap: 8px !important;
+        width: 100% !important;
         margin-top: 5px !important;
     }
-    
-    /* System Log (Ít quan trọng) -> Xuống thứ 4 */
-    .panel-left {
+
+    /* Vị trí 4: Matrix Code (Chữ chạy xanh) -> Đẩy xuống dưới */
+    .panel-right {
         order: 4;
         width: 100% !important;
-        height: 150px !important; /* Giới hạn chiều cao log */
-    }
-
-    /* Footer -> Xuống cuối cùng */
-    .sys-footer {
-        order: 5;
-        display: grid !important;
-        grid-template-columns: 1fr 1fr !important; /* Chia thành 2 cột */
-        grid-template-rows: auto auto !important;   /* 2 hàng */
         height: auto !important;
-        gap: 5px !important;
-        margin-bottom: 20px;
+        min-height: 120px;
+        margin-top: 10px !important;
     }
 
-    /* 3. FIX LỖI HIỂN THỊ HEADER */
-    .brand-box { width: 100%; text-align: center; margin-bottom: 5px; }
-    .sys-header h1 { font-size: 1.1rem !important; text-align: center; width: 100%; }
+    /* Vị trí 5: System Log (Log hệ thống) -> Xuống cuối cùng */
+    .panel-left {
+        order: 5;
+        width: 100% !important;
+        height: 200px !important; /* Tăng chiều cao để xem log dễ hơn */
+        margin-bottom: 30px !important;
+    }
+
+    /* --- CÁC FIX GIAO DIỆN KHÁC (GIỮ NGUYÊN) --- */
+
+    /* Header */
+    .brand-box { width: 100%; text-align: center; }
+    .sys-header h1 { font-size: 1.1rem !important; width: 100%; text-align: center; }
     .sys-status { width: 100%; justify-content: center; }
 
-    /* 4. FIX LỖI LÁ BÀI & KHUNG VS (Code cũ đã sửa, giữ lại) */
-    .battle-wrapper {
-        width: 100% !important;
-        padding: 0 !important;
-        gap: 5px !important;
-    }
-
-    .side-container {
-        width: 48% !important;
-        padding: 5px 2px !important;
-    }
-    
+    /* Game (Bài & VS) */
+    .battle-wrapper { width: 100% !important; padding: 0 !important; gap: 4px !important; }
+    .side-container { width: 48% !important; padding: 5px 2px !important; }
     .cards-area { gap: 2px !important; margin-top: 5px !important; }
     .card-slot { width: 30px !important; height: 45px !important; }
     .card-front, .card-back { font-size: 0.7rem !important; }
     .score-box { font-size: 1.5rem !important; margin-top: 5px !important; }
 
-    /* Fix VS nhỏ lại */
+    /* VS Badge */
     .vs-container { width: 50px !important; height: 50px !important; }
     .vs-text { font-size: 1.5rem !important; }
     .vs-ring { border-width: 1px !important; }
 
-    /* 5. FIX KHUNG DỰ ĐOÁN (ROBOT) */
+    /* Robot Dự đoán */
     .prediction-wrapper {
         width: 100% !important;
         height: auto !important;
@@ -99,16 +94,13 @@
         margin-top: 10px !important;
         border-radius: 15px !important;
     }
-    
     .ai-box, .pred-gauge { width: 60px !important; height: 60px !important; }
     .ai-img { width: 80% !important; height: 80% !important; }
     .pred-result { font-size: 2rem !important; }
     .pred-label { font-size: 0.6rem !important; }
     .gauge-text { font-size: 0.9rem !important; }
 
-    /* 6. FIX MATRIX CODE DÀI XUỐNG */
-    #matrixCode {
-        height: 100px !important; /* Đặt chiều cao cố định cho mobile */
-        flex: none !important;
-    }
+    /* Matrix & Footer Items */
+    #matrixCode { height: 100px !important; flex: none !important; }
+    .footer-panel { border: 1px solid #333; background: #050505; }
 }
