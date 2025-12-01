@@ -1,143 +1,97 @@
 /* =========================================
-   MOBILE.CSS - OPTIMIZED V22 (FIXED LAYOUT)
+   MOBILE.CSS - FIX LỖI TRÀN MÀN HÌNH & VS
    ========================================= */
 
-@media screen and (max-width: 1024px) {
-    /* 1. RESET LAYOUT CHÍNH */
-    .hacker-layout {
-        display: flex; 
-        flex-direction: column;
-        height: auto;
-        min-height: 100vh;
-        padding: 5px;
-        gap: 10px;
-        background: #000;
-        overflow-x: hidden; /* Chặn cuộn ngang tuyệt đối */
-    }
+@media screen and (max-width: 768px) {
 
-    /* 2. HEADER GỌN GÀNG */
-    .sys-header {
-        order: 1; 
-        flex-wrap: wrap; 
-        height: auto; 
-        padding: 10px 5px; 
-        justify-content: center;
-        gap: 5px;
-    }
-    .brand-box { width: 100%; text-align: center; margin-bottom: 2px; }
-    .glitch-text { font-size: 1.2rem !important; margin: 5px 0; }
-    .sys-status { width: 100%; justify-content: center; display: flex; gap: 10px; font-size: 0.8rem; }
-
-    /* 3. GAME CENTER */
-    .game-center {
-        order: 2;
-        width: 100%;
-        min-height: auto;
-        padding: 10px 2px;
-        margin: 0;
-        box-shadow: none;
-        background: none; /* Bỏ nền cầu kỳ trên mobile cho nhẹ */
-    }
-
-    /* KHU VỰC BÀI */
+    /* 1. ĐIỀU CHỈNH KHUNG CHỨA (Battle Wrapper) */
     .battle-wrapper {
-        margin-top: 5px;
-        padding: 0;
-        justify-content: space-between;
-        width: 100%;
-        margin-bottom: 15px;
-        gap: 5px;
-    }
-    .side-container { 
-        width: 48% !important; 
-        margin: 0; 
-        padding: 5px;
-    }
-    .cards-area { 
-        height: 50px; 
-        gap: 2px; 
-        margin-top: 5px;
-    }
-    /* Thu nhỏ lá bài */
-    .card-slot { width: 30px; height: 45px; font-size: 0.7rem; }
-    .score-box { font-size: 2rem !important; margin-top: 5px; }
-
-    /* 4. KHUNG DỰ ĐOÁN (QUAN TRỌNG: THU NHỎ ĐỂ KHÔNG VỠ) */
-    .prediction-wrapper {
-        width: 100%; 
-        max-width: none;
-        height: auto; /* Chiều cao tự động */
-        min-height: 80px;
-        margin-top: 5px;
-        padding: 10px 5px; /* Giảm padding 2 bên */
-        border-radius: 15px; /* Bo góc nhỏ hơn */
-        justify-content: center;
-        gap: 5px;
+        width: 100% !important;
+        padding: 0 5px !important;
+        gap: 2px !important; /* Giảm khoảng cách giữa 2 bên */
+        margin-bottom: 10px !important;
     }
 
-    /* Robot nhỏ lại */
-    .ai-box {
-        width: 50px; height: 50px; 
-        border-width: 2px;
-        margin-right: 0;
+    /* 2. THU NHỎ KHUNG PLAYER / BANKER */
+    .side-container {
+        width: 49% !important; /* Mở rộng tối đa */
+        padding: 5px 2px !important; /* Giảm padding để có chỗ cho bài */
+        border-radius: 8px !important;
     }
-
-    /* Chữ kết quả nhỏ lại */
-    .pred-info { margin: 0 5px; }
-    .pred-label { font-size: 0.6rem; letter-spacing: 1px; margin-bottom: 0; }
-    .pred-result { font-size: 2rem; } /* Giảm từ 4.5rem xuống 2rem */
-    .res-wait { font-size: 1.5rem; }
-
-    /* Vòng tròn % nhỏ lại */
-    .pred-gauge { width: 55px; height: 55px; }
-    .gauge-text { font-size: 0.9rem; }
-    .circle-bg, .circle { stroke-width: 4; } /* Viền đậm lên cho dễ nhìn ở size nhỏ */
-
-    /* 5. FOOTER: CHIA LƯỚI 2x2 (2 Cột, 2 Hàng) */
-    .sys-footer {
-        order: 3;
-        display: grid;
-        grid-template-columns: 1fr 1fr; /* 2 cột đều nhau */
-        grid-template-rows: 130px 130px; /* 2 hàng, mỗi hàng cao 130px */
-        gap: 5px;
-        height: auto;
-        margin-bottom: 10px;
-    }
-
-    .footer-panel {
-        height: 100%; /* Full chiều cao ô grid */
-        background: #080808;
-    }
-
-    /* Chỉnh lại font chữ trong footer cho nhỏ */
-    .panel-label { font-size: 0.55rem; padding: 1px 3px; }
     
-    /* Bead Plate & Big Road cần fit grid */
-    .bead-cell { width: 100%; height: 100%; }
-    .bead-circle { width: 16px; height: 16px; font-size: 0.6rem; }
-    .tool-road-col { max-width: none; } /* Bỏ giới hạn max-width trên mobile */
-
-    /* 6. PANEL PHẢI (MATRIX & THANH TỶ LỆ) -> ĐẨY XUỐNG CUỐI */
-    .panel-right {
-        order: 4;
-        margin-top: 0;
-        padding: 10px;
-        height: auto;
+    /* Chỉnh tiêu đề PLAYER/BANKER nhỏ lại */
+    .side-container > div:first-child {
+        font-size: 0.9rem !important; 
+        margin-bottom: 5px !important;
     }
-    #matrixCode { height: 80px; font-size: 0.55rem; }
 
-    /* 7. ẨN PANEL TRÁI (LOG) ĐỂ TIẾT KIỆM DIỆN TÍCH */
-    /* Hoặc hiển thị ở cuối cùng nếu cần */
-    .panel-left {
-        order: 5;
-        height: 120px;
-        display: flex; /* Hiện lại để xem log trừ tiền */
+    /* 3. THU NHỎ LÁ BÀI (QUAN TRỌNG NHẤT) */
+    .cards-area {
+        gap: 2px !important; /* Các lá bài xích lại gần nhau */
+        margin-top: 5px !important;
     }
-}
 
-/* Fix riêng cho màn hình cực nhỏ (iPhone SE, Fold...) */
-@media screen and (max-width: 360px) {
-    .pred-result { font-size: 1.6rem; }
-    .ai-box { width: 40px; height: 40px; }
-    .pred-gauge { width: 45px; height: 45px; }
+    .card-slot {
+        width: 32px !important;  /* Chiều rộng bé lại */
+        height: 48px !important; /* Chiều cao bé lại */
+    }
+
+    /* Chỉnh cỡ chữ/icon bên trong lá bài */
+    .card-front, .card-back {
+        font-size: 0.7rem !important; 
+        border-radius: 4px !important;
+    }
+    
+    /* Icon chất bài (Cơ, Rô...) bé lại */
+    .card-front div:nth-child(2) {
+        font-size: 1rem !important; 
+    }
+
+    /* 4. THU NHỎ SỐ ĐIỂM TỔNG (Ví dụ: 2 - 8) */
+    .score-box {
+        font-size: 1.8rem !important; /* Giảm từ 3rem xuống */
+        margin-top: 5px !important;
+    }
+
+    /* 5. FIX LỖI VS QUÁ TO ĐÈ LÊN KHUNG */
+    .vs-container {
+        width: 50px !important;  /* Giảm từ 100px xuống 50px */
+        height: 50px !important;
+    }
+    
+    .vs-text {
+        font-size: 1.5rem !important; /* Chữ VS nhỏ lại */
+        text-shadow: 1px 1px 0px #00f3ff, -1px -1px 0px #ff003c !important; /* Giảm bóng đổ cho đỡ rối */
+    }
+    
+    /* Thu nhỏ vòng tròn xoay quanh VS */
+    .vs-ring {
+        border-width: 1px !important;
+        box-shadow: 0 0 10px rgba(0, 243, 255, 0.5) !important;
+    }
+
+    /* 6. TINH CHỈNH CÁC PHẦN KHÁC CHO CÂN ĐỐI */
+    .sys-header h1 {
+        font-size: 1rem !important; /* Tên bàn nhỏ lại */
+    }
+    
+    .prediction-wrapper {
+        margin-top: 10px !important;
+        padding: 5px !important;
+        height: 100px !important;
+        border-radius: 15px !important;
+    }
+    
+    .ai-box, .pred-gauge {
+        width: 70px !important;
+        height: 70px !important;
+    }
+    
+    .pred-result {
+        font-size: 2.5rem !important;
+    }
+    
+    .pred-label {
+        font-size: 0.7rem !important;
+    }
 }
