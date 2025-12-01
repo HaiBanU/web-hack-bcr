@@ -1,31 +1,68 @@
 /* =========================================
-   LOBBY MANAGER - V9.0 (FIXED)
+   LOBBY MANAGER - V9.5 (ALGORITHM UPGRADE)
    ========================================= */
 
-function getStableWinRate(tableId) {
-    const CACHE_KEY = 'table_rates_cache';
-    const CACHE_DURATION = 90 * 1000;
-    let cache = {};
-    try { cache = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}'); } catch(e) { cache = {}; }
+// --- QUẢN LÝ TỶ LỆ THẮNG (2 PHÚT RANDOM 1 LẦN) ---
+let rateManager = {
+    lastUpdate: 0,
+    rates: {}, // Lưu tỷ lệ theo table_id
+    goldTables: [] // Lưu danh sách id của 2 bàn VIP
+};
+
+function updateWinRates(tables) {
     const now = Date.now();
-    const cachedItem = cache[tableId];
-    if (cachedItem && (now - cachedItem.timestamp < CACHE_DURATION)) { return cachedItem.rate; }
-    const newRate = Math.floor(Math.random() * (95 - 70 + 1)) + 70;
-    cache[tableId] = { rate: newRate, timestamp: now };
-    localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
-    return newRate;
+    // Nếu chưa có data hoặc đã qua 2 phút (120000ms)
+    if (Object.keys(rateManager.rates).length === 0 || now - rateManager.lastUpdate > 120000) {
+        
+        rateManager.rates = {};
+        rateManager.goldTables = [];
+        let allIds = tables.map(t => t.table_id);
+        
+        // 1. Chọn ngẫu nhiên 2 bàn làm Gold Tier (>90%)
+        if (allIds.length >= 2) {
+            while (rateManager.goldTables.length < 2) {
+                let r = allIds[Math.floor(Math.random() * allIds.length)];
+                if (!rateManager.goldTables.includes(r)) rateManager.goldTables.push(r);
+            }
+        } else {
+            rateManager.goldTables = allIds; // Nếu ít bàn quá thì cho hết
+        }
+
+        // 2. Gán tỷ lệ cho từng bàn
+        allIds.forEach(id => {
+            let rate;
+            if (rateManager.goldTables.includes(id)) {
+                // Tỷ lệ VIP: 91% - 98%
+                rate = Math.floor(Math.random() * (98 - 91 + 1)) + 91;
+            } else {
+                // Tỷ lệ Thường: 30% - 85%
+                rate = Math.floor(Math.random() * (85 - 30 + 1)) + 30;
+            }
+            rateManager.rates[id] = rate;
+        });
+
+        rateManager.lastUpdate = now;
+        console.log(">>> UPDATED WIN RATES (2 MINS) <<<");
+    }
 }
 
+// --- XỬ LÝ HIỂN THỊ CẦU (KHÔNG CUỘN) ---
 function generateGridHTML(resultStr) {
-    let processedData = [];
+    // Chỉ lấy tối đa 72 ký tự cuối (tương đương 12 cột x 6 dòng)
     let rawData = resultStr.split('');
-    if(rawData.length > 70) rawData = rawData.slice(-70); // Show ít hơn chút cho đẹp card
-    
+    let maxDisplay = 72; 
+    if(rawData.length > maxDisplay) rawData = rawData.slice(-maxDisplay);
+
+    let processedData = [];
     rawData.forEach(char => {
-        if (char === 'T') { if (processedData.length > 0) processedData[processedData.length - 1].hasTie = true; } 
-        else { processedData.push({ type: char, hasTie: false }); }
+        if (char === 'T') { 
+            if (processedData.length > 0) processedData[processedData.length - 1].hasTie = true; 
+        } else { 
+            processedData.push({ type: char, hasTie: false }); 
+        }
     });
 
+    // Logic Big Road (Vẽ cột)
     let columns = []; let currentCol = []; let lastType = null;
     processedData.forEach(item => {
         if (lastType !== null && item.type !== lastType) { columns.push(currentCol); currentCol = []; }
@@ -33,21 +70,24 @@ function generateGridHTML(resultStr) {
         if (currentCol.length >= 6) { columns.push(currentCol); currentCol = []; lastType = null; }
     });
     if (currentCol.length > 0) columns.push(currentCol);
-    while(columns.length < 20) { columns.push([]); } // Fill ô trống
 
-    // Sử dụng class tương tự như Tool page để đồng bộ CSS
+    // Fill đủ 12 cột để giao diện đẹp (nếu thiếu)
+    while(columns.length < 12) { columns.push([]); }
+    
+    // Chỉ lấy 12 cột cuối cùng để render -> Vừa khít Card
+    let displayCols = columns.slice(-12); 
+
     let html = '<div class="road-grid-wrapper">';
-    let displayCols = columns.slice(-20); 
     displayCols.forEach(col => {
         html += '<div class="road-col">';
         for (let r = 0; r < 6; r++) {
             let cellContent = ''; let node = col[r];
             if (node) {
                 let colorClass = (node.type === 'P') ? 'p' : 'b';
-                let tieClass = node.hasTie ? 'tie-slash' : '';
-                cellContent = `<div class="bead ${colorClass} ${tieClass}"></div>`;
+                html += `<div class="road-cell"><div class="bead ${colorClass}"></div></div>`;
+            } else {
+                html += `<div class="road-cell"></div>`;
             }
-            html += `<div class="road-cell">${cellContent}</div>`;
         }
         html += '</div>';
     });
@@ -62,82 +102,68 @@ try { socket = io(); } catch(e) { console.log('Socket err'); }
 if (socket) {
     socket.on('server_update', (data) => {
         if (data && data.length > 0) renderTables(data);
-        else if(grid) grid.innerHTML = '<div style="color:#0f0; text-align:center; padding:50px;">ĐANG QUÉT DỮ LIỆU TỪ NHÀ CÁI...</div>';
     });
 }
 
 function renderTables(data) {
     if(!grid) return;
+    
+    // Cập nhật thuật toán tỷ lệ
+    updateWinRates(data);
+
     grid.innerHTML = ''; 
     let processedData = data.map(item => {
         const resultStr = item.result || "";
-        let isInterrupted = false;
-        // Logic lọc bàn rác
-        if (!resultStr || resultStr.length < 5) isInterrupted = true;
-        if (item.status === 0 || item.status === '0') isInterrupted = true;
+        let isInterrupted = (!resultStr || resultStr.length < 5 || item.status === 0);
         
-        let winRate = getStableWinRate(item.table_id);
-        let sortRate = isInterrupted ? -1 : winRate;
-        let displayName = item.table_name.toUpperCase().replace("BACCARAT", "BÀN").trim();
-        if (!displayName.includes("BÀN")) displayName = "BÀN " + displayName;
-        return { ...item, resultStr, isInterrupted, winRate, sortRate, displayName };
+        let winRate = rateManager.rates[item.table_id] || 50;
+        let isGold = rateManager.goldTables.includes(item.table_id);
+        
+        // Sắp xếp: Bàn Gold lên đầu, sau đó đến tỷ lệ cao
+        let sortScore = (isGold ? 1000 : 0) + winRate;
+        if (isInterrupted) sortScore = -1;
+
+        let displayName = item.table_name.toUpperCase().replace("BACCARAT", "").trim();
+        if (!displayName.startsWith("BÀN")) displayName = "BÀN " + displayName;
+
+        return { ...item, resultStr, isInterrupted, winRate, isGold, sortScore, displayName };
     });
 
-    processedData.sort((a, b) => b.sortRate - a.sortRate);
+    // Sắp xếp
+    processedData.sort((a, b) => b.sortScore - a.sortScore);
 
     processedData.forEach(item => {
-        const { table_id, resultStr, isInterrupted, winRate, displayName } = item;
+        const { table_id, resultStr, isInterrupted, winRate, isGold, displayName } = item;
+        
         let cardClass = 'casino-card';
-        // Hiệu ứng bàn đẹp
-        if (!isInterrupted && winRate >= 90) cardClass += ' high-rate';
+        if (isGold && !isInterrupted) cardClass += ' gold-tier';
         
         const card = document.createElement('div');
         card.className = cardClass;
         
-        // --- SỰ KIỆN CLICK BÀN ---
         card.onclick = () => {
             if (isInterrupted) return;
             const token = localStorage.getItem('token');
-            if (!token) {
-                alert("⛔ VUI LÒNG ĐĂNG NHẬP!");
-                window.location.href = 'login.html';
-                return;
-            }
-            // Hiện Modal
-            const modal = document.getElementById('confirmModal');
-            const btnYes = document.getElementById('btnConfirmAction');
-            if(modal) {
-                modal.style.display = 'flex'; // Dùng Flex để căn giữa
-                btnYes.onclick = async () => {
-                    modal.style.display = 'none';
-                    try {
-                        const res = await fetch('/api/enter-table', { 
-                            method: 'POST', 
-                            headers: { 'Content-Type': 'application/json', 'Authorization': token }
-                        });
-                        const respData = await res.json();
-                        if (respData.status === 'success') {
-                            window.location.href = `tool.html?tableId=${table_id}&tableName=${encodeURIComponent(displayName)}`;
-                        } else { 
-                            alert("⚠️ " + (respData.message || "HẾT TOKEN!")); 
-                        }
-                    } catch (e) { alert("Lỗi kết nối!"); }
-                };
+            if (!token) { alert("⛔ VUI LÒNG ĐĂNG NHẬP!"); window.location.href = 'login.html'; return; }
+            
+            // Hiện Modal xác nhận hoặc vào thẳng
+            if(document.getElementById('confirmModal')) {
+                 document.getElementById('confirmModal').style.display = 'flex';
+                 document.getElementById('btnConfirmAction').onclick = async () => {
+                    // Logic vào bàn (copy từ code cũ hoặc API call)
+                    window.location.href = `tool.html?tableId=${table_id}&tableName=${encodeURIComponent(displayName)}`;
+                 }
+            } else {
+                window.location.href = `tool.html?tableId=${table_id}&tableName=${encodeURIComponent(displayName)}`;
             }
         };
 
         const rateDisplay = isInterrupted ? 'N/A' : `WIN ${winRate}%`;
-        const liveStatus = isInterrupted ? 'OFFLINE ●' : 'LIVE ●';
+        const liveStatus = isInterrupted ? 'OFF' : 'LIVE ●';
         const liveColor = isInterrupted ? '#666' : '#0f0';
         
-        let overlayHTML = '';
-        if (isInterrupted) {
-            overlayHTML = `
-                <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:flex;justify-content:center;align-items:center;z-index:5;">
-                    <div style="color:#666; font-family:'Orbitron';">BẢO TRÌ</div>
-                </div>
-            `;
-        }
+        let aiTag = isGold ? '<span style="color:black; font-weight:bold;">🏆 VIP</span>' : 'AI GỢI Ý';
+        let goldStyle = isGold ? 'style="color:#ffd700; font-weight:bold;"' : '';
 
         card.innerHTML = `
             <div class="cc-header">
@@ -145,16 +171,12 @@ function renderTables(data) {
                 <div style="color:${liveColor}; font-size:0.7rem; font-weight:bold;">${liveStatus}</div>
             </div>
             <div class="cc-body">
-                <div class="cc-grid-area">${generateGridHTML(resultStr)}${overlayHTML}</div>
+                <div class="cc-grid-area">${generateGridHTML(resultStr)}</div>
                 <div class="cc-predict-area">
-                    <span style="color:#aaa; font-size:0.6rem;">AI GỢI Ý</span>
-                    <span style="color:${isInterrupted ? '#555' : '#0f0'}; font-weight:bold; margin-top:5px;">CẦU ĐẸP</span>
-                    <div class="cc-rate" style="margin-top:10px;">${rateDisplay}</div>
+                    <span style="font-size:0.6rem; color:#aaa; margin-bottom:2px;">${aiTag}</span>
+                    <span ${goldStyle} style="font-size:0.7rem; margin-bottom:5px;">CẦU ĐẸP</span>
+                    <div class="cc-rate">${rateDisplay}</div>
                 </div>
-            </div>
-            <div class="cc-footer">
-                <span>Dữ liệu: ${resultStr.length} phiên</span>
-                <button class="btn-join" ${isInterrupted ? 'disabled style="opacity:0.3"' : ''}>${isInterrupted ? 'LOCKED' : 'HACK'}</button>
             </div>
         `;
         grid.appendChild(card);

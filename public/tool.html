@@ -9,127 +9,104 @@
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@500;900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- CANVAS MATRIX CODE RAIN -->
+    <!-- NỀN CHUNG -->
     <canvas id="matrixCanvas"></canvas>
-
-    <!-- NỀN LƯỚI CYBERPUNK -->
     <div class="cyber-grid-bg"></div>
-    
-    <!-- HIỆU ỨNG VIGNETTE TỐI GÓC -->
-    <div class="vignette"></div>
 
     <div class="hacker-layout">
         
         <!-- HEADER -->
         <header class="sys-header">
             <div class="brand-box">
-                <span class="sexy-tag">SEXY</span>
-                <span class="root-text">// SYSTEM V8.2</span>
+                <span class="sexy-tag" style="background:#ff003c; color:#fff; padding:2px 5px; font-weight:bold;">SEXY</span>
+                <span style="color:#fff; font-family:'Orbitron'; font-size:1.2rem;">// SYSTEM V9.0</span>
             </div>
-            
-            <div class="table-identity">
-                <h1 id="tableNameDisplay" class="glitch-name">CONNECTING...</h1>
-            </div>
-
+            <h1 id="tableNameDisplay" class="glitch-text" style="font-size:1.5rem; margin:0;">CONNECTING...</h1>
             <div class="sys-status">
-                <div class="header-token-box">
-                    TOKEN: <span id="headerTokenDisplay" class="blink-text">---</span>
-                </div>
-                <button onclick="window.location.href='index.html'" class="btn-exit">THOÁT</button>
+                <span style="border:1px solid #00ff41; padding:5px; color:#00ff41; font-size:0.9rem;">TOKEN: <span id="headerTokenDisplay">---</span></span>
+                <button onclick="window.location.href='index.html'" style="background:#333; color:#fff; border:none; padding:5px 10px; cursor:pointer;">EXIT</button>
             </div>
         </header>
 
-        <!-- PANEL TRÁI (LOG) -->
+        <!-- PANEL TRÁI -->
         <aside class="panel-left">
-            <div class="panel-head">>> SYSTEM LOG</div>
-            <div class="log-window" id="systemLog">
-                <div class="log-line"><span class="log-time">[SYS]</span> Khởi tạo kết nối an toàn...</div>
-            </div>
+            <div style="color:#00ff41; border-bottom:1px solid #333; margin-bottom:5px;">SYSTEM LOG</div>
+            <div class="log-window" id="systemLog" style="flex:1; overflow-y:auto; font-size:0.7rem; color:#cfc;"></div>
         </aside>
 
-        <!-- GAME CENTER (GIỮA) -->
+        <!-- MAIN GAME CENTER (ĐÃ SỬA HIỆU ỨNG) -->
         <main class="game-center">
+            
+            <!-- CANVAS MƯA MATRIX RIÊNG CHO KHU VỰC GAME -->
+            <canvas id="cardRain"></canvas>
+
             <div class="battle-wrapper">
                 <!-- NHÀ CON -->
                 <div class="side-container p-side">
-                    <div class="side-label">NHÀ CON</div>
-                    <div class="cards-area">
+                    <div class="side-label" style="color:#00f3ff;">PLAYER</div>
+                    <div class="cards-area" style="display:flex; gap:5px; justify-content:center;">
                         <div class="card-slot" id="p1"></div>
                         <div class="card-slot" id="p2"></div>
-                        <div class="card-slot" id="p3" style="opacity:0.7; transform:scale(0.9)"></div>
+                        <div class="card-slot" id="p3" style="opacity:0.6; transform:scale(0.9);"></div>
                     </div>
-                    <div class="score-box p-score" id="playerScore">-</div>
+                    <div class="score-box" id="playerScore" style="color:#00f3ff; font-size:2.5rem; font-weight:bold;">-</div>
                 </div>
-
-                <div class="vs-divider">VS</div>
+                
+                <div style="color:#666; font-style:italic; align-self:center;">VS</div>
 
                 <!-- NHÀ CÁI -->
                 <div class="side-container b-side">
-                    <div class="side-label">NHÀ CÁI</div>
-                    <div class="cards-area">
+                    <div class="side-label" style="color:#ff003c;">BANKER</div>
+                    <div class="cards-area" style="display:flex; gap:5px; justify-content:center;">
                         <div class="card-slot" id="b1"></div>
                         <div class="card-slot" id="b2"></div>
-                        <div class="card-slot" id="b3" style="opacity:0.7; transform:scale(0.9)"></div>
+                        <div class="card-slot" id="b3" style="opacity:0.6; transform:scale(0.9);"></div>
                     </div>
-                    <div class="score-box b-score" id="bankerScore">-</div>
+                    <div class="score-box" id="bankerScore" style="color:#ff003c; font-size:2.5rem; font-weight:bold;">-</div>
                 </div>
             </div>
 
-            <!-- THANH DỰ ĐOÁN & ROBOT -->
-            <div class="prediction-bar">
-                <!-- KHUNG CHỨA ROBOT (BẠN BỎ FILE ẢNH robot.png VÀO CÙNG THƯ MỤC) -->
-                <div class="ai-robot-box">
-                    <img src="robot.png" alt="AI" class="ai-robot-img">
+            <!-- THANH DỰ ĐOÁN ROBOT MỚI -->
+            <div class="prediction-wrapper">
+                <div class="ai-box">
+                    <div class="scan-beam"></div>
+                    <img src="robot.png" alt="AI" class="ai-img"> <!-- Nhớ tải ảnh robot.png -->
                 </div>
-
-                <div class="pred-content">
-                    <div class="pred-label" id="aiAdvice">ANALYZING DATA STREAM...</div>
-                    <div class="pred-result blink" id="aiPredText">WAITING</div>
+                <div class="pred-info">
+                    <div class="pred-label" id="aiAdvice">SYSTEM ANALYZING...</div>
+                    <div class="pred-result blink-wait" id="aiPredText">WAITING</div>
                 </div>
             </div>
+
         </main>
 
-        <!-- PANEL PHẢI (TỶ LỆ) -->
+        <!-- PANEL PHẢI -->
         <aside class="panel-right">
-            <div class="analysis-box">
-                <div class="box-title">TỶ LỆ CHIẾN THẮNG</div>
-                <div class="stat-group">
-                    <div class="stat-label"><span>CON (P)</span> <span id="confP">0%</span></div>
-                    <div class="stat-bar-bg"><div class="stat-bar-fill p-fill" id="barP" style="width:0%"></div></div>
+            <div style="margin-bottom:10px;">
+                <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:5px;">
+                    <span style="color:#00f3ff;">PLAYER</span> <span id="confP">0%</span>
                 </div>
-                <div class="stat-group">
-                    <div class="stat-label"><span>CÁI (B)</span> <span id="confB">0%</span></div>
-                    <div class="stat-bar-bg"><div class="stat-bar-fill b-fill" id="barB" style="width:0%"></div></div>
+                <div style="background:#222; height:5px;"><div id="barP" style="height:100%; background:#00f3ff; width:0%;"></div></div>
+            </div>
+            <div>
+                <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:5px;">
+                    <span style="color:#ff003c;">BANKER</span> <span id="confB">0%</span>
                 </div>
+                <div style="background:#222; height:5px;"><div id="barB" style="height:100%; background:#ff003c; width:0%;"></div></div>
             </div>
-
-            <div class="analysis-box matrix-box" style="flex:1; display:flex; flex-direction:column; margin-top:10px;">
-                <div class="box-title">DECODING STREAM</div>
-                <div id="matrixCode" class="code-rain">Loading...</div>
-            </div>
+            <div id="matrixCode" style="margin-top:20px; font-size:0.7rem; color:#0f0; word-break:break-all; opacity:0.7;"></div>
         </aside>
 
-        <!-- FOOTER (3 CỘT) -->
+        <!-- FOOTER -->
         <footer class="sys-footer">
-            
-            <!-- CỘT 1: BIỂU ĐỒ -->
             <div class="footer-panel footer-chart">
-                <div class="fp-header">SIGNAL CHART <span class="live-dot">●</span></div>
-                <div class="chart-wrapper">
-                    <canvas id="trendChart"></canvas>
-                </div>
+                <canvas id="trendChart" style="width:100%; height:100%;"></canvas>
             </div>
-
-            <!-- CỘT 2: BẢNG CẦU -->
             <div class="footer-panel footer-road">
-                <div class="fp-header" style="text-align: center; color: #fff;">ROADMAP HISTORY</div>
                 <div class="road-container" id="bigRoadGrid"></div>
             </div>
-
-            <!-- CỘT 3: GIAO DỊCH -->
-            <div class="footer-panel footer-extra">
-                <div class="fp-header">LIVE TRANSACTIONS</div>
-                <div class="transaction-list" id="transLog"></div>
+            <div class="footer-panel">
+                <div id="transLog" style="padding:5px; font-size:0.7rem;"></div>
             </div>
         </footer>
 
