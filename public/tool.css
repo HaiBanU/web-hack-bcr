@@ -1,34 +1,98 @@
 /* =========================================
-   TOOL.CSS - UPDATED V20
+   TOOL.CSS - HACKER SYSTEM V18
    ========================================= */
 
 /* --- LAYOUT GRID --- */
 .hacker-layout {
     display: grid;
-    grid-template-columns: 280px 1fr 280px; /* Panel 2 bên nhỏ lại xíu */
-    grid-template-rows: 60px 1fr 280px; /* Footer cao lên để chứa 2 bảng */
+    /* Cột: Trái 280px - Giữa (tự giãn) - Phải 280px */
+    grid-template-columns: 280px 1fr 280px; 
+    /* Hàng: Header 60px - Main (tự giãn) - Footer 220px */
+    grid-template-rows: 60px 1fr 220px; 
     height: 100vh; 
     gap: 10px; 
     padding: 10px;
+    max-width: 1920px; 
+    margin: 0 auto;
     background: #020202;
     overflow: hidden; 
 }
 
-/* Các phần Header, Panel-left, Panel-right, Game-center GIỮ NGUYÊN như cũ */
-/* ... (Copy lại các phần cũ nếu cần, ở đây chỉ sửa Footer) ... */
-.sys-header { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; background: rgba(10, 20, 10, 0.9); border-bottom: 2px solid var(--neon-green); padding: 0 20px; box-shadow: 0 5px 20px rgba(0,255,65,0.1); border-radius: 6px; }
-.panel-left, .panel-right { background: rgba(5, 10, 5, 0.95); border: 1px solid #333; padding: 15px; border-radius: 8px; display: flex; flex-direction: column; box-shadow: 0 0 10px #000; overflow: hidden; }
-.game-center { position: relative; z-index: 0; border: none; border-radius: 12px; display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; box-shadow: 0 0 50px rgba(0, 50, 0, 0.2); padding: 3px; }
-.game-center::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(transparent, transparent, transparent, #00ff41); animation: rotateBorder 4s linear infinite; z-index: -2; }
-.game-center::after { content: ''; position: absolute; inset: 3px; background: radial-gradient(circle at center, #0a1f0a 0%, #000 90%); border-radius: 10px; z-index: -1; }
+/* --- HEADER --- */
+.sys-header { 
+    grid-column: 1 / -1; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    background: rgba(10, 20, 10, 0.9); 
+    border-bottom: 2px solid var(--neon-green); 
+    padding: 0 20px; 
+    box-shadow: 0 5px 20px rgba(0,255,65,0.1); 
+    border-radius: 6px; 
+}
+
+/* --- PANELS (LEFT & RIGHT) --- */
+.panel-left, .panel-right { 
+    background: rgba(5, 10, 5, 0.95); 
+    border: 1px solid #333; 
+    padding: 15px; 
+    border-radius: 8px; 
+    display: flex; 
+    flex-direction: column; 
+    box-shadow: 0 0 10px #000;
+    overflow: hidden;
+}
+
+/* --- GAME CENTER --- */
+.game-center {
+    position: relative; 
+    z-index: 0;
+    border: none;
+    border-radius: 12px;
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center; 
+    align-items: center;     
+    overflow: hidden; 
+    box-shadow: 0 0 50px rgba(0, 50, 0, 0.2);
+    padding: 3px; 
+}
+.game-center::before {
+    content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: conic-gradient(transparent, transparent, transparent, #00ff41);
+    animation: rotateBorder 4s linear infinite; z-index: -2;
+}
+.game-center::after {
+    content: ''; position: absolute; inset: 3px; 
+    background: radial-gradient(circle at center, #0a1f0a 0%, #000 90%); 
+    border-radius: 10px; z-index: -1;
+}
 @keyframes rotateBorder { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-/* ... (Giữ nguyên các class battle-wrapper, cards, robot, gauge...) ... */
-.battle-wrapper { position: relative; z-index: 10; width: 95%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-.side-container { width: 45%; text-align: center; background: rgba(0,0,0,0.6); padding: 15px; border-radius: 10px; border: 2px solid #333; transition: 0.3s; position: relative; overflow: hidden; }
+
+#cardRain { 
+    position: absolute; top:0; left:0; width:100%; height:100%; 
+    z-index: 0; opacity: 0.2; pointer-events: none;
+}
+
+/* --- BATTLE AREA --- */
+.battle-wrapper { 
+    position: relative; z-index: 10; width: 95%; 
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 30px;
+}
+.side-container {
+    width: 45%; text-align: center;
+    background: rgba(0,0,0,0.6); padding: 15px;
+    border-radius: 10px; border: 2px solid #333;
+    transition: 0.3s; position: relative; overflow: hidden;
+}
 .side-container.winner-p { animation: pulseWinP 0.8s infinite alternate; background: rgba(0, 243, 255, 0.1); }
 .side-container.winner-b { animation: pulseWinB 0.8s infinite alternate; background: rgba(255, 0, 60, 0.1); }
+
 @keyframes pulseWinP { 0% { border-color: #00f3ff; box-shadow: 0 0 10px #00f3ff; } 100% { border-color: #fff; box-shadow: 0 0 40px #00f3ff, inset 0 0 20px #00f3ff; } }
 @keyframes pulseWinB { 0% { border-color: #ff003c; box-shadow: 0 0 10px #ff003c; } 100% { border-color: #fff; box-shadow: 0 0 40px #ff003c, inset 0 0 20px #ff003c; } }
+
+/* --- CARDS --- */
 .cards-area { display: flex; gap: 10px; justify-content: center; margin-top: 15px; perspective: 1000px; }
 .card-slot { width: 70px; height: 100px; position: relative; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); }
 .card-back, .card-front { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: 'Orbitron'; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
@@ -36,17 +100,26 @@
 .card-front { background: #fff; color: #000; font-size: 1.5rem; border: 2px solid #ddd; transform: rotateY(180deg); }
 .card-slot.flipped { transform: rotateY(180deg); }
 .score-box { font-size: 3rem; font-weight: 900; margin-top: 10px; font-family: 'Orbitron'; text-shadow: 0 0 10px currentColor; }
-.prediction-wrapper { position: relative; z-index: 10; width: 650px; height: 110px; background: rgba(0, 15, 0, 0.9); border: 1px solid #444; border-radius: 60px; display: flex; align-items: center; justify-content: space-between; padding: 10px 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+
+/* --- PREDICTION AREA --- */
+.prediction-wrapper {
+    position: relative; z-index: 10; width: 650px; height: 110px;
+    background: rgba(0, 15, 0, 0.9); border: 1px solid #444; border-radius: 60px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
 .ai-box { width: 90px; height: 90px; border-radius: 50%; background: #000; border: 2px solid var(--neon-green); display: flex; justify-content: center; align-items: center; position: relative; overflow: hidden; flex-shrink: 0; animation: glowBox 2s infinite alternate; }
 .ai-img { width: 85%; height: 85%; object-fit: contain; z-index: 2; animation: robotFloat 3s ease-in-out infinite; filter: drop-shadow(0 0 5px var(--neon-green)); }
 @keyframes robotFloat { 0% { transform: translateY(0); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0); } }
 @keyframes glowBox { from { box-shadow: 0 0 10px var(--neon-green); } to { box-shadow: 0 0 25px var(--neon-green); } }
+
 .pred-info { flex-grow: 1; text-align: center; margin: 0 20px; }
 .pred-label { font-size: 0.8rem; letter-spacing: 2px; color: #888; margin-bottom: 5px; font-family: 'Share Tech Mono'; }
 .pred-result { font-size: 2.8rem; font-family: 'Orbitron'; font-weight: 900; line-height: 1; text-transform: uppercase; }
 .res-wait { color: #fff; animation: blink 0.5s infinite; }
 .res-p { color: #00f3ff; text-shadow: 0 0 20px #00f3ff; }
 .res-b { color: #ff003c; text-shadow: 0 0 20px #ff003c; }
+
 .pred-gauge { width: 80px; height: 80px; position: relative; flex-shrink: 0; display: flex; justify-content: center; align-items: center; }
 .pred-gauge::before { content: ''; position: absolute; inset: -5px; border-radius: 50%; background: conic-gradient(transparent, transparent, var(--target-color, #00ff41)); animation: spinGauge 2s linear infinite; z-index: 0; opacity: 0; transition: opacity 0.5s; }
 .pred-gauge.active::before { opacity: 1; }
@@ -60,78 +133,107 @@
 @keyframes spinGauge { 100% { transform: rotate(360deg); } }
 @keyframes blink { 50% { opacity: 0.3; } }
 
-/* ================== FOOTER MỚI (CHIA 2) ================== */
+/* ================== FOOTER 4 CỘT (QUAN TRỌNG) ================== */
 .sys-footer { 
     grid-column: 1 / -1; 
     display: grid; 
-    grid-template-columns: 1fr 1fr; /* Chia đôi 50-50 */
-    gap: 10px; 
+    grid-template-columns: repeat(4, 1fr); /* 4 cột bằng nhau */
+    gap: 8px; 
+    height: 100%;
+    min-height: 0;
 }
 
-/* --- CỘT TRÁI --- */
-.footer-left-col {
-    display: flex; flex-direction: column; gap: 10px;
-}
-.chart-container {
-    flex: 1; /* Chiếm phần trên */
-    background: rgba(5,10,5,0.95); border: 1px solid #333; border-radius: 6px; 
-    position: relative; overflow: hidden;
-    /* Hiệu ứng nền lưới mờ */
-    background-image: radial-gradient(#002200 1px, transparent 1px);
-    background-size: 20px 20px;
-}
-.bead-container {
-    height: 160px; /* Chiều cao cố định cho bảng Bead */
-    background: #000; border: 1px solid #333; border-radius: 6px;
-    position: relative; overflow: hidden; padding: 5px;
+.footer-panel {
+    background: #050505; 
+    border: 1px solid #333; 
+    border-radius: 4px;
+    position: relative; 
+    overflow: hidden; 
+    display: flex;
+    flex-direction: column;
 }
 
-/* --- CỘT PHẢI --- */
-.footer-right-col {
-    background: #000; border: 1px solid #333; border-radius: 6px;
-    position: relative; overflow: hidden; padding: 5px;
-}
-
-/* --- NHÃN PANEL --- */
+/* Nhãn Panel */
 .panel-label {
-    position: absolute; top: 5px; left: 8px; 
-    font-size: 0.65rem; color: #666; font-family: var(--font-display); 
-    z-index: 5; background: rgba(0,0,0,0.5); padding: 2px 5px; border-radius: 3px;
+    position: absolute; top: 2px; left: 5px; 
+    font-size: 0.6rem; color: #888; font-family: var(--font-display); 
+    z-index: 5; background: rgba(0,0,0,0.7); padding: 2px 4px; border-radius: 3px;
+    pointer-events: none;
 }
 
-/* --- STYLE CẦU GIỌT NƯỚC (BEAD PLATE) --- */
+/* CỘT 1: BIỂU ĐỒ SÓNG */
+.chart-panel {
+    background-image: radial-gradient(#002200 1px, transparent 1px);
+    background-size: 15px 15px;
+}
+#trendChart { width: 100%; height: 100%; display: block; }
+
+/* CỘT 2: CẦU GIỌT NƯỚC */
+.bead-panel {
+    background: #000;
+    padding-top: 20px;
+}
 .bead-grid {
     display: grid;
     grid-template-rows: repeat(6, 1fr); /* 6 hàng */
-    grid-auto-flow: column; /* Tự động thêm cột */
+    grid-auto-flow: column; /* Chảy ngang */
     gap: 2px;
-    height: 100%;
-    overflow-x: auto; /* Cho phép cuộn ngang nếu dài */
-    justify-content: start;
+    height: 100%; width: 100%;
+    overflow-x: auto;
+    padding: 2px;
 }
-/* Một ô trong bảng bead */
 .bead-cell {
-    width: 24px; height: 24px; /* Kích thước ô */
+    width: 25px; height: 25px; flex-shrink: 0;
     display: flex; justify-content: center; align-items: center;
-    border: 1px solid #111;
 }
-/* Hạt tròn */
 .bead-circle {
-    width: 22px; height: 22px; 
-    border-radius: 50%;
+    width: 22px; height: 22px; border-radius: 50%;
     display: flex; justify-content: center; align-items: center;
-    font-family: 'Arial', sans-serif; font-weight: bold; font-size: 0.8rem;
-    color: #fff;
-    box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+    font-family: Arial, sans-serif; font-weight: bold; font-size: 0.8rem; color: #fff;
+    box-shadow: inset 0 0 3px rgba(0,0,0,0.8);
 }
-.bead-p { background: #007bff; border: 1px solid #0056b3; } /* Xanh dương */
-.bead-b { background: #dc3545; border: 1px solid #a71d2a; } /* Đỏ */
-.bead-t { background: #28a745; border: 1px solid #1e7e34; } /* Xanh lá */
+.bead-p { background: #007bff; border: 1px solid #0056b3; }
+.bead-b { background: #dc3545; border: 1px solid #a71d2a; }
+.bead-t { background: #28a745; border: 1px solid #1e7e34; }
 
-/* --- STYLE CẦU LỚN (BIG ROAD) - GIỮ NGUYÊN CSS CŨ --- */
-.road-container { display: flex; height: 100%; width: 100%; overflow-x: auto; }
-.tool-road-col { width: 25px; border-right: 1px solid #222; display: flex; flex-direction: column; }
-.tool-road-cell { flex: 1; border-bottom: 1px solid #222; display: flex; justify-content: center; align-items: center; position: relative; }
-.tool-bead { width: 16px; height: 16px; border-radius: 50%; border: 3px solid; background: transparent; }
-.tool-p { border-color: #00f3ff; } .tool-b { border-color: #ff003c; }
+/* CỘT 3: CẦU LỚN */
+.road-panel {
+    background: #000;
+    padding-top: 20px;
+}
+.road-container { 
+    display: flex; height: 100%; overflow-x: auto; padding-left: 5px;
+}
+.tool-road-col { 
+    width: 25px; border-right: 1px solid #222; 
+    display: flex; flex-direction: column; flex-shrink: 0;
+}
+.tool-road-cell { 
+    flex: 1; border-bottom: 1px solid #222; 
+    display: flex; justify-content: center; align-items: center; 
+}
+.tool-bead { 
+    width: 16px; height: 16px; 
+    border-radius: 50%; border: 2px solid; background: transparent; 
+}
+.tool-p { border-color: #00f3ff; } 
+.tool-b { border-color: #ff003c; }
 .tool-bead.has-tie::after { content: ''; position: absolute; width: 3px; height: 20px; background: #00ff41; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); }
+
+/* CỘT 4: TRANSACTION LOG */
+.trans-panel {
+    background: rgba(0, 10, 0, 0.5);
+    padding-top: 20px;
+}
+.trans-log-content {
+    flex: 1; overflow-y: hidden; 
+    padding: 0 5px;
+    font-family: monospace; font-size: 0.7rem;
+    display: flex; flex-direction: column-reverse;
+}
+.trans-item { 
+    display: flex; justify-content: space-between; 
+    border-bottom: 1px solid #222; padding: 3px 0; 
+    animation: fadeIn 0.3s ease-out;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

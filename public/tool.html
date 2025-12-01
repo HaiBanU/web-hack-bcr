@@ -4,13 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HACKER AI - SYSTEM V18</title>
+    <!-- Font chữ -->
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@500;900&display=swap" rel="stylesheet">
+    <!-- CSS -->
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="tool.css">
     <link rel="stylesheet" href="mobile.css">
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@500;900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Nền Matrix -->
+    <!-- Hiệu ứng nền Matrix & Grid -->
     <canvas id="matrixCanvas"></canvas>
     <div class="cyber-grid-bg"></div>
 
@@ -33,19 +35,19 @@
             </div>
         </header>
 
-        <!-- PANEL TRÁI (LOG) -->
+        <!-- PANEL TRÁI: LOG HỆ THỐNG -->
         <aside class="panel-left">
             <div style="color:#00ff41; border-bottom:1px solid #333; margin-bottom:5px; font-weight:bold; font-size:0.9rem;">>> SYSTEM LOG</div>
             <div class="log-window" id="systemLog" style="flex:1; overflow-y:auto; font-size:0.7rem; color:#cfc;"></div>
         </aside>
 
-        <!-- GAME CENTER -->
+        <!-- CENTER: KHU VỰC GAME -->
         <main class="game-center">
             <canvas id="cardRain"></canvas>
 
-            <!-- Khu vực bài -->
+            <!-- Khu vực bài (Player vs Banker) -->
             <div class="battle-wrapper">
-                <!-- PLAYER -->
+                <!-- PLAYER SIDE -->
                 <div class="side-container p-side">
                     <div style="color:#00f3ff; font-family:'Orbitron'; font-size:1.2rem; margin-bottom:10px;">PLAYER</div>
                     <div class="cards-area">
@@ -58,7 +60,7 @@
                 
                 <div style="color:#444; font-family:'Orbitron'; font-size:1.5rem; margin-top:-50px;">VS</div>
 
-                <!-- BANKER -->
+                <!-- BANKER SIDE -->
                 <div class="side-container b-side">
                     <div style="color:#ff003c; font-family:'Orbitron'; font-size:1.2rem; margin-bottom:10px;">BANKER</div>
                     <div class="cards-area">
@@ -73,7 +75,8 @@
             <!-- KHUNG DỰ ĐOÁN & ROBOT -->
             <div class="prediction-wrapper">
                 <div class="ai-box">
-                    <img src="robot.png" class="ai-img" alt="AI">
+                    <!-- Bạn cần có file robot.png hoặc xóa thẻ img này đi -->
+                    <img src="robot.png" class="ai-img" alt="AI" onerror="this.style.display='none'">
                 </div>
                 <div class="pred-info">
                     <div class="pred-label" id="aiAdvice">SYSTEM ANALYZING...</div>
@@ -91,7 +94,7 @@
             </div>
         </main>
 
-        <!-- PANEL PHẢI (MATRIX & TỈ LỆ) -->
+        <!-- PANEL PHẢI: TỈ LỆ & MATRIX -->
         <aside class="panel-right">
             <div style="margin-bottom:15px;">
                 <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:5px;">
@@ -108,32 +111,37 @@
             <div id="matrixCode" style="margin-top:auto; font-size:0.6rem; color:#0f0; word-break:break-all; opacity:0.5; font-family:monospace; height:150px; overflow:hidden;"></div>
         </aside>
 
-        <!-- FOOTER: CHIA 2 PHẦN -->
+        <!-- FOOTER: CHIA 4 CỘT -->
         <footer class="sys-footer">
             
-            <!-- CỘT TRÁI: BIỂU ĐỒ + CẦU GIỌT NƯỚC -->
-            <div class="footer-left-col">
-                <!-- 1. Biểu đồ sóng -->
-                <div class="chart-container">
-                    <div class="panel-label">WAVE TREND ANALYSIS</div>
-                    <canvas id="trendChart"></canvas>
-                </div>
-                <!-- 2. Cầu Giọt Nước (Bead Plate) -->
-                <div class="bead-container">
-                    <div class="panel-label">BEAD PLATE (GIỌT NƯỚC)</div>
-                    <div id="beadPlateGrid" class="bead-grid"></div>
-                </div>
+            <!-- CỘT 1: BIỂU ĐỒ SÓNG -->
+            <div class="footer-panel chart-panel">
+                <div class="panel-label">WAVE TREND</div>
+                <canvas id="trendChart"></canvas>
             </div>
 
-            <!-- CỘT PHẢI: CẦU LỚN (BIG ROAD) -->
-            <div class="footer-right-col">
-                <div class="panel-label">BIG ROAD (CẦU HIỆN TẠI)</div>
+            <!-- CỘT 2: CẦU GIỌT NƯỚC (BEAD PLATE) -->
+            <div class="footer-panel bead-panel">
+                <div class="panel-label">BEAD PLATE</div>
+                <div id="beadPlateGrid" class="bead-grid"></div>
+            </div>
+
+            <!-- CỘT 3: CẦU LỚN (BIG ROAD) -->
+            <div class="footer-panel road-panel">
+                <div class="panel-label">BIG ROAD</div>
                 <div class="road-container" id="bigRoadGrid"></div>
+            </div>
+
+            <!-- CỘT 4: GIAO DỊCH -->
+            <div class="footer-panel trans-panel">
+                <div class="panel-label">LIVE TRANS</div>
+                <div id="transLog" class="trans-log-content"></div>
             </div>
 
         </footer>
     </div>
     
+    <!-- Load Socket.io -->
     <script src="/socket.io/socket.io.js"></script>
     <script src="script.js"></script>
 </body>

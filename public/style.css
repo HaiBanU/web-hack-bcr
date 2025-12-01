@@ -1,5 +1,5 @@
 /* =========================================
-   STYLE.CSS - GLOBAL CORE (DÙNG CHUNG)
+   STYLE.CSS - GLOBAL CORE
    ========================================= */
 
 :root {
@@ -9,7 +9,6 @@
     --neon-blue: #00f3ff;
     --neon-gold: #ffd700;
     --bg-black: #020202;
-    --bg-panel: rgba(5, 15, 5, 0.95);
     --font-main: 'Share Tech Mono', monospace;
     --font-display: 'Orbitron', sans-serif;
 }
@@ -24,7 +23,7 @@ html, body {
 
 * { box-sizing: border-box; user-select: none; }
 
-/* --- BACKGROUND EFFECTS (MATRIX) --- */
+/* --- BACKGROUND EFFECTS --- */
 #matrixCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.15; pointer-events: none; }
 
 .cyber-grid-bg {
@@ -38,7 +37,7 @@ html, body {
 }
 @keyframes gridMove { 0% { transform: perspective(500px) rotateX(60deg) translateY(0); } 100% { transform: perspective(500px) rotateX(60deg) translateY(40px); } }
 
-/* --- COMMON TYPOGRAPHY --- */
+/* --- TYPOGRAPHY --- */
 .glitch-text { 
     font-family: var(--font-display); 
     color: #fff; 

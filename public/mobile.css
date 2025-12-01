@@ -1,9 +1,8 @@
 /* =========================================
-   MOBILE.CSS - OPTIMIZED V16 (FULL)
+   MOBILE.CSS - RESPONSIVE
    ========================================= */
 
 @media screen and (max-width: 1024px) {
-    /* 1. RESET LAYOUT THÀNH CỘT DỌC */
     .hacker-layout {
         display: flex; 
         flex-direction: column;
@@ -12,128 +11,33 @@
         padding: 5px;
         gap: 10px;
         background: #000;
-        overflow-y: auto; /* Cho phép cuộn trên mobile */
+        overflow-y: auto;
     }
 
-    /* 2. HEADER GỌN GÀNG */
-    .sys-header {
-        order: 1; 
-        flex-wrap: wrap; 
-        height: auto; 
-        padding: 10px; 
-        justify-content: center;
-        gap: 5px;
-    }
-    .brand-box { width: 100%; text-align: center; margin-bottom: 2px; }
+    .sys-header { order: 1; flex-wrap: wrap; height: auto; padding: 10px; justify-content: center; gap: 5px; }
+    .brand-box { width: 100%; text-align: center; }
     .glitch-text { font-size: 1.1rem !important; margin: 5px 0; }
-    .sys-status { width: 100%; justify-content: center; display: flex; gap: 10px; font-size: 0.8rem; }
-
-    /* 3. GAME CENTER (ƯU TIÊN HIỂN THỊ ĐẦU TIÊN) */
-    .game-center {
-        order: 2; /* Vị trí số 2 (sau Header) */
-        width: 100%;
-        min-height: auto;
-        padding: 15px 5px;
-        margin: 0;
-        border: none;
-        background: transparent;
-        box-shadow: none;
-    }
-
-    /* 4. KHU VỰC LẬT BÀI (THU NHỎ) */
-    .battle-wrapper {
-        margin-top: 5px;
-        padding: 0;
-        justify-content: space-between;
-        width: 100%;
-        margin-bottom: 10px;
-    }
-    .side-container { 
-        width: 48% !important; 
-        margin: 0; 
-        padding: 8px;
-    }
-    .cards-area { 
-        height: 55px; /* Giới hạn chiều cao */
-        gap: 3px; 
-        margin-top: 5px;
-    }
     
-    /* LÁ BÀI MOBILE: SIZE 32x48px */
-    .card-slot { 
-        width: 32px; 
-        height: 48px; 
-        font-size: 0.8rem; /* Chữ nhỏ lại */
-    }
-    .card-back::after { font-size: 1.2rem; }
-    .card-front > div:last-child { font-size: 1rem !important; } /* Icon chất bài */
-
-    .score-box { font-size: 2rem !important; margin-top: 5px; }
-
-    /* 5. KHUNG DỰ ĐOÁN ROBOT MOBILE */
-    .prediction-wrapper {
-        width: 100%; 
-        height: 70px; 
-        margin-top: 10px;
-        padding: 5px;
-        border-radius: 35px;
-    }
-    .ai-box {
-        width: 55px; height: 55px; 
-        margin-right: 10px;
-        border-width: 1px;
-    }
-    .pred-label { font-size: 0.6rem; }
+    .game-center { order: 2; width: 100%; min-height: auto; padding: 15px 5px; }
+    .battle-wrapper { margin-top: 5px; padding: 0; width: 100%; margin-bottom: 10px; }
+    .side-container { width: 48% !important; margin: 0; padding: 8px; }
+    .cards-area { height: 55px; gap: 3px; margin-top: 5px; }
+    .card-slot { width: 32px; height: 48px; font-size: 0.8rem; }
+    
+    .prediction-wrapper { width: 100%; height: 70px; margin-top: 10px; padding: 5px; border-radius: 35px; }
+    .ai-box { width: 55px; height: 55px; margin-right: 10px; }
     .pred-result { font-size: 1.8rem; } 
 
-    /* 6. BẢNG CẦU (BIG ROAD) - ĐƯA LÊN NGAY DƯỚI GAME */
-    /* Ta dùng Footer để chứa Road và Chart, nhưng đổi thứ tự hiển thị */
+    /* PANEL PHẢI & TRÁI */
+    .panel-right { order: 4; margin-top: 0; padding: 10px; }
+    .panel-left { order: 5; height: 150px; }
+
+    /* FOOTER MOBILE - CHUYỂN VỀ DẠNG 2 CỘT CHO DỄ NHÌN */
     .sys-footer {
-        order: 3; /* Vị trí số 3 (sau Game Center) */
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        width: 100%;
+        order: 3;
+        grid-template-columns: 1fr 1fr; /* 2 cột trên mobile */
         height: auto;
+        gap: 5px;
     }
-
-    /* Big Road lên đầu trong Footer */
-    .footer-road {
-        order: 1; 
-        height: 150px; /* Chiều cao cố định cho bảng cầu */
-        width: 100%;
-    }
-    /* Chỉnh kích thước ô cầu trên mobile */
-    .tool-road-col { width: 6.5vw; } /* Chia theo chiều rộng màn hình */
-    .tool-bead { width: 14px; height: 14px; border-width: 2px; }
-
-    /* Biểu đồ xuống dưới */
-    .footer-chart { 
-        order: 2;
-        height: 120px; 
-    }
-
-    /* Ẩn Log giao dịch trên Mobile cho đỡ rối */
-    .footer-panel:nth-child(3) { display: none; }
-
-    /* 7. CÁC PANEL PHỤ (XUỐNG CUỐI CÙNG) */
-    .panel-right { 
-        order: 4; 
-        margin-top: 0; 
-        padding: 10px;
-    }
-    /* Thanh % thắng */
-    .panel-right > div { margin-bottom: 5px; }
-    
-    /* Matrix Code ngắn lại */
-    #matrixCode { height: 100px; }
-
-    /* 8. ẨN PANEL TRÁI (LOG HỆ THỐNG) */
-    /* Hoặc có thể để nó hiển thị ở cuối cùng nếu muốn xem log */
-    .panel-left {
-        order: 5;
-        height: 150px;
-        margin-bottom: 20px;
-        display: block; /* Hiển thị để xem log trừ tiền */
-    }
+    .footer-panel { height: 150px; }
 }
