@@ -1,12 +1,12 @@
 /* =========================================
-   STYLE.CSS - PHIÊN BẢN ULTIMATE V8 (FULL)
+   STYLE.CSS - FIX V8.1 (FINAL)
    ========================================= */
 
 :root {
     --neon-green: #00ff41;
     --neon-green-dim: rgba(0, 255, 65, 0.1);
     --neon-red: #ff003c;
-    --neon-blue: #00f3ff; /* Màu xanh cyan mới */
+    --neon-blue: #00f3ff;
     --neon-gold: #ffd700;
     --bg-dark: #020202;
     --bg-panel: rgba(0, 10, 0, 0.85);
@@ -14,17 +14,21 @@
     --font-display: 'Orbitron', sans-serif;
 }
 
+/* SỬA LỖI NỀN TRẮNG: Thêm màu nền cho HTML */
+html { background-color: #000; }
+
 * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
 
 body {
     background-color: var(--bg-dark);
     color: var(--neon-green);
     font-family: var(--font-main);
-    width: 100vw; height: 100vh;
+    width: 100vw; 
+    min-height: 100vh; /* Sửa height thành min-height */
     overflow: hidden; 
 }
 
-/* --- HIỆU ỨNG NỀN GLOBAL (NEW) --- */
+/* HIỆU ỨNG NỀN */
 .cyber-grid-bg {
     position: fixed; top: -50%; left: -50%; width: 200vw; height: 200vh;
     background-image: 
@@ -59,36 +63,21 @@ body {
     background: radial-gradient(circle, transparent 60%, #000 100%); z-index: -1;
 }
 
-/* SCROLLBAR */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: #000; }
 ::-webkit-scrollbar-thumb { background: var(--neon-green); border-radius: 2px; }
 
-/* CANVAS MATRIX (Login/Lobby) */
 #matrixCanvas { position: fixed; top: 0; left: 0; z-index: -1; width: 100%; height: 100%; }
 
+/* --- LOGIN / LOBBY STYLE --- */
+.login-wrapper { background: rgba(0, 20, 0, 0.9); border: 1px solid var(--neon-green); }
 
-/* =========================================
-   1. LOGIN PAGE STYLES
-   ========================================= */
-/* (Giữ lại các class login nếu bạn dùng chung file css) */
-.login-wrapper {
-    /* Style này thường nằm inline hoặc file riêng, nhưng nếu gộp chung thì thêm vào đây */
-    background: rgba(0, 20, 0, 0.9); border: 1px solid var(--neon-green);
-}
-
-
-/* =========================================
-   2. LOBBY (SẢNH CHỜ) STYLES
-   ========================================= */
-body.lobby-body { overflow-y: auto !important; height: auto !important; min-height: 100vh; }
+body.lobby-body { overflow-y: auto !important; height: auto !important; min-height: 100vh; background: #000; }
 .lobby-content { position: relative; z-index: 10; padding: 15px; max-width: 1400px; margin: 0 auto; padding-bottom: 80px; }
-
 .lobby-header { display: flex; flex-direction: column; align-items: center; position: relative; margin-bottom: 30px; padding-top: 10px; }
 .glitch-text { font-family: var(--font-display); font-size: 2.5rem; color: #fff; text-shadow: 0 0 10px var(--neon-green); letter-spacing: 3px; text-align: center; margin-top: 10px; }
 .server-info { display: inline-flex; gap: 15px; background: rgba(0,20,0,0.8); border: 1px solid var(--neon-green); padding: 5px 15px; font-size: 0.8rem; margin-top: 10px; }
 
-/* Auth Section Lobby */
 #authSection { position: absolute; top: 10px; right: 20px; z-index: 100; text-align: right; width: auto; }
 .user-panel-cyber { display: flex; align-items: center; gap: 15px; background: rgba(0, 10, 0, 0.9); border: 1px solid #00ff41; padding: 8px 15px; border-radius: 4px; box-shadow: 0 0 15px rgba(0, 255, 65, 0.15); backdrop-filter: blur(5px); }
 .user-name { font-family: 'Orbitron'; color: #fff; font-weight: bold; text-shadow: 0 0 5px #00ff41; font-size: 1rem; }
@@ -96,7 +85,6 @@ body.lobby-body { overflow-y: auto !important; height: auto !important; min-heig
 .btn-logout-cyber { background: transparent; border: 1px solid #ff003c; color: #ff003c; padding: 5px 12px; font-family: 'Share Tech Mono'; cursor: pointer; font-size: 0.85rem; transition: 0.3s; font-weight: bold; }
 .btn-logout-cyber:hover { background: #ff003c; color: #fff; box-shadow: 0 0 10px #ff003c; }
 
-/* Grid Cards (Bàn chơi Lobby) */
 .tables-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
 .casino-card { background: #000; border: 1px solid #333; border-top: 2px solid var(--neon-green); display: flex; flex-direction: column; overflow: hidden; cursor: pointer; transition: 0.3s; }
 .casino-card:hover { transform: translateY(-5px); box-shadow: 0 0 15px rgba(0,255,65,0.3); border-color: var(--neon-green); }
@@ -104,39 +92,34 @@ body.lobby-body { overflow-y: auto !important; height: auto !important; min-heig
 .cc-header { background: #111; padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; }
 .cc-name { font-family: var(--font-display); font-weight: bold; color: #fff; font-size: 1rem; }
 .cc-rate { background: #00ff41; color: #000; font-weight: 900; font-family: var(--font-display); font-size: 0.8rem; padding: 2px 6px; margin-left: 10px; border-radius: 2px; box-shadow: 0 0 8px #00ff41; animation: pulseRate 1.5s infinite alternate; }
-
 .cc-body { display: flex; height: 97px; background: #000; border-bottom: 1px solid #222; }
 .cc-grid-area { flex: 1; background: #fff; overflow: hidden; position: relative; } 
 .cc-predict-area { width: 80px; background: #051005; border-left: 1px solid #333; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 5px; }
 .cc-footer { background: #000; padding: 5px 10px; display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: #888; }
 .btn-join { background: #ff9800; color: #000; border: none; padding: 3px 10px; font-weight: bold; font-family: var(--font-display); cursor: pointer; }
 
-/* Style cho Hạt Cầu (Bead Road) trong Lobby */
+/* FIX LỖI ĐƯỜNG CHÉO TRONG LOBBY */
 .road-grid-wrapper { display: flex; height: 100%; width: 100%; }
 .road-col { width: 14px; display: flex; flex-direction: column; border-right: 1px solid #eee; }
 .road-cell { flex: 1; border-bottom: 1px solid #eee; display: flex; justify-content: center; align-items: center; }
-.bead { width: 10px; height: 10px; border-radius: 50%; border: 2px solid; position: relative; }
+
+/* QUAN TRỌNG: Thêm overflow hidden để đường chéo không lòi ra ngoài */
+.bead { width: 10px; height: 10px; border-radius: 50%; border: 2px solid; position: relative; overflow: hidden; }
+
 .bead.b { border-color: #ff003c; } 
 .bead.p { border-color: #0099ff; } 
 .bead.t { border-color: #00c853; } 
-.tie-slash::after { content: ''; position: absolute; width: 2px; height: 140%; background-color: #00c853; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); }
-
-
-/* =========================================
-   3. ADMIN & MODAL STYLES
-   ========================================= */
-/* Modal Popup Xác nhận */
-.custom-modal-overlay { 
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-    background: rgba(0, 0, 0, 0.85); z-index: 99999; 
-    display: none; justify-content: center; align-items: center; backdrop-filter: blur(3px); 
+.tie-slash::after { 
+    content: ''; position: absolute; 
+    width: 2px; height: 150%; 
+    background-color: #00c853; 
+    top: 50%; left: 50%; 
+    transform: translate(-50%, -50%) rotate(-45deg); 
 }
-.custom-modal-box { 
-    background: #000500; border: 2px solid #00ff41; padding: 30px; 
-    width: 90%; max-width: 400px; text-align: center; 
-    box-shadow: 0 0 30px rgba(0, 255, 65, 0.2); 
-    position: relative; animation: modalPop 0.3s ease-out; 
-}
+
+/* Modal */
+.custom-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 99999; display: none; justify-content: center; align-items: center; backdrop-filter: blur(3px); }
+.custom-modal-box { background: #000500; border: 2px solid #00ff41; padding: 30px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 0 30px rgba(0, 255, 65, 0.2); position: relative; animation: modalPop 0.3s ease-out; }
 .modal-title { font-family: 'Orbitron'; color: #00ff41; font-size: 1.4rem; font-weight: bold; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; text-shadow: 0 0 10px #00ff41; }
 .modal-content { color: #fff; font-family: monospace; line-height: 1.8; margin-bottom: 30px; font-size: 1.1rem; }
 .modal-actions { display: flex; gap: 15px; justify-content: center; }
@@ -145,24 +128,10 @@ body.lobby-body { overflow-y: auto !important; height: auto !important; min-heig
 .btn-cancel { background: #222; color: #aaa; border: 1px solid #444; }
 
 
-/* =========================================
-   4. TOOL PAGE (GIAO DIỆN HACKER V8 MỚI)
-   ========================================= */
-.hacker-layout {
-    display: grid;
-    /* Chia layout 3 cột, footer cao hơn */
-    grid-template-columns: 280px 1fr 280px;
-    grid-template-rows: 60px 1fr 180px; 
-    height: 100vh; gap: 10px; padding: 10px;
-    position: relative; z-index: 1;
-}
+/* --- TOOL PAGE --- */
+.hacker-layout { display: grid; grid-template-columns: 280px 1fr 280px; grid-template-rows: 60px 1fr 180px; height: 100vh; gap: 10px; padding: 10px; position: relative; z-index: 1; }
 
-/* HEADER TOOL */
-.sys-header {
-    grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center;
-    background: var(--bg-panel); border: 1px solid var(--neon-green);
-    padding: 0 20px; box-shadow: 0 0 15px rgba(0,255,65,0.1);
-}
+.sys-header { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; background: var(--bg-panel); border: 1px solid var(--neon-green); padding: 0 20px; box-shadow: 0 0 15px rgba(0,255,65,0.1); }
 .brand-box { display: flex; align-items: center; gap: 10px; }
 .sexy-tag { background: var(--neon-red); color: #fff; padding: 2px 8px; font-weight: bold; font-family: 'Orbitron'; animation: blink 2s infinite; }
 .glitch-name { font-family: 'Orbitron'; font-size: 1.8rem; color: #fff; text-shadow: 0 0 10px var(--neon-green); margin: 0; text-align: center; }
@@ -171,7 +140,6 @@ body.lobby-body { overflow-y: auto !important; height: auto !important; min-heig
 .btn-exit { background: transparent; border: 1px solid var(--neon-red); color: var(--neon-red); padding: 5px 15px; font-weight: bold; cursor: pointer; transition: 0.3s; font-family: var(--font-display); }
 .btn-exit:hover { background: var(--neon-red); color: #000; box-shadow: 0 0 15px var(--neon-red); }
 
-/* PANEL TRÁI & PHẢI */
 .panel-left, .panel-right { background: var(--bg-panel); border: 1px solid #333; display: flex; flex-direction: column; padding: 10px; overflow: hidden; }
 .box-title { color: var(--neon-green); border-bottom: 1px solid #333; margin-bottom: 10px; font-family: 'Orbitron'; padding-bottom: 5px; }
 .log-window { flex: 1; overflow-y: auto; font-size: 0.7rem; color: #cfc; font-family: monospace; }
@@ -186,34 +154,19 @@ body.lobby-body { overflow-y: auto !important; height: auto !important; min-heig
 .p-fill { background: var(--neon-blue); box-shadow: 0 0 10px var(--neon-blue); } 
 .b-fill { background: var(--neon-red); box-shadow: 0 0 10px var(--neon-red); }
 
-/* GAME CENTER */
-.game-center {
-    position: relative; border: 1px solid var(--neon-green); 
-    background: rgba(0, 5, 0, 0.6); backdrop-filter: blur(5px);
-    display: flex; flex-direction: column; justify-content: center; align-items: center; 
-}
+.game-center { position: relative; border: 1px solid var(--neon-green); background: rgba(0, 5, 0, 0.6); backdrop-filter: blur(5px); display: flex; flex-direction: column; justify-content: center; align-items: center; }
 .battle-wrapper { display: flex; width: 100%; justify-content: space-around; margin-top: -20px; }
 .side-container { text-align: center; width: 40%; transition: 0.3s; padding: 10px; border-radius: 10px; }
 .side-label { font-family: var(--font-display); font-size: 1.4rem; font-weight: 900; margin-bottom: 10px; display: inline-block; border-bottom: 2px solid currentColor; }
 .p-side { color: var(--neon-blue); } .b-side { color: var(--neon-red); }
 
 .cards-area { display: flex; justify-content: center; gap: 8px; height: 110px; margin-bottom: 5px; }
-.card-slot { 
-    width: 80px; height: 110px; border: 1px solid #444; border-radius: 5px; 
-    background: #050505; color: #fff; display: flex; justify-content: center; align-items: center; 
-    font-size: 2.5rem; font-weight: bold; position: relative; box-shadow: 0 0 10px rgba(0,0,0,0.5);
-    transform-style: preserve-3d;
-}
+.card-slot { width: 80px; height: 110px; border: 1px solid #444; border-radius: 5px; background: #050505; color: #fff; display: flex; justify-content: center; align-items: center; font-size: 2.5rem; font-weight: bold; position: relative; box-shadow: 0 0 10px rgba(0,0,0,0.5); transform-style: preserve-3d; }
 .card-slot.revealed { background: #fff; color: #000; border: 2px solid #fff; box-shadow: 0 0 20px #fff; animation: flipReveal 0.6s ease-out forwards; }
 .card-slot.hearts, .card-slot.diamonds { color: #d00; } .card-slot.spades, .card-slot.clubs { color: #000; }
-
 .score-box { font-size: 2.5rem; font-family: var(--font-display); font-weight: bold; text-shadow: 0 0 15px currentColor; }
 
-.prediction-bar {
-    width: 95%; height: 60px; margin-top: auto; margin-bottom: 20px;
-    background: rgba(0,0,0,0.8); border: 1px solid #333;
-    display: flex; align-items: center; overflow: hidden; position: relative;
-}
+.prediction-bar { width: 95%; height: 60px; margin-top: auto; margin-bottom: 20px; background: rgba(0,0,0,0.8); border: 1px solid #333; display: flex; align-items: center; overflow: hidden; position: relative; }
 .prediction-bar.win-p { border: 2px solid var(--neon-blue); box-shadow: 0 0 20px var(--neon-blue); background: linear-gradient(90deg, rgba(0,0,0,0.9), rgba(0, 243, 255, 0.1)); }
 .prediction-bar.win-b { border: 2px solid var(--neon-red); box-shadow: 0 0 20px var(--neon-red); background: linear-gradient(90deg, rgba(0,0,0,0.9), rgba(255, 0, 60, 0.1)); }
 .pred-left { width: 30%; border-right: 1px solid #333; height: 100%; display: flex; flex-direction: column; justify-content: center; padding-left: 20px; }
@@ -223,68 +176,37 @@ body.lobby-body { overflow-y: auto !important; height: auto !important; min-heig
 .res-char-p { color: var(--neon-blue); text-shadow: 0 0 20px var(--neon-blue); }
 .res-char-b { color: var(--neon-red); text-shadow: 0 0 20px var(--neon-red); }
 
-/* --- FOOTER 3 CỘT (MỚI) --- */
-.sys-footer {
-    grid-column: 1 / -1;
-    display: grid;
-    grid-template-columns: 320px 1fr 320px; /* Chia 3 cột */
-    gap: 10px;
-    height: 100%;
-}
+.sys-footer { grid-column: 1 / -1; display: grid; grid-template-columns: 320px 1fr 320px; gap: 10px; height: 100%; }
+.footer-panel { background: rgba(0, 10, 0, 0.9); border: 1px solid var(--neon-green); display: flex; flex-direction: column; overflow: hidden; }
+.fp-header { background: rgba(0, 255, 65, 0.1); color: var(--neon-green); padding: 5px 10px; font-size: 0.8rem; font-weight: bold; border-bottom: 1px solid rgba(0, 255, 65, 0.3); display: flex; justify-content: space-between; }
 
-.footer-panel {
-    background: rgba(0, 10, 0, 0.9); border: 1px solid var(--neon-green);
-    display: flex; flex-direction: column; overflow: hidden;
-}
-
-.fp-header {
-    background: rgba(0, 255, 65, 0.1); color: var(--neon-green);
-    padding: 5px 10px; font-size: 0.8rem; font-weight: bold;
-    border-bottom: 1px solid rgba(0, 255, 65, 0.3); display: flex; justify-content: space-between;
-}
-
-/* 1. CHART (Bên Trái) */
 .chart-wrapper { flex: 1; position: relative; background: #000; }
 #trendChart { width: 100%; height: 100%; display: block; }
 .live-dot { color: #ff003c; animation: blink 1s infinite; }
 
-/* 2. ROADMAP (Ở Giữa) */
 .footer-road { border: 2px solid var(--neon-green); box-shadow: 0 0 10px rgba(0,255,65,0.2); }
-.road-container {
-    flex: 1; display: flex; overflow-x: auto; overflow-y: hidden;
-    background-image: linear-gradient(#111 1px, transparent 1px), linear-gradient(90deg, #111 1px, transparent 1px);
-    background-size: 14px 14px;
-}
+.road-container { flex: 1; display: flex; overflow-x: auto; overflow-y: hidden; background-image: linear-gradient(#111 1px, transparent 1px), linear-gradient(90deg, #111 1px, transparent 1px); background-size: 14px 14px; }
 .tool-road-col { width: 25px; min-width: 25px; display: flex; flex-direction: column; border-right: 1px solid #222; }
 .tool-road-cell { flex: 1; border-bottom: 1px solid #222; display: flex; justify-content: center; align-items: center; }
-.tool-bead { width: 18px; height: 18px; border-radius: 50%; border: 3px solid; }
+
+/* FIX LỖI ĐƯỜNG CHÉO TRONG FOOTER */
+.tool-bead { width: 18px; height: 18px; border-radius: 50%; border: 3px solid; position: relative; overflow: hidden; /* <--- FIX QUAN TRỌNG */ }
 .tool-p { border-color: var(--neon-blue); box-shadow: 0 0 5px var(--neon-blue); }
 .tool-b { border-color: var(--neon-red); box-shadow: 0 0 5px var(--neon-red); }
 .tool-t { border-color: var(--neon-green); }
 
-/* 3. TRANSACTION LOG (Bên Phải) */
-.transaction-list {
-    flex: 1; overflow-y: hidden; padding: 5px; font-size: 0.75rem; font-family: monospace;
-    display: flex; flex-direction: column; justify-content: flex-end;
-}
+.transaction-list { flex: 1; overflow-y: hidden; padding: 5px; font-size: 0.75rem; font-family: monospace; display: flex; flex-direction: column; justify-content: flex-end; }
 .trans-item { display: flex; justify-content: space-between; margin-bottom: 4px; border-bottom: 1px dashed #222; padding-bottom: 2px; animation: slideInLeft 0.3s; }
 .trans-amt { color: #fff; font-weight: bold; }
 .trans-p { color: var(--neon-blue); }
 .trans-b { color: var(--neon-red); }
 
-/* ANIMATION */
 @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 @keyframes pulseRate { from { box-shadow: 0 0 5px currentColor; transform: scale(1); } to { box-shadow: 0 0 15px currentColor; transform: scale(1.05); } }
 @keyframes modalPop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-@keyframes flipReveal {
-    0% { transform: perspective(600px) rotateY(0deg); background: #002200; color: transparent; border-color: #00ff41; }
-    49% { transform: perspective(600px) rotateY(90deg); background: #002200; color: transparent; }
-    50% { transform: perspective(600px) rotateY(90deg); background: linear-gradient(135deg, #fff 0%, #eee 100%); border-color: #fff; color: inherit; }
-    100% { transform: perspective(600px) rotateY(0deg); background: linear-gradient(135deg, #fff 0%, #eee 100%); border-color: #fff; box-shadow: 0 0 15px rgba(255,255,255,0.4); color: inherit; }
-}
+@keyframes flipReveal { 0% { transform: perspective(600px) rotateY(0deg); background: #002200; color: transparent; border-color: #00ff41; } 49% { transform: perspective(600px) rotateY(90deg); background: #002200; color: transparent; } 50% { transform: perspective(600px) rotateY(90deg); background: linear-gradient(135deg, #fff 0%, #eee 100%); border-color: #fff; color: inherit; } 100% { transform: perspective(600px) rotateY(0deg); background: linear-gradient(135deg, #fff 0%, #eee 100%); border-color: #fff; box-shadow: 0 0 15px rgba(255,255,255,0.4); color: inherit; } }
 @keyframes slideInLeft { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
 
-/* CÁC CLASS TRẠNG THÁI KHÁC */
 .high-rate { border-color: var(--neon-gold) !important; box-shadow: 0 0 15px rgba(255, 215, 0, 0.2); }
 .interrupted-card { border-color: #555 !important; opacity: 0.9; }
 .interrupted-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); display: flex; justify-content: center; align-items: center; z-index: 5; backdrop-filter: blur(1px); }

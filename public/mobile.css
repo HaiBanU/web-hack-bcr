@@ -1,14 +1,15 @@
 /* =========================================
-   MOBILE.CSS - SMARTPHONE LAYOUT & OVERRIDES (FULL)
+   MOBILE.CSS - FIX V8.1 (FINAL)
    ========================================= */
 
 @media screen and (max-width: 1024px) {
-    /* 1. RESET BODY MOBILE (Để lộ nền Cyberpunk) */
-    body {
-        background-color: #000 !important; /* Fallback */
-        background: transparent !important; 
+    /* 1. RESET BODY MOBILE (SỬA LỖI NỀN TRẮNG) */
+    html, body {
+        background-color: #000 !important; /* Bắt buộc đen */
+        background-image: none !important; /* Bỏ grid nếu gây lỗi */
         overflow-y: auto; 
         -webkit-overflow-scrolling: touch;
+        min-height: 100vh;
     }
     
     /* 2. LAYOUT CHÍNH */
@@ -18,7 +19,8 @@
         height: auto; 
         min-height: 100vh;
         padding: 5px; 
-        gap: 10px;
+        gap: 15px; /* Tăng khoảng cách để không dính nhau */
+        background: #000; /* Nền layout đen */
     }
 
     /* 3. HEADER MOBILE */
@@ -27,91 +29,85 @@
         background: rgba(0, 10, 0, 0.95); 
         backdrop-filter: blur(10px);
         border-bottom: 1px solid var(--neon-green); 
-        padding: 5px 10px; height: 50px;
+        padding: 5px 10px; height: auto; min-height: 50px;
         order: 0;
+        flex-wrap: wrap; /* Cho phép xuống dòng nếu chật */
     }
-    .brand-box { transform: scale(0.8); transform-origin: left; }
-    .glitch-name { font-size: 1rem; }
-    .btn-exit { padding: 2px 8px; font-size: 0.7rem; }
-    .header-token-box { font-size: 0.8rem; padding: 2px 5px; }
+    .brand-box { transform: scale(0.9); transform-origin: left; }
+    .glitch-name { font-size: 0.9rem; margin-left: auto; margin-right: auto; }
+    .btn-exit { padding: 4px 10px; font-size: 0.7rem; }
+    .header-token-box { font-size: 0.75rem; padding: 2px 5px; }
 
     /* 4. GAME CENTER MOBILE */
     .game-center {
         order: 1; 
         height: auto; 
         padding: 15px 0; margin-top: 5px;
-        background: rgba(0, 0, 0, 0.4); /* Trong suốt hơn */
+        background: rgba(10, 10, 10, 0.8); /* Nền tối hơn chút */
         border: 1px solid rgba(0, 255, 65, 0.3);
         box-shadow: 0 0 15px rgba(0, 255, 65, 0.1);
     }
     .battle-wrapper { width: 100%; margin-top: 0; padding: 0 5px; }
-    .side-container { width: 48%; padding: 5px; background: rgba(0,0,0,0.4); }
+    .side-container { width: 48%; padding: 5px; background: rgba(0,0,0,0.6); }
     .side-label { font-size: 1rem; margin-bottom: 5px; }
     
-    /* Card nhỏ lại */
-    .card-slot { width: 45px; height: 60px; font-size: 1.2rem; border-radius: 3px; }
-    .cards-area { height: 65px; gap: 3px; }
+    .card-slot { width: 40px; height: 55px; font-size: 1.1rem; border-radius: 3px; }
+    .cards-area { height: 60px; gap: 2px; }
     .score-box { font-size: 1.5rem; margin-top: 5px; }
     
-    /* PREDICTION BAR MOBILE */
     .prediction-bar {
         width: 96%; height: 50px; 
-        margin-top: 10px; margin-bottom: 0;
-        background: linear-gradient(90deg, rgba(0,0,0,0.9), rgba(0,20,0,0.8));
+        margin-top: 15px; margin-bottom: 0;
+        background: linear-gradient(90deg, #000, #0a0a0a);
     }
     .pred-left { width: 35%; padding-left: 10px; }
-    .pred-result { font-size: 2rem; margin-left: 0; }
-    .res-char-p, .res-char-b { font-size: 2.5rem; }
+    .pred-result { font-size: 1.8rem; margin-left: 0; }
 
     /* 5. ẨN CÁC PHẦN KHÔNG CẦN THIẾT */
     .panel-left, .scan-line-overlay { display: none; }
-    .matrix-box { display: none; } /* Ẩn matrix code */
+    .matrix-box { display: none; }
 
     /* 6. PANEL PHẢI (TỶ LỆ THẮNG) */
     .panel-right { 
         order: 2; 
-        background: rgba(0,0,0,0.6); 
-        border: none; padding: 5px; 
-        border-top: 1px solid #333;
+        background: #050505; 
+        border: 1px solid #333; padding: 10px; 
     }
 
-    /* 7. FOOTER MOBILE: XẾP LẠI THỨ TỰ (QUAN TRỌNG) */
+    /* 7. FOOTER MOBILE */
     .sys-footer {
         display: flex !important; 
         flex-direction: column; 
         height: auto; 
-        gap: 10px; 
+        gap: 15px; 
         order: 3;
-        margin-bottom: 20px;
+        margin-bottom: 30px;
     }
     
-    /* ORDER 1: BẢNG CẦU (ROADMAP) - ĐƯA LÊN ĐẦU FOOTER */
     .footer-road {
-        order: 1; height: 120px;
-        background: rgba(0, 0, 0, 0.7);
+        order: 1; height: 140px; /* Tăng chiều cao để dễ nhìn */
+        background: #000;
         border: 1px solid var(--neon-green);
     }
     .road-container { overflow-x: scroll; }
-    .tool-road-col { width: 20px; min-width: 20px; }
-    .tool-bead { width: 14px; height: 14px; border-width: 2px; }
+    .tool-road-col { width: 22px; min-width: 22px; }
+    .tool-bead { width: 16px; height: 16px; border-width: 2px; }
 
-    /* ORDER 2: BIỂU ĐỒ (CHART) */
     .footer-chart {
-        order: 2; height: 150px; display: block;
-        background: rgba(0, 0, 0, 0.7);
+        order: 2; height: 160px; display: block;
+        background: #000;
+        border: 1px solid #333;
     }
     
-    /* ORDER 3: TRANSACTION LOG */
     .footer-extra { 
-        order: 3; height: 100px; 
-        background: rgba(0,0,0,0.7); 
+        order: 3; height: 120px; 
+        background: #000;
     }
     .transaction-list { font-size: 0.7rem; }
     
-    /* FIX HIỆU ỨNG HẠT MỜ ĐI TRÊN MOBILE */
-    .particles { opacity: 0.5; }
+    /* Tắt hiệu ứng hạt trên mobile để nhẹ máy */
+    .particles { display: none; }
 
-    /* --- LOBBY MOBILE TWEAKS --- */
     .lobby-content { padding: 10px; padding-bottom: 50px; }
     .tables-grid { grid-template-columns: 1fr; gap: 15px; }
     .cc-body { height: 100px; }
