@@ -89,7 +89,7 @@ socket.on('server_update', (allTables) => {
     }
 });
 
-// --- PREDICTION LOGIC (SYSTEM V18) ---
+// --- PREDICTION LOGIC (SYSTEM AI V1.0.26) ---
 function runPredictionSystem(historyArr) {
     isProcessing = true;
     resetCardsUI();
