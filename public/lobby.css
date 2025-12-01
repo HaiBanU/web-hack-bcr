@@ -291,3 +291,82 @@
 .btn-cancel:hover { background: #555; }
 .btn-confirm { background: var(--neon-green); color: #000; box-shadow: 0 0 15px var(--neon-green); }
 .btn-confirm:hover { transform: translateY(-2px); box-shadow: 0 0 25px var(--neon-green); }
+/* --- CẬP NHẬT LOBBY CSS (RATE COLORS & VIP EFFECT) --- */
+
+/* 1. MÀU SẮC TỶ LỆ THẮNG */
+
+/* Mặc định (70% - 90%): Xanh Neon (Giữ nguyên class .cc-rate cũ) */
+
+/* Tỷ lệ thấp (< 70%): MÀU ĐỎ */
+.cc-rate.rate-low {
+    background: #ff003c !important;
+    color: #fff !important;
+    box-shadow: 0 0 10px #ff003c !important;
+}
+
+/* Tỷ lệ cao (> 90%): MÀU VÀNG GOLD + NHẤP NHÁY */
+.cc-rate.rate-high {
+    background: #ffd700 !important;
+    color: #000 !important;
+    box-shadow: 0 0 15px #ffd700, 0 0 30px #ffd700 !important;
+    animation: pulseGold 1s infinite alternate;
+}
+@keyframes pulseGold {
+    0% { transform: scale(1); box-shadow: 0 0 15px #ffd700; }
+    100% { transform: scale(1.05); box-shadow: 0 0 30px #ffd700; }
+}
+
+/* 2. HIỆU ỨNG CARD VIP (CHO BÀN > 90%) - LED CHẠY VIỀN */
+.casino-card.card-vip {
+    /* Xóa border cũ để dùng border led */
+    border: none;
+    /* Padding tạo khoảng cách cho viền LED */
+    padding: 3px; 
+    background: transparent;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.2); /* Glow vàng nhẹ */
+    /* Bỏ clip-path cũ nếu muốn viền chạy vuông vức đẹp hơn, hoặc giữ lại tùy ý */
+    clip-path: none; 
+    border-radius: 6px;
+}
+
+/* Lớp LED chạy bên dưới */
+.casino-card.card-vip::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    /* Gradient vàng + xanh tạo hiệu ứng VIP */
+    background: conic-gradient(
+        transparent, 
+        transparent, 
+        transparent, 
+        #ffd700,
+        #00ff41
+    );
+    animation: rotateCardBorder 3s linear infinite;
+    z-index: 0;
+}
+
+/* Lớp nền che ở giữa để lộ viền */
+.casino-card.card-vip::after {
+    content: '';
+    position: absolute;
+    inset: 3px; /* Khớp với padding */
+    background: #050505;
+    border-radius: 4px;
+    z-index: 0;
+}
+
+/* Đảm bảo nội dung nổi lên trên nền giả */
+.casino-card.card-vip .cc-header,
+.casino-card.card-vip .cc-body {
+    position: relative;
+    z-index: 1;
+}
+
+@keyframes rotateCardBorder {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

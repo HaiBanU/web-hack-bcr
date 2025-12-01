@@ -1,35 +1,42 @@
 /* --- START OF FILE lobby.js --- */
 
+// Quản lý tỷ lệ thắng giả lập (giữ nguyên tỷ lệ trong 2 phút để không bị nhảy số liên tục)
 let rateManager = {
     lastUpdate: 0,
     rates: {}, 
     goldTables: [] 
 };
 
-// Biến lưu URL bàn sắp vào
+// Biến lưu URL bàn sắp vào (để xử lý khi bấm xác nhận ở Modal)
 let pendingTableUrl = "";
 
 // Cập nhật tỷ lệ thắng giả lập
 function updateWinRates(tables) {
     const now = Date.now();
+    // Cập nhật lại mỗi 120 giây hoặc khi chưa có dữ liệu
     if (Object.keys(rateManager.rates).length === 0 || now - rateManager.lastUpdate > 120000) {
         rateManager.rates = {};
         rateManager.goldTables = [];
         let allIds = tables.map(t => t.table_id);
         
+        // Chọn ngẫu nhiên 2 bàn làm "Bàn Vàng" (VIP)
         if (allIds.length >= 2) {
             while (rateManager.goldTables.length < 2) {
                 let r = allIds[Math.floor(Math.random() * allIds.length)];
                 if (!rateManager.goldTables.includes(r)) rateManager.goldTables.push(r);
             }
-        } else { rateManager.goldTables = allIds; }
+        } else { 
+            rateManager.goldTables = allIds; 
+        }
 
         allIds.forEach(id => {
             let rate;
             if (rateManager.goldTables.includes(id)) {
-                rate = Math.floor(Math.random() * (98 - 92 + 1)) + 92;
+                // Bàn VIP: Tỷ lệ từ 91% -> 99%
+                rate = Math.floor(Math.random() * (99 - 91 + 1)) + 91;
             } else {
-                rate = Math.floor(Math.random() * (85 - 40 + 1)) + 40;
+                // Bàn thường: Tỷ lệ từ 40% -> 88%
+                rate = Math.floor(Math.random() * (88 - 40 + 1)) + 40;
             }
             rateManager.rates[id] = rate;
         });
@@ -102,6 +109,7 @@ if (socket) {
     });
 }
 
+// --- HÀM RENDER CHÍNH (ĐÃ CẬP NHẬT LOGIC MÀU SẮC & VIP) ---
 function renderTables(data) {
     if(!grid) return;
     updateWinRates(data);
@@ -110,34 +118,54 @@ function renderTables(data) {
     let processedData = data.map(item => {
         const resultStr = item.result || "";
         let isInterrupted = (!resultStr || resultStr.length < 5 || item.status === 0);
-        let winRate = rateManager.rates[item.table_id] || 50;
-        let isGold = rateManager.goldTables.includes(item.table_id);
         
-        let sortScore = (isGold ? 1000 : 0) + winRate;
+        let winRate = rateManager.rates[item.table_id] || 50;
+        
+        // Logic sắp xếp: VIP (>90%) ưu tiên lên đầu
+        let sortScore = winRate;
+        if (winRate > 90) sortScore += 1000;
         if (isInterrupted) sortScore = -1;
 
-        // --- XỬ LÝ TÊN BÀN TỰ ĐỘNG ---
+        // Xử lý tên bàn cho gọn
         let rawName = item.table_name.toUpperCase();
-        // Loại bỏ các từ cũ để tránh lặp
         rawName = rawName.replace("BACCARAT", "").replace("BÀN", "").trim();
-        // Tạo tên chuẩn mới
         let displayName = "BÀN BACCARAT " + rawName;
 
-        return { ...item, resultStr, isInterrupted, winRate, isGold, sortScore, displayName };
+        return { ...item, resultStr, isInterrupted, winRate, sortScore, displayName };
     });
 
+    // Sắp xếp dữ liệu
     processedData.sort((a, b) => b.sortScore - a.sortScore);
 
     processedData.forEach(item => {
-        const { table_id, resultStr, isInterrupted, winRate, isGold, displayName } = item;
+        const { table_id, resultStr, isInterrupted, winRate, displayName } = item;
         
+        // 1. XỬ LÝ CLASS CHO THẺ BÀI (VIP LED EFFECT)
         let cardClass = 'casino-card';
-        if (isGold && !isInterrupted) cardClass += ' gold-tier';
+        if (!isInterrupted && winRate > 90) {
+            cardClass += ' card-vip'; // Thêm class kích hoạt LED chạy
+        }
+
+        // 2. XỬ LÝ MÀU SẮC TỶ LỆ (ĐỎ / VÀNG / XANH)
+        let rateClass = '';
+        let aiLabel = 'AI GỢI Ý';
         
+        if (isInterrupted) {
+            // Không làm gì
+        } else if (winRate > 90) {
+            rateClass = 'rate-high'; // Vàng Gold
+            aiLabel = '<span style="color:#ffd700; font-weight:bold;">★ SUPER VIP ★</span>';
+        } else if (winRate < 70) {
+            rateClass = 'rate-low';  // Đỏ
+            aiLabel = '<span style="color:#ff003c; font-weight:bold;">RỦI RO CAO</span>';
+        } else {
+            // Mặc định (Xanh Neon)
+        }
+
         const card = document.createElement('div');
         card.className = cardClass;
         
-        // SỰ KIỆN CLICK: TRUYỀN TÊN MỚI QUA URL
+        // Sự kiện Click
         card.onclick = () => {
             if (isInterrupted) return;
             pendingTableUrl = `tool.html?tableId=${table_id}&tableName=${encodeURIComponent(displayName)}`;
@@ -149,9 +177,7 @@ function renderTables(data) {
         const liveStatus = isInterrupted ? 'OFF' : 'LIVE ●';
         const liveColor = isInterrupted ? '#666' : '#0f0';
         
-        let aiTag = isGold ? '<span style="color:#ffd700; font-weight:bold;">★ VIP ★</span>' : 'AI GỢI Ý';
-        let predictStyle = isGold ? 'background:#ffd700; color:#000; box-shadow:0 0 10px #ffd700;' : '';
-
+        // Render HTML
         card.innerHTML = `
             <div class="cc-header">
                 <div><span class="cc-name">${displayName}</span></div>
@@ -160,9 +186,10 @@ function renderTables(data) {
             <div class="cc-body">
                 <div class="cc-grid-area">${generateGridHTML(resultStr)}</div>
                 <div class="cc-predict-area">
-                    <span style="font-size:0.6rem; color:#666; margin-bottom:5px;">${aiTag}</span>
+                    <span style="font-size:0.6rem; color:#888; margin-bottom:5px;">${aiLabel}</span>
                     <span style="font-size:0.6rem; margin-bottom:5px; color:#fff;">TỈ LỆ THẮNG</span>
-                    <div class="cc-rate" style="${predictStyle}">${rateDisplay}</div>
+                    <!-- Thêm class rateClass (rate-low hoặc rate-high) vào đây -->
+                    <div class="cc-rate ${rateClass}">${rateDisplay}</div>
                 </div>
             </div>
         `;
@@ -170,7 +197,7 @@ function renderTables(data) {
     });
 }
 
-// Xử lý nút Modal
+// Xử lý sự kiện Modal Xác nhận
 document.addEventListener('DOMContentLoaded', () => {
     const btnCancel = document.querySelector('.btn-cancel');
     if(btnCancel) {
@@ -197,6 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         document.getElementById('confirmModal').style.display = 'none';
                     }
                 } catch(e) {
+                    // Nếu lỗi mạng vẫn cho vào (demo)
                     window.location.href = pendingTableUrl;
                 }
             } else {
