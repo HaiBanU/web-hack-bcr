@@ -213,7 +213,7 @@ function revealCard(id, card) {
     const slot = document.getElementById(id); slot.style.opacity = '1';
     const front = slot.querySelector('.card-front');
     let val = card.raw; if(val===1) val='A'; else if(val===11) val='J'; else if(val===12) val='Q'; else if(val===13) val='K';
-    let suit = (card.suit==='hearts'?'♥':(card.suit==='diamonds'?'♦':(card.suit==='clubs'?'♣':'♠'));
+    let suit = (card.suit==='hearts'?'♥':(card.suit==='diamonds'?'♦':(card.suit==='clubs'?'♣':'♠')));
     let color = (card.suit==='hearts' || card.suit==='diamonds') ? '#ff003c' : '#000';
     front.innerHTML = `<div style="color:${color}">${val}</div><div style="font-size:1.5rem; color:${color}">${suit}</div>`;
     slot.classList.add('flipped');
