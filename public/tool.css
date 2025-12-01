@@ -430,11 +430,19 @@
 
 /* Hình tròn (Hạt cầu) */
 .bead-circle {
-    /* QUAN TRỌNG: Dùng % thay vì px để tự co giãn */
-    width: 80%; 
+    /* --- SỬA ĐOẠN NÀY --- */
+    /* Bỏ width: 80% cũ đi */
+    width: auto; 
     height: auto; 
-    aspect-ratio: 1/1; /* Giữ hình tròn không bị méo */
     
+    /* Thêm giới hạn để hạt không bao giờ to hơn ô chứa nó */
+    max-width: 85%; 
+    max-height: 85%;
+    
+    /* Giữ tỉ lệ 1:1 để luôn là hình tròn */
+    aspect-ratio: 1/1; 
+    
+    /* --- CÁC PHẦN DƯỚI GIỮ NGUYÊN --- */
     border-radius: 50%;
     display: flex;
     justify-content: center;
@@ -442,13 +450,13 @@
     
     font-family: Arial, sans-serif;
     font-weight: bold;
-    /* Chỉnh cỡ chữ linh hoạt theo khung nhìn */
-    font-size: clamp(8px, 1.2cqw, 12px); 
+    /* Giảm font size một chút cho gọn */
+    font-size: clamp(8px, 1.2cqw, 11px); 
     color: #fff;
     
-    /* Hiệu ứng bóng nhẹ cho hạt đẹp hơn */
+    /* Hiệu ứng bóng */
     box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
-}
+    }
 
 /* Màu sắc hạt */
 .bead-p { background: #007bff; border: 1px solid #0056b3; }
