@@ -1,457 +1,320 @@
 /* =========================================
-   BACCARAT HACKER ENGINE - V9.5 (GAME CORE)
+   HACKER ENGINE V12 - FULL LOGIC + ANIMATION
    ========================================= */
 
-let currentTableId = null; 
-let history = []; 
-let isProcessing = false; 
-const socket = io(); 
+let currentTableId = null;
+let history = [];
+let isProcessing = false;
+const socket = io();
 
-// TIMER CONFIG
-let deductionTimer = null;
-const DEDUCTION_INTERVAL = 30000; 
-
-// --- 1. MATRIX BACKGROUND (Toàn màn hình) ---
-const canvas = document.getElementById('matrixCanvas');
-const ctx = canvas ? canvas.getContext('2d') : null;
-
-function resizeCanvas() { 
-    if(canvas) { 
-        canvas.width = window.innerWidth; 
-        canvas.height = window.innerHeight; 
-    } 
-}
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas(); 
-
-const chars = "0123456789ABCDEF_HACK_SYSTEM"; 
-const drops = canvas ? Array(Math.floor(canvas.width / 20)).fill(1) : [];
-
-function drawMatrix() {
-    if(!ctx) return;
-    ctx.fillStyle = "rgba(0, 0, 0, 0.05)"; 
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "#0F0"; 
-    ctx.font = "14px monospace"; 
-    for (let i = 0; i < drops.length; i++) {
-        const text = chars[Math.floor(Math.random() * chars.length)];
-        ctx.fillText(text, i * 20, drops[i] * 20);
-        if (drops[i] * 20 > canvas.height && Math.random() > 0.975) drops[i] = 0;
-        drops[i]++;
-    }
-}
-if(canvas) setInterval(drawMatrix, 50);
-
-
-// --- 2. MATRIX RAIN INSIDE GAME (HIỆU ỨNG MỚI) ---
-function initCardRain() {
-    const c = document.getElementById('cardRain');
-    if(!c) return;
-    const ctxRain = c.getContext('2d');
-    
-    function resizeRain() {
-        if(c.parentElement) {
-            c.width = c.parentElement.clientWidth;
-            c.height = c.parentElement.clientHeight;
-        }
-    }
-    window.addEventListener('resize', resizeRain);
-    resizeRain();
-
-    const rainChars = "XY_01_WIN_$$";
-    const rainDrops = [];
-    const fontSize = 10;
-    const columns = Math.floor(c.width / fontSize) + 1;
-    
-    for(let i=0; i<columns; i++) rainDrops[i] = 1;
-
-    function drawInnerRain() {
-        ctxRain.fillStyle = "rgba(0, 0, 0, 0.1)"; 
-        ctxRain.fillRect(0, 0, c.width, c.height);
-        
-        ctxRain.fillStyle = "rgba(0, 255, 65, 0.5)"; // Màu xanh mờ hơn chút
-        ctxRain.font = fontSize + "px monospace";
-        
-        for (let i = 0; i < rainDrops.length; i++) {
-            const text = rainChars[Math.floor(Math.random() * rainChars.length)];
-            ctxRain.fillText(text, i * fontSize, rainDrops[i] * fontSize);
-            
-            if (rainDrops[i] * fontSize > c.height && Math.random() > 0.98) rainDrops[i] = 0;
-            rainDrops[i]++;
-        }
-    }
-    setInterval(drawInnerRain, 60);
-}
-
-// --- MAIN INIT ---
+// --- INIT ---
 window.addEventListener('DOMContentLoaded', () => {
-    // Init Effects
+    // 1. Setup Canvas Matrix
     initCardRain();
-
-    // 1. Cập nhật Token
-    const savedTokens = localStorage.getItem('tokens') || 0;
-    updateTokenUI(savedTokens);
-
-    // 2. Lấy thông tin bàn
+    
+    // 2. Lấy param
     const urlParams = new URLSearchParams(window.location.search);
     currentTableId = urlParams.get('tableId');
-    let tableName = urlParams.get('tableName') || "UNKNOWN";
-    tableName = decodeURIComponent(tableName);
-    if(!tableName.includes("BÀN")) tableName = "BÀN " + tableName.replace(/BACCARAT/i, "").trim();
+    let tName = decodeURIComponent(urlParams.get('tableName') || "UNKNOWN");
+    document.getElementById('tableNameDisplay').innerText = tName.toUpperCase();
     
-    const nameDisplay = document.getElementById('tableNameDisplay');
-    if(nameDisplay) nameDisplay.innerHTML = tableName.toUpperCase();
+    addLog(`SYSTEM READY: ${tName}`);
     
-    addLog(`CONNECTED: ${tableName} [SECURE SOCKET]`);
-    
-    setInterval(updateSystemStats, 1000);
-    setInterval(generateMatrixCode, 80);
-    startFakeTransactions();
-    startTokenDeduction();
+    // 3. Khởi tạo các ô bài (Vẽ mặt lưng màu xanh trước)
+    resetCardsUI();
 });
 
 // --- UI HELPERS ---
-function updateTokenUI(amount) {
-    const el = document.getElementById('headerTokenDisplay');
-    if(el) {
-        if(amount === 'VIP' || amount === 'unlimited') {
-            el.innerText = "VIP"; el.style.color = "#ff003c";
-        } else {
-            el.innerText = Math.floor(amount).toLocaleString('vi-VN'); 
-            el.style.color = "#fff";
+function initCardRain() {
+    const c = document.getElementById('cardRain');
+    if(!c) return;
+    const ctx = c.getContext('2d');
+    function resize() { 
+        if(c.parentElement) { c.width = c.parentElement.clientWidth; c.height = c.parentElement.clientHeight; }
+    }
+    window.addEventListener('resize', resize); resize();
+    
+    const chars = "XY_01_WIN_$$";
+    const drops = Array(Math.floor(c.width/15)).fill(1);
+    
+    setInterval(() => {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.1)"; ctx.fillRect(0, 0, c.width, c.height);
+        ctx.fillStyle = "#003300"; ctx.font = "10px monospace";
+        for(let i=0; i<drops.length; i++){
+            ctx.fillText(chars[Math.floor(Math.random()*chars.length)], i*15, drops[i]*15);
+            if(drops[i]*15 > c.height && Math.random()>0.98) drops[i]=0;
+            drops[i]++;
         }
-    }
-}
-
-function updateSystemStats() { /* Giữ chỗ update thông số khác */ }
-
-function generateMatrixCode() {
-    const chars = "0123456789ABCDEF";
-    let str = "";
-    for(let i=0; i<150; i++) {
-        str += chars[Math.floor(Math.random() * chars.length)];
-        if(i % 15 === 0) str += " ";
-    }
-    const el = document.getElementById('matrixCode');
-    if(el) el.innerText = str;
+    }, 50);
 }
 
 function addLog(msg) {
     const box = document.getElementById('systemLog');
-    if(!box) return;
-    const div = document.createElement('div');
-    div.className = "log-line";
-    const now = new Date();
-    div.innerHTML = `<span style="color:#666">[${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}]</span> ${msg}`;
-    box.appendChild(div);
-    if (box.children.length > 50) box.removeChild(box.firstChild);
+    const time = new Date().toLocaleTimeString();
+    box.innerHTML += `<div style="border-bottom:1px solid #222; padding:2px;">[${time}] <span style="color:#fff">${msg}</span></div>`;
     box.scrollTop = box.scrollHeight;
 }
 
-// --- TOKEN LOGIC ---
-function startTokenDeduction() {
-    const token = localStorage.getItem('token');
-    if(!token) return;
-
-    deductionTimer = setInterval(async () => {
-        try {
-            const res = await fetch('/api/deduct-periodic', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': token }
-            });
-            const data = await res.json();
-            if (data.status === 'success') {
-                updateTokenUI(data.remaining);
-                localStorage.setItem('tokens', data.remaining);
-            } else {
-                clearInterval(deductionTimer);
-                showOutOfTokenPopup();
-            }
-        } catch (e) { console.error("Lỗi trừ tiền:", e); }
-    }, DEDUCTION_INTERVAL);
-}
-
-function showOutOfTokenPopup() {
-    alert("⚠️ HẾT TOKEN! Vui lòng nạp thêm.");
-    window.location.href = 'index.html';
-}
-
-// --- CORE GAME LOGIC ---
+// --- CORE SOCKET LOGIC ---
 socket.on('server_update', (allTables) => {
     if (isProcessing || !currentTableId) return;
-
     const tableData = allTables.find(t => t.table_id == currentTableId);
     
     if (tableData) {
-        const serverHistoryArr = (tableData.result || "").split('');
-
-        if (serverHistoryArr.length > history.length || history.length === 0) {
+        const serverRes = (tableData.result || "").split('');
+        
+        // Nếu có dữ liệu mới
+        if (serverRes.length > history.length || history.length === 0) {
+            history = serverRes;
             
-            const realResult = serverHistoryArr[serverHistoryArr.length - 1];
-            history = serverHistoryArr; 
-            
-            // Vẽ bảng cầu & Chart
+            // 1. Vẽ lại bảng cầu dưới
             renderBigRoadGrid(history);
-            drawTrendChart(history);
-
-            if(realResult) {
-                let winText = (realResult === 'P') ? "PLAYER" : (realResult === 'B' ? "BANKER" : "TIE");
-                addLog(`>> KẾT QUẢ: [ ${winText} ] -> Cập nhật cầu.`);
+            
+            // 2. Nếu vừa có kết quả mới -> Reset bài và hiển thị kết quả
+            if (history.length > 0) {
+                const lastWin = history[history.length - 1];
+                addLog(`>> KẾT QUẢ MỚI: [ ${lastWin==='P'?'PLAYER':(lastWin==='B'?'BANKER':'TIE')} ]`);
+                
+                // Chạy phân tích Tay Sau (Next Hand)
+                runPredictionSystem(history);
             }
-
-            analyzeAndRenderFuture(history);
         }
     }
 });
 
-function analyzeAndRenderFuture(historyArr) {
+// --- THUẬT TOÁN DỰ ĐOÁN (ALGORITHM) ---
+function runPredictionSystem(historyArr) {
     isProcessing = true;
+    resetCardsUI(); // Úp bài lại
     
-    // Reset UI
-    document.querySelectorAll('.card-slot').forEach(c => { 
-        c.className = "card-slot"; c.innerText = ""; c.classList.remove('revealed', 'hearts', 'diamonds', 'spades', 'clubs');
-    });
-    document.getElementById('playerScore').innerText = "-";
-    document.getElementById('bankerScore').innerText = "-";
-    
-    const wrapper = document.querySelector('.prediction-wrapper');
-    if(wrapper) wrapper.classList.remove('win-p', 'win-b');
-
-    const textEl = document.getElementById('aiPredText');
+    // UI: Đang phân tích
     const adviceEl = document.getElementById('aiAdvice');
-
-    if(textEl) { textEl.innerHTML = "SCANNING..."; textEl.className = "pred-result blink-wait"; }
-
-    // ALGORITHM
-    const analysis = getAdvancedAlgorithm(historyArr);
-    const predictedSide = analysis.side; 
-    const futureHand = simulateRealBaccaratHand(predictedSide);
-
-    // DELAY & REVEAL
-    setTimeout(() => {
-        renderSingleCard('p1', futureHand.pCards[0], 0);
-        renderSingleCard('p2', futureHand.pCards[1], 150);
-        renderSingleCard('b1', futureHand.bCards[0], 300);
-        renderSingleCard('b2', futureHand.bCards[1], 450);
-
-        setTimeout(() => {
-            if(futureHand.pCards[2]) renderSingleCard('p3', futureHand.pCards[2], 0);
-            if(futureHand.bCards[2]) renderSingleCard('b3', futureHand.bCards[2], 150);
-            
-            document.getElementById('playerScore').innerText = futureHand.pScore;
-            document.getElementById('bankerScore').innerText = futureHand.bScore;
-
-            let confidence = Math.floor(Math.random() * (98 - 80 + 1)) + 80; // High confidence for visual
-            
-            if(textEl) {
-                textEl.classList.remove('blink-wait');
-                if (predictedSide === 'P') { 
-                    textEl.innerHTML = "PLAYER"; 
-                    textEl.className = "pred-result res-p"; 
-                    if(wrapper) wrapper.classList.add('win-p');
-                } else { 
-                    textEl.innerHTML = "BANKER"; 
-                    textEl.className = "pred-result res-b"; 
-                    if(wrapper) wrapper.classList.add('win-b');
-                }
-            }
-            if(adviceEl) adviceEl.innerHTML = `SIGNAL: ${analysis.name} | CONFIDENCE: ${confidence}%`;
-
-            let confP = (predictedSide === 'P') ? confidence : (100 - confidence);
-            let confB = (predictedSide === 'B') ? confidence : (100 - confidence);
-            
-            document.getElementById('confP').innerText = confP + "%"; document.getElementById('barP').style.width = confP + "%";
-            document.getElementById('confB').innerText = confB + "%"; document.getElementById('barB').style.width = confB + "%";
-
-            addLog(`SYSTEM: Dự đoán -> ${predictedSide} (${confidence}%)`);
-            isProcessing = false;
-
-        }, 1000);
-    }, 500);
-}
-
-function getAdvancedAlgorithm(history) {
-    if (!history || history.length < 3) return { side: (Math.random()>0.5?'P':'B'), name: "RANDOM", reason: "Wait Data..." };
-    const cleanHistory = history.filter(x => x !== 'T');
-    const len = cleanHistory.length;
-    if (len < 3) return { side: 'B', name: "BASIC", reason: "Init..." };
+    const predEl = document.getElementById('aiPredText');
+    adviceEl.innerText = "SCANNING PATTERN...";
+    adviceEl.style.color = "#ffff00";
+    predEl.innerText = "WAIT...";
+    predEl.className = "pred-result res-wait";
     
-    const last1 = cleanHistory[len - 1];
-    const last2 = cleanHistory[len - 2];
+    // --- LOGIC SOI CẦU ---
+    // 1. Lấy dữ liệu sạch (bỏ Tie)
+    const cleanHist = historyArr.filter(x => x !== 'T');
     
-    if (last1 === last2) return { side: last1, name: "DRAGON (Bệt)", reason: "Theo Bệt" };
-    return { side: (last1 === 'P' ? 'B' : 'P'), name: "PING-PONG (1-1)", reason: "Bẻ Cầu" };
-}
+    // 2. Phân tích
+    let prediction = 'B'; // Mặc định
+    let reason = "RANDOM";
+    let confidence = 50;
+    
+    if (cleanHist.length >= 3) {
+        const len = cleanHist.length;
+        const last1 = cleanHist[len-1];
+        const last2 = cleanHist[len-2];
+        const last3 = cleanHist[len-3];
+        
+        // Logic Bệt (Dragon): Nếu 3 tay gần nhất giống nhau
+        if (last1 === last2 && last2 === last3) {
+            prediction = last1; 
+            reason = `STRONG DRAGON (${last1})`; 
+            confidence = 95;
+        }
+        // Logic 1-1 (Ping Pong): Nếu P-B-P hoặc B-P-B
+        else if (last1 !== last2 && last2 !== last3) {
+            prediction = (last1 === 'P') ? 'B' : 'P';
+            reason = "PING PONG DETECTED";
+            confidence = 88;
+        }
+        // Logic Bẻ Cầu 2-1: Nếu BB-P hoặc PP-B -> Dự đoán quay lại
+        else if (last1 !== last2 && last2 === last3) {
+            prediction = last2; // Theo lại cầu cũ
+            reason = "REPEAT PATTERN";
+            confidence = 75;
+        }
+        // Mặc định Random thông minh
+        else {
+            prediction = (Math.random() > 0.5) ? 'P' : 'B';
+            reason = "AI DEEP LEARN";
+            confidence = 65;
+        }
+    }
 
-function renderSingleCard(slotId, cardData, delay) {
+    // 3. Hiển thị kết quả dự đoán sau 1.5 giây (Giả lập tính toán)
     setTimeout(() => {
-        const el = document.getElementById(slotId);
-        if(!el) return;
-        el.classList.add(cardData.suit); 
-        el.classList.add('revealed');
-        let txt = cardData.raw;
-        if(cardData.raw===1) txt="A"; else if(cardData.raw===11) txt="J"; else if(cardData.raw===12) txt="Q"; else if(cardData.raw===13) txt="K";
-        el.innerText = txt;
-    }, delay);
+        // Cập nhật text Robot
+        adviceEl.innerText = `SIGNAL: ${reason}`;
+        adviceEl.style.color = "#00ff41";
+        
+        predEl.innerText = (prediction === 'P') ? "PLAYER" : "BANKER";
+        predEl.className = (prediction === 'P') ? "pred-result res-p" : "pred-result res-b";
+        
+        // Cập nhật thanh %
+        let confP = (prediction === 'P') ? confidence : (100 - confidence);
+        let confB = (prediction === 'B') ? confidence : (100 - confidence);
+        document.getElementById('confP').innerText = confP + "%"; document.getElementById('barP').style.width = confP + "%";
+        document.getElementById('confB').innerText = confB + "%"; document.getElementById('barB').style.width = confB + "%";
+
+        addLog(`BOT: Dự đoán tay sau -> ${prediction} (${confidence}%)`);
+
+        // 4. Mở bài giả lập (Lật bài 3D)
+        simulateHandReveal(prediction);
+        
+    }, 1500);
 }
 
+// --- HỆ THỐNG GIẢ LẬP BÀI (CARD ENGINE) ---
+function simulateHandReveal(targetWinner) {
+    // Tạo bộ bài ngẫu nhiên khớp với kết quả dự đoán
+    const hand = generateFakeHand(targetWinner);
+    
+    // Lần lượt lật bài (Flip effect)
+    // Player 1
+    setTimeout(() => revealCard('p1', hand.p[0]), 500);
+    // Banker 1
+    setTimeout(() => revealCard('b1', hand.b[0]), 1000);
+    // Player 2
+    setTimeout(() => revealCard('p2', hand.p[1]), 1500);
+    // Banker 2
+    setTimeout(() => revealCard('b2', hand.b[1]), 2000);
+    
+    // Lá thứ 3 (nếu có)
+    setTimeout(() => {
+        if(hand.p[2]) revealCard('p3', hand.p[2]);
+        if(hand.b[2]) revealCard('b3', hand.b[2]);
+        
+        // Cập nhật điểm số cuối cùng
+        document.getElementById('playerScore').innerText = hand.pScore;
+        document.getElementById('bankerScore').innerText = hand.bScore;
+        
+        // Highlight bên thắng
+        const pBox = document.querySelector('.p-side');
+        const bBox = document.querySelector('.b-side');
+        pBox.classList.remove('winner-p', 'winner-b');
+        bBox.classList.remove('winner-p', 'winner-b');
+        
+        if (hand.pScore > hand.bScore) pBox.classList.add('winner-p');
+        else if (hand.bScore > hand.pScore) bBox.classList.add('winner-b');
+        
+        isProcessing = false;
+        
+    }, 3000);
+}
+
+function revealCard(slotId, cardData) {
+    const slot = document.getElementById(slotId);
+    if (!slot || !cardData) return;
+    
+    // Tìm mặt trước (card-front) và gán giá trị
+    const frontFace = slot.querySelector('.card-front');
+    
+    // Xử lý hiển thị J, Q, K, A
+    let displayVal = cardData.raw;
+    if (displayVal === 1) displayVal = "A";
+    else if (displayVal === 11) displayVal = "J";
+    else if (displayVal === 12) displayVal = "Q";
+    else if (displayVal === 13) displayVal = "K";
+    
+    // Gán suit icon
+    let suitIcon = "♠";
+    if (cardData.suit === 'hearts') suitIcon = "♥";
+    else if (cardData.suit === 'diamonds') suitIcon = "♦";
+    else if (cardData.suit === 'clubs') suitIcon = "♣";
+    
+    frontFace.innerHTML = `<div>${displayVal}</div><div style="font-size:1.5rem">${suitIcon}</div>`;
+    frontFace.className = `card-front ${cardData.suit}`; // Thêm class màu đỏ/đen
+    
+    // Thêm class 'flipped' để CSS xoay lá bài 180 độ
+    slot.classList.add('flipped');
+}
+
+function resetCardsUI() {
+    // Reset điểm
+    document.getElementById('playerScore').innerText = "0";
+    document.getElementById('bankerScore').innerText = "0";
+    document.querySelector('.p-side').classList.remove('winner-p');
+    document.querySelector('.b-side').classList.remove('winner-b');
+    
+    // Tạo cấu trúc HTML cho lá bài 3D (Mặt sau + Mặt trước)
+    const slots = ['p1','p2','p3','b1','b2','b3'];
+    slots.forEach(id => {
+        const el = document.getElementById(id);
+        el.className = "card-slot"; // Xóa class flipped
+        // HTML structure cho 3D flip
+        el.innerHTML = `
+            <div class="card-back"></div>
+            <div class="card-front"></div>
+        `;
+    });
+}
+
+// --- LOGIC TẠO BỘ BÀI (MATH) ---
 function getCard() {
     const raw = Math.floor(Math.random() * 13) + 1;
     const value = raw >= 10 ? 0 : raw;
     const suits = ['spades', 'hearts', 'clubs', 'diamonds'];
-    const suit = suits[Math.floor(Math.random() * 4)];
-    return { raw, value, suit };
+    return { raw, value, suit: suits[Math.floor(Math.random()*4)] };
 }
-function calc(cards) { return cards.reduce((sum, c) => sum + c.value, 0) % 10; }
+function calc(cards) { return cards.reduce((a,b)=>a+b.value,0) % 10; }
 
-function simulateRealBaccaratHand(targetWinner) {
-    // Logic giả lập bài để khớp với kết quả dự đoán
-    let safeGuard = 0;
-    while (safeGuard < 500) {
-        safeGuard++;
-        let p = [getCard(), getCard()]; let b = [getCard(), getCard()];
-        let pScore = calc(p); let bScore = calc(b);
-        let finished = false;
-        if (pScore >= 8 || bScore >= 8) finished = true; 
-        if (!finished) {
-            let p3 = null;
-            if (pScore <= 5) { p3 = getCard(); p.push(p3); pScore = calc(p); }
-            let bDraws = false;
-            if (p3 === null) { if (bScore <= 5) bDraws = true; } 
-            else {
-                const val3 = p3.value;
-                if (bScore <= 2) bDraws = true;
-                else if (bScore === 3 && val3 !== 8) bDraws = true;
-                else if (bScore === 4 && val3 >= 2 && val3 <= 7) bDraws = true;
-                else if (bScore === 5 && val3 >= 4 && val3 <= 7) bDraws = true;
-                else if (bScore === 6 && (val3 === 6 || val3 === 7)) bDraws = true;
-            }
-            if (bDraws) { b.push(getCard()); bScore = calc(b); }
-        }
-        let winner = pScore > bScore ? 'P' : (bScore > pScore ? 'B' : 'T');
-        if (targetWinner === 'T') return { pCards: p, bCards: b, pScore, bScore }; 
-        if (winner === targetWinner) return { pCards: p, bCards: b, pScore, bScore };
-    }
-    return { pCards: [getCard(), getCard()], bCards: [getCard(), getCard()], pScore: 0, bScore: 0 }; // Fallback
-}
-
-function renderBigRoadGrid(resultArr) {
-    const gridEl = document.getElementById('bigRoadGrid');
-    if(!gridEl) return;
-    
-    // Cắt bớt dữ liệu hiển thị (30 cột cuối)
-    let processedData = [];
-    let data = resultArr;
-    
-    for(let char of data) {
-        if (char === 'T') { if (processedData.length > 0) processedData[processedData.length - 1].hasTie = true; } 
-        else { processedData.push({ type: char, hasTie: false }); }
-    }
-
-    let columns = []; let currentCol = []; let lastType = null;
-    processedData.forEach(item => {
-        if (lastType !== null && item.type !== lastType) { columns.push(currentCol); currentCol = []; }
-        currentCol.push(item); lastType = item.type;
-        if(currentCol.length >= 6) { columns.push(currentCol); currentCol = []; lastType = null; }
-    });
-    if (currentCol.length > 0) columns.push(currentCol);
-    while(columns.length < 20) { columns.push([]); }
-    
-    // Chỉ lấy 20 cột cuối
-    let displayCols = columns.slice(-20);
-
-    let html = '';
-    displayCols.forEach(col => {
-        html += '<div class="tool-road-col">'; 
-        for (let r = 0; r < 6; r++) { 
-            let cellContent = ''; let node = col[r];
-            if (node) {
-                let colorClass = (node.type === 'P') ? 'tool-p' : 'tool-b';
-                cellContent = `<div class="tool-bead ${colorClass}"></div>`;
-            }
-            html += `<div class="tool-road-cell">${cellContent}</div>`;
-        }
-        html += '</div>'; 
-    });
-    gridEl.innerHTML = html;
-}
-
-function drawTrendChart(historyArr) {
-    const canvas = document.getElementById('trendChart');
-    if (!canvas) return;
-    
-    // Resize lại để không bị vỡ
-    if(canvas.parentElement) {
-        canvas.width = canvas.parentElement.clientWidth;
-        canvas.height = canvas.parentElement.clientHeight;
-    }
-    
-    const ctx = canvas.getContext('2d');
-    const w = canvas.width;
-    const h = canvas.height;
-    ctx.clearRect(0, 0, w, h);
-
-    let data = historyArr.slice(-30); 
-    if(data.length < 2) return;
-
-    let points = [];
-    let currentVal = h / 2;
-    let stepX = w / (data.length - 1); 
-    const amplitude = 10; 
-
-    data.forEach((char, index) => {
-        if (char === 'B') currentVal -= amplitude; 
-        else if (char === 'P') currentVal += amplitude; 
-        // Clamp
-        if (currentVal < 10) currentVal = 10;
-        if (currentVal > h - 10) currentVal = h - 10;
+function generateFakeHand(target) {
+    // Thử tạo bài ngẫu nhiên cho đến khi khớp kết quả dự đoán
+    for(let i=0; i<500; i++) {
+        let p = [getCard(), getCard()];
+        let b = [getCard(), getCard()];
+        let pS = calc(p);
+        let bS = calc(b);
         
-        points.push({ x: index * stepX, y: currentVal, type: char });
-    });
-
-    // Draw Line
-    ctx.beginPath();
-    ctx.moveTo(points[0].x, points[0].y);
-    for (let i = 1; i < points.length; i++) {
-        // Smooth curve
-        const xc = (points[i].x + points[i - 1].x) / 2;
-        const yc = (points[i].y + points[i - 1].y) / 2;
-        ctx.quadraticCurveTo(points[i - 1].x, points[i - 1].y, xc, yc);
+        // Logic rút lá 3 đơn giản hóa
+        if (pS <= 5) { p.push(getCard()); pS = calc(p); }
+        if (bS <= 5) { b.push(getCard()); bS = calc(b); }
+        
+        let winner = pS > bS ? 'P' : (bS > pS ? 'B' : 'T');
+        
+        if (winner === target || target === 'T') {
+            return { p, b, pScore: pS, bScore: bS };
+        }
     }
-    ctx.lineTo(points[points.length-1].x, points[points.length-1].y);
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = '#00ff41';
-    ctx.stroke();
-
-    // Draw Dots
-    points.forEach(p => {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
-        if (p.type === 'P') { ctx.fillStyle = '#00f3ff'; ctx.shadowColor = '#00f3ff'; } 
-        else if (p.type === 'B') { ctx.fillStyle = '#ff003c'; ctx.shadowColor = '#ff003c'; } 
-        else { ctx.fillStyle = '#aaa'; ctx.shadowColor = '#aaa'; }
-        ctx.shadowBlur = 5;
-        ctx.fill();
-        ctx.shadowBlur = 0;
-    });
+    // Fallback
+    return { 
+        p:[getCard(), getCard()], 
+        b:[getCard(), getCard()], 
+        pScore:0, bScore:0 
+    };
 }
 
-function startFakeTransactions() {
-    const box = document.getElementById('transLog');
-    if(!box) return;
-    const names = ["VipPro99", "HackerVN", "Bot_AI", "Master88", "Dragon9", "Ghost_X", "SystemV8"];
-    setInterval(() => {
-        const name = names[Math.floor(Math.random() * names.length)];
-        const side = Math.random() > 0.5 ? 'P' : 'B';
-        const amt = Math.floor(Math.random() * 500) + 50; 
-        const div = document.createElement('div');
-        div.className = 'trans-item';
-        div.innerHTML = `
-            <span style="color:#aaa">${name}</span>
-            <span style="color:${side==='P'?'#00f3ff':'#ff003c'}; font-weight:bold;">${side==='P'?'PLAYER':'BANKER'}</span>
-            <span style="color:#fff">$${amt}k</span>
-        `;
-        box.appendChild(div);
-        if(box.children.length > 6) box.removeChild(box.firstChild);
-    }, 1500);
+// --- LOGIC VẼ CẦU DƯỚI (BIG ROAD) ---
+function renderBigRoadGrid(res) {
+    const grid = document.getElementById('bigRoadGrid');
+    if(!grid) return;
+    
+    // Xử lý Tie
+    let processed = [];
+    res.forEach(c => {
+        if(c==='T') { if(processed.length>0) processed[processed.length-1].hasTie=true; }
+        else processed.push({type:c, hasTie:false});
+    });
+    
+    // Chia cột
+    let cols = []; let cur = []; let last = null;
+    processed.forEach(item => {
+        if(last!==null && item.type!==last) { cols.push(cur); cur=[]; }
+        if(cur.length>=6) { cols.push(cur); cur=[]; }
+        cur.push(item); last=item.type;
+    });
+    if(cur.length>0) cols.push(cur);
+    while(cols.length<30) cols.push([]);
+    
+    let html = '';
+    cols.slice(-30).forEach(col => {
+        html += '<div class="tool-road-col">';
+        for(let i=0; i<6; i++) {
+            let node = col[i];
+            let inner = '';
+            if(node) {
+                let cls = node.type==='P'?'tool-p':'tool-b';
+                let tie = node.hasTie?'has-tie':'';
+                inner = `<div class="tool-bead ${cls} ${tie}"></div>`;
+            }
+            html += `<div class="tool-road-cell">${inner}</div>`;
+        }
+        html += '</div>';
+    });
+    grid.innerHTML = html;
 }

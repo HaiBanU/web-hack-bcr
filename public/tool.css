@@ -1,110 +1,203 @@
 /* =========================================
-   TOOL.CSS - GIAO DIỆN GAME TOOL
+   TOOL.CSS - VERSION 12 (ULTRA CYBER UI)
    ========================================= */
 
-/* LAYOUT GRID CHO TOOL */
+/* --- LAYOUT GRID --- */
 .hacker-layout {
     display: grid;
     grid-template-columns: 320px 1fr 320px;
-    grid-template-rows: 65px 1fr 200px; 
+    grid-template-rows: 60px 1fr 220px; 
     height: 100vh; gap: 15px; padding: 15px;
     max-width: 1920px; margin: 0 auto;
+    background: #020202;
 }
 
-/* HEADER TOOL */
+/* --- HEADER --- */
 .sys-header { 
     grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; 
-    background: var(--bg-panel); border: 1px solid var(--neon-green); 
-    padding: 0 20px; box-shadow: 0 0 20px rgba(0,255,65,0.1); border-radius: 6px; 
+    background: rgba(10, 20, 10, 0.9); border-bottom: 2px solid var(--neon-green); 
+    padding: 0 20px; box-shadow: 0 5px 20px rgba(0,255,65,0.1); border-radius: 6px; 
 }
-.sys-header .glitch-text { font-size: 1.4rem; }
-.sys-status { display: flex; align-items: center; }
 
-/* SIDE PANELS */
+/* --- PANELS (Left/Right) --- */
 .panel-left, .panel-right { 
-    background: var(--bg-panel); border: 1px solid #333; padding: 15px; 
-    border-radius: 6px; display: flex; flex-direction: column; 
-    box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    background: rgba(5, 10, 5, 0.95); border: 1px solid #333; padding: 15px; 
+    border-radius: 8px; display: flex; flex-direction: column; 
+    box-shadow: 0 0 15px rgba(0,0,0,0.8);
 }
 
-/* GAME CENTER (MAIN AREA) */
+/* --- GAME CENTER (MAIN AREA - QUAN TRỌNG) --- */
 .game-center {
     position: relative; 
-    border: 2px solid var(--neon-green);
+    border: 1px solid var(--neon-green);
     border-radius: 12px;
-    background: rgba(5, 15, 5, 0.9); 
-    display: flex; flex-direction: column; justify-content: center; align-items: center; 
+    background: radial-gradient(circle at center, #0a1f0a 0%, #000 70%); 
+    display: flex; flex-direction: column; 
+    justify-content: center; /* Căn giữa dọc */
+    align-items: center;     /* Căn giữa ngang */
     overflow: hidden; 
-    box-shadow: 0 0 50px rgba(0, 50, 0, 0.4), inset 0 0 100px rgba(0,20,0,0.8);
+    box-shadow: 0 0 50px rgba(0, 50, 0, 0.2), inset 0 0 100px rgba(0,20,0,0.9);
 }
 
-/* PREDICTION PILL (KHUNG DỰ ĐOÁN) */
-.prediction-wrapper {
-    position: relative; z-index: 5; 
-    width: 80%; max-width: 550px; margin-top: 30px;
-    height: 90px;
-    background: rgba(0, 20, 0, 0.8); 
-    border: 1px solid #555;
-    border-radius: 60px;
-    display: flex; align-items: center;
-    padding: 5px 10px;
-    transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+/* Hiệu ứng mưa ma trận mờ phía sau */
+#cardRain {
+    position: absolute; top:0; left:0; width:100%; height:100%; z-index: 0; opacity: 0.3;
 }
 
-/* Win Effects */
-.prediction-wrapper.win-p { 
-    border: 2px solid var(--neon-blue); 
-    box-shadow: 0 0 40px rgba(0, 243, 255, 0.3), inset 0 0 20px rgba(0, 243, 255, 0.1); 
-    background: linear-gradient(90deg, rgba(0,0,0,0.9), rgba(0, 243, 255, 0.15));
-}
-.prediction-wrapper.win-b { 
-    border: 2px solid var(--neon-red); 
-    box-shadow: 0 0 40px rgba(255, 0, 60, 0.3), inset 0 0 20px rgba(255, 0, 60, 0.1);
-    background: linear-gradient(90deg, rgba(0,0,0,0.9), rgba(255, 0, 60, 0.15));
+/* --- KHUNG BÀI (CARD AREA) --- */
+.battle-wrapper { 
+    position: relative; z-index: 10; 
+    width: 90%; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    margin-bottom: 30px; /* Đẩy lên trên khung dự đoán */
 }
 
-/* ROBOT CONTAINER */
-.ai-box {
-    width: 80px; height: 80px;
-    border-radius: 50%;
-    border: 1px solid rgba(0, 255, 65, 0.3);
-    display: flex; justify-content: center; align-items: center;
-    margin-right: 20px;
+.side-container {
+    width: 45%;
+    text-align: center;
+    background: rgba(0,0,0,0.5);
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid #333;
+    transition: 0.3s;
+}
+
+/* Hiệu ứng khi bên nào thắng */
+.side-container.winner-p { border-color: #00f3ff; box-shadow: 0 0 20px rgba(0, 243, 255, 0.2); }
+.side-container.winner-b { border-color: #ff003c; box-shadow: 0 0 20px rgba(255, 0, 60, 0.2); }
+
+/* --- LÁ BÀI 3D (QUAN TRỌNG) --- */
+.cards-area {
+    display: flex; gap: 10px; justify-content: center; margin-top: 10px; perspective: 1000px;
+}
+
+.card-slot { 
+    width: 90px; height: 125px; 
     position: relative;
-    background: radial-gradient(circle, rgba(0,255,65,0.15), transparent 70%);
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-.ai-img { width: 60px; height: 60px; object-fit: contain; filter: drop-shadow(0 0 5px var(--neon-green)); animation: float 3s ease-in-out infinite; }
-@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 
-/* PREDICT TEXT */
-.pred-info { flex: 1; display: flex; flex-direction: column; justify-content: center; }
-.pred-label { font-size: 0.8rem; color: #888; letter-spacing: 3px; margin-bottom: 2px; text-transform: uppercase; }
-.pred-result { font-size: 3.2rem; font-family: var(--font-display); font-weight: 900; line-height: 1; text-transform: uppercase; padding-bottom: 5px; }
+/* Mặt sau (Màu xanh - Úp) */
+.card-back, .card-front {
+    position: absolute; width: 100%; height: 100%;
+    backface-visibility: hidden;
+    border-radius: 6px;
+    display: flex; justify-content: center; align-items: center;
+    font-family: 'Orbitron'; font-weight: bold;
+}
 
-.res-p { color: var(--neon-blue); text-shadow: 0 0 20px var(--neon-blue); }
-.res-b { color: var(--neon-red); text-shadow: 0 0 20px var(--neon-red); }
-.blink-wait { animation: blink 1s infinite; color: #fff; }
-@keyframes blink { 50% { opacity: 0.3; } }
+.card-back {
+    background: linear-gradient(135deg, #003b0f, #001a00);
+    border: 2px solid var(--neon-green);
+    color: var(--neon-green);
+    font-size: 2rem;
+    box-shadow: 0 0 10px var(--neon-green);
+    transform: rotateY(0deg); /* Mặc định hiện mặt lưng */
+}
+/* Họa tiết mặt lưng */
+.card-back::after { content: '?'; opacity: 0.5; }
 
-/* CARDS AREA */
-.battle-wrapper { position: relative; z-index: 2; width: 100%; display: flex; justify-content: space-around; margin-top: 20px; }
-.card-slot { width: 85px; height: 115px; background: #080808; border: 1px solid #444; border-radius: 6px; display: flex; justify-content: center; align-items: center; font-size: 2.2rem; color: #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-.card-slot.revealed { background: #fff; color: #000; border: 2px solid #fff; box-shadow: 0 0 25px #fff; transform: scale(1.1); animation: flipReveal 0.4s both; }
-@keyframes flipReveal { from { transform: rotateY(90deg); } to { transform: rotateY(0deg); } }
+/* Mặt trước (Màu trắng - Ngửa) */
+.card-front {
+    background: #fff;
+    color: #000;
+    font-size: 2.5rem;
+    border: 2px solid #fff;
+    transform: rotateY(180deg); /* Mặc định giấu mặt số */
+    box-shadow: 0 0 25px rgba(255,255,255,0.5);
+}
 
-.cards-area .hearts, .cards-area .diamonds { color: #ff0000; }
-.cards-area .spades, .cards-area .clubs { color: #000000; }
+/* Class kích hoạt lật bài */
+.card-slot.flipped { transform: rotateY(180deg); }
 
-/* FOOTER */
+.card-front.hearts, .card-front.diamonds { color: #d00; }
+.card-front.spades, .card-front.clubs { color: #000; }
+
+/* --- ĐIỂM SỐ --- */
+.score-box { 
+    font-size: 3.5rem; font-weight: 900; margin-top: 10px; 
+    text-shadow: 0 0 20px currentColor; font-family: 'Orbitron';
+}
+
+/* --- KHUNG DỰ ĐOÁN ROBOT --- */
+.prediction-wrapper {
+    position: relative; z-index: 10; 
+    width: 600px; height: 100px;
+    background: rgba(0, 10, 0, 0.9); 
+    border: 1px solid #444;
+    border-radius: 50px;
+    display: flex; align-items: center;
+    padding: 10px;
+    margin-top: 20px;
+    transition: 0.3s;
+}
+
+/* Robot AI Box */
+.ai-box {
+    width: 90px; height: 90px;
+    border-radius: 50%;
+    background: #000;
+    border: 2px solid var(--neon-green);
+    position: relative;
+    display: flex; justify-content: center; align-items: center;
+    box-shadow: 0 0 20px var(--neon-green);
+    margin-right: 20px;
+}
+
+/* Vòng Radar xoay quanh Robot */
+.ai-box::before {
+    content: ''; position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    border-top-color: var(--neon-green);
+    border-bottom-color: var(--neon-green);
+    animation: radarSpin 2s linear infinite;
+}
+@keyframes radarSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+/* Ảnh Robot / SVG */
+.ai-img { 
+    width: 60px; height: 60px; 
+    fill: var(--neon-green);
+    filter: drop-shadow(0 0 5px var(--neon-green));
+    animation: pulseEye 1s infinite alternate;
+}
+@keyframes pulseEye { from { transform: scale(1); opacity: 0.8; } to { transform: scale(1.1); opacity: 1; } }
+
+/* Text Dự Đoán */
+.pred-info { flex: 1; text-align: left; }
+.pred-label { font-size: 0.8rem; color: #888; letter-spacing: 2px; margin-bottom: 5px; }
+.pred-result { 
+    font-size: 3rem; font-family: 'Orbitron'; font-weight: 900; 
+    line-height: 1; text-transform: uppercase; 
+}
+
+/* Màu kết quả dự đoán */
+.res-wait { color: #fff; animation: blink 0.5s infinite; }
+.res-p { color: #00f3ff; text-shadow: 0 0 20px #00f3ff; }
+.res-b { color: #ff003c; text-shadow: 0 0 20px #ff003c; }
+
+/* --- FOOTER & BIG ROAD --- */
 .sys-footer { grid-column: 1 / -1; display: grid; grid-template-columns: 320px 1fr 320px; gap: 15px; }
-.footer-panel { background: var(--bg-panel); border: 1px solid #333; overflow: hidden; display: flex; flex-direction: column; border-radius: 6px; }
+.footer-panel { background: rgba(5,10,5,0.95); border: 1px solid #333; overflow: hidden; display: flex; flex-direction: column; border-radius: 6px; }
 
-/* TOOL ROAD STYLES (FOOTER) */
-.tool-road-col { width: 15px; display: flex; flex-direction: column; border-right: 1px solid #222; }
-.tool-road-cell { height: 16.66%; border-bottom: 1px solid #222; display: flex; justify-content: center; align-items: center; }
+/* Road Grid Style */
+.road-container { display: flex; height: 100%; background: #000; }
+.tool-road-col { width: 25px; border-right: 1px solid #333; display: flex; flex-direction: column; }
+.tool-road-cell { height: 16.66%; border-bottom: 1px solid #333; display: flex; justify-content: center; align-items: center; position: relative; }
 
-.tool-bead { width: 10px; height: 10px; border-radius: 50%; }
-.tool-p { background: var(--neon-blue); box-shadow: 0 0 5px var(--neon-blue); }
-.tool-b { background: var(--neon-red); box-shadow: 0 0 5px var(--neon-red); }
+/* Hạt cầu rỗng (Hollow) */
+.tool-bead { width: 16px; height: 16px; border-radius: 50%; border: 2px solid; background: transparent; }
+.tool-p { border-color: #00f3ff; } 
+.tool-b { border-color: #ff003c; }
+.tool-bead.has-tie::after {
+    content: ''; position: absolute; width: 2px; height: 20px; background: #00ff41;
+    top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg);
+}
 
-.road-container { display: flex; height: 100%; overflow: hidden; }
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-thumb { background: var(--neon-green); }

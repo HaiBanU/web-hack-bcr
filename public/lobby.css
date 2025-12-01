@@ -1,5 +1,7 @@
+/* --- START OF FILE lobby.css --- */
+
 /* =========================================
-   LOBBY.CSS - GIAO DIỆN TRANG CHỦ (V2)
+   LOBBY.CSS - V3 (NEON UPGRADE & FIXES)
    ========================================= */
 
 /* --- CẤU TRÚC CHÍNH --- */
@@ -7,193 +9,188 @@
     position: relative; 
     z-index: 10; 
     padding: 20px; 
-    max-width: 1400px; 
+    max-width: 1600px; /* Mở rộng chiều ngang cho thoáng */
     margin: 0 auto; 
     padding-bottom: 80px; 
 }
 
-/* --- HEADER & TITLE --- */
-.lobby-header { text-align: center; margin-bottom: 30px; position: relative; z-index: 20; }
-
-.glitch-text { 
-    font-size: 3.5rem; 
-    font-weight: 900;
-    color: #fff; 
-    text-shadow: 0 0 5px var(--neon-green), 0 0 15px var(--neon-green); 
-    margin: 0; 
-    letter-spacing: 4px; 
-    text-transform: uppercase;
+/* --- HEADER & TITLE (FIX LỖI ĐÈ) --- */
+.lobby-header { 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    margin-bottom: 40px; 
+    position: relative; 
+    z-index: 20; 
 }
 
+/* Khu vực Auth chuyển sang Flex để không đè chữ */
+#authSection { 
+    position: relative; /* Bỏ absolute để không đè */
+    margin-bottom: 15px;
+    width: 100%;
+    display: flex;
+    justify-content: flex-end; /* Căn phải */
+    padding-right: 20px;
+    top: auto; right: auto;
+}
+
+.glitch-text { 
+    font-size: 4rem; 
+    font-weight: 900;
+    color: #fff; 
+    text-shadow: 0 0 10px var(--neon-green), 0 0 20px var(--neon-green), 0 0 40px var(--neon-green); 
+    margin: 0; 
+    letter-spacing: 5px; 
+    text-transform: uppercase;
+    animation: textPulse 3s infinite alternate;
+}
+@keyframes textPulse { from { text-shadow: 0 0 10px var(--neon-green); } to { text-shadow: 0 0 30px var(--neon-green), 0 0 10px #fff; } }
+
 .server-info {
-    margin-top: 10px; font-size: 0.9rem; letter-spacing: 1px; color: #aaa;
+    margin-top: 10px; font-size: 1rem; letter-spacing: 2px; color: #aaa;
+    background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 20px; border: 1px solid #333;
 }
 .blink { animation: blinkStatus 1s infinite; }
 @keyframes blinkStatus { 50% { opacity: 0.5; } }
 
-/* --- AUTH BUTTONS --- */
-#authSection { position: absolute; top: 20px; right: 20px; z-index: 30; }
+/* --- USER PANEL --- */
 .btn-join { 
-    background: rgba(0,0,0,0.6); border: 1px solid #fff; color: #fff; 
-    padding: 8px 20px; font-family: var(--font-display); cursor: pointer; 
-    transition: 0.3s; font-weight: bold; border-radius: 4px;
+    background: rgba(0, 255, 65, 0.1); border: 1px solid var(--neon-green); color: var(--neon-green); 
+    padding: 10px 25px; font-family: var(--font-display); cursor: pointer; 
+    transition: 0.3s; font-weight: bold; border-radius: 4px; text-shadow: 0 0 5px var(--neon-green);
 }
-.btn-join:hover { background: var(--neon-green); color: #000; border-color: var(--neon-green); box-shadow: 0 0 15px var(--neon-green); }
+.btn-join:hover { background: var(--neon-green); color: #000; box-shadow: 0 0 20px var(--neon-green); }
 
-.user-panel-cyber { display: flex; align-items: center; gap: 15px; }
-.user-name { font-weight: bold; color: #fff; text-shadow: 0 0 5px #fff; }
-.token-badge { border: 1px solid var(--neon-green); padding: 5px 10px; background: rgba(0,50,0,0.8); border-radius: 4px; color: var(--neon-green); font-weight: bold;}
-.btn-logout-cyber { background: #333; color: #fff; border: 1px solid #555; padding: 5px 10px; cursor: pointer; border-radius: 4px; }
+.user-panel-cyber { display: flex; align-items: center; gap: 15px; background: rgba(0,0,0,0.6); padding: 10px; border-radius: 8px; border: 1px solid #333; }
+.user-name { font-weight: bold; color: #fff; font-size: 1.1rem; }
+.token-badge { 
+    border: 1px solid var(--neon-green); padding: 5px 12px; 
+    background: rgba(0, 255, 65, 0.1); border-radius: 4px; 
+    color: var(--neon-green); font-weight: bold; box-shadow: 0 0 5px var(--neon-green);
+}
+.btn-logout-cyber { background: #d00; color: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; font-weight: bold; }
 
 /* --- GRID HỆ THỐNG BÀN --- */
 .tables-grid { 
     display: grid; 
-    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); /* Card to hơn chút */
-    gap: 20px; 
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); 
+    gap: 30px; 
 }
 
-/* --- THIẾT KẾ CARD (THEO PHONG CÁCH HÌNH 2) --- */
+/* --- THIẾT KẾ CARD (HIỆU ỨNG ĐỘNG MỚI) --- */
 .casino-card { 
-    background: #fff; /* Nền trắng cho phần thân */
-    border: 2px solid #333; /* Viền tối màu */
-    border-radius: 8px;
+    background: #000; 
+    border: 1px solid #333; 
+    border-radius: 12px;
     display: flex; flex-direction: column; overflow: hidden; position: relative; 
     transition: all 0.3s ease;
-    height: 200px; cursor: pointer;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    height: 220px; cursor: pointer;
+    box-shadow: 0 0 15px rgba(0,0,0,0.8);
+}
+
+/* Hiệu ứng viền chạy (Glowing Border) */
+.casino-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    border-radius: 12px; padding: 2px;
+    background: linear-gradient(45deg, transparent, #333, transparent);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
 }
 
 .casino-card:hover { 
     transform: translateY(-5px); 
-    box-shadow: 0 10px 25px rgba(0, 255, 65, 0.2); 
-    border-color: var(--neon-green); /* Hover thì viền sáng xanh */
+    box-shadow: 0 0 25px rgba(0, 255, 65, 0.4); 
+    border-color: var(--neon-green);
 }
+.casino-card:hover::before {
+    background: linear-gradient(45deg, var(--neon-green), transparent, var(--neon-green));
+    animation: rotateBorder 2s linear infinite;
+}
+@keyframes rotateBorder { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
 
-/* HEADER CỦA CARD (Vẫn giữ màu tối để ngầu) */
+/* HEADER CỦA CARD */
 .cc-header { 
-    background: #111; 
-    border-bottom: 1px solid #444;
+    background: linear-gradient(90deg, #111, #050505); 
+    border-bottom: 1px solid #333;
     padding: 10px 15px; 
     display: flex; justify-content: space-between; align-items: center; 
-    height: 45px;
+    height: 50px;
 }
 .cc-name { 
     font-family: var(--font-display); font-weight: 900; 
-    color: #fff; font-size: 1.1rem; letter-spacing: 1px; 
+    color: #fff; font-size: 1.2rem; letter-spacing: 1px; 
 }
 
 /* BODY CỦA CARD */
-.cc-body { display: flex; height: calc(100% - 45px); background: #fff; }
+.cc-body { display: flex; height: calc(100% - 50px); background: #0b0b0b; }
 
-/* --- GRID CẦU (STYLE GIỐNG HÌNH 2) --- */
+/* --- GRID CẦU (STYLE BIG ROAD CHUẨN) --- */
 .cc-grid-area { 
     flex: 1; 
     position: relative; 
-    background: #fff; /* Nền trắng tuyệt đối */
+    background: #fff; /* Nền trắng như yêu cầu */
     display: flex; 
-    justify-content: flex-start; /* Cầu chạy từ trái qua */
+    justify-content: flex-start;
     align-items: flex-start;
     overflow: hidden; 
-    border-right: 1px solid #ccc; /* Ngăn cách với phần dự đoán */
+    border-right: 2px solid #000;
 } 
 
 .road-grid-wrapper { display: flex; height: 100%; width: 100%; }
 
-/* CỘT CẦU */
 .road-col { 
-    width: 25px; /* Cột rộng hơn */
-    display: flex; 
-    flex-direction: column; 
-    border-right: 1px solid #e0e0e0; /* Kẻ dọc màu xám nhạt */
+    width: 28px; 
+    display: flex; flex-direction: column; 
+    border-right: 1px solid #ccc; 
 }
-/* Ô CẦU */
 .road-cell { 
-    flex: 1; /* Tự chia đều chiều cao */
-    border-bottom: 1px solid #e0e0e0; /* Kẻ ngang màu xám nhạt */
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
+    flex: 1; 
+    border-bottom: 1px solid #ccc; 
+    display: flex; justify-content: center; align-items: center; 
+    position: relative; /* Để vẽ Tie */
 }
 
-/* --- HẠT CẦU (BEAD) - STYLE RÕ RÀNG --- */
+/* --- HẠT CẦU (BEAD) --- */
 .bead { 
-    width: 18px; height: 18px; /* To rõ */
+    width: 20px; height: 20px; 
     border-radius: 50%; 
     background: transparent; 
-    border: 3px solid; /* Viền dày */
-    box-shadow: none; /* Bỏ bóng mờ neon */
+    border: 3px solid; 
+    position: relative;
 }
-/* Màu chuẩn Baccarat: Xanh dương & Đỏ */
-.bead.p { border-color: #007bff; } /* Player - Xanh */
+.bead.p { border-color: #007bff; } /* Player - Xanh Dương */
 .bead.b { border-color: #dc3545; } /* Banker - Đỏ */
-.bead.t { 
-    border-color: #28a745; /* Tie - Xanh lá */
-    background: #28a745; 
-    width: 10px; height: 10px; /* Tie thường nhỏ hơn hoặc full màu */
-}
 
-/* --- PHẦN DỰ ĐOÁN (BÊN PHẢI) --- */
+/* --- HIỆU ỨNG HÒA (GẠCH CHÉO XANH LÁ) --- */
+.bead.has-tie::after {
+    content: '';
+    position: absolute;
+    width: 3px; height: 24px; /* Dài hơn chút để cắt chéo */
+    background-color: #28a745; /* Màu xanh lá */
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) rotate(-45deg); /* Xoay chéo */
+    box-shadow: 0 0 2px #fff;
+}
+/* Nếu có 2 tie thì thêm vạch nữa (optional, ở đây làm 1 vạch đại diện) */
+
+/* --- PHẦN DỰ ĐOÁN --- */
 .cc-predict-area { 
-    width: 100px; 
-    background: #1a1a1a; /* Nền tối để nổi bật phần kết quả */
+    width: 110px; 
+    background: #000; 
     display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; 
+    border-left: 1px solid #333;
 }
 .cc-rate { 
     font-family: var(--font-display); font-weight: 900; color: #000; 
     background: var(--neon-green); 
-    padding: 8px 0; width: 85%; font-size: 1.2rem; margin-top: 5px; 
-    border-radius: 4px; box-shadow: 0 0 10px var(--neon-green);
+    padding: 10px 0; width: 90%; font-size: 1.4rem; margin-top: 5px; 
+    border-radius: 4px; box-shadow: 0 0 15px var(--neon-green);
+    animation: glowRate 2s infinite alternate;
 }
+@keyframes glowRate { from { box-shadow: 0 0 10px var(--neon-green); } to { box-shadow: 0 0 25px var(--neon-green); } }
 
-/* --- VIP GOLD STYLE --- */
-.casino-card.gold-tier {
-    border: 2px solid var(--neon-gold);
-}
-.casino-card.gold-tier .cc-header { background: #222; border-bottom-color: var(--neon-gold); }
-.casino-card.gold-tier .cc-name { color: var(--neon-gold); text-shadow: 0 0 5px var(--neon-gold); }
-.casino-card.gold-tier .cc-rate { background: var(--neon-gold); box-shadow: 0 0 15px var(--neon-gold); }
-
-/* --- MODAL POPUP (FIXED CENTER) --- */
-.custom-modal-overlay {
-    display: none; /* Mặc định ẩn, JS sẽ đổi thành flex */
-    position: fixed; /* Cố định toàn màn hình */
-    top: 0; left: 0; 
-    width: 100vw; height: 100vh;
-    background: rgba(0, 0, 0, 0.85); /* Nền tối mờ phía sau */
-    backdrop-filter: blur(5px); /* Hiệu ứng mờ kính */
-    z-index: 99999; /* Luôn nằm trên cùng */
-    justify-content: center; /* Căn giữa ngang */
-    align-items: center; /* Căn giữa dọc */
-}
-
-.custom-modal-box {
-    background: #000; 
-    border: 2px solid var(--neon-green);
-    padding: 30px; 
-    width: 90%; max-width: 450px;
-    box-shadow: 0 0 30px rgba(0, 255, 65, 0.3);
-    border-radius: 8px;
-    text-align: center;
-    position: relative;
-    animation: zoomIn 0.3s ease-out;
-}
-@keyframes zoomIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-.modal-title { 
-    font-family: var(--font-display); font-size: 1.8rem; 
-    color: var(--neon-green); margin-bottom: 20px; 
-    text-transform: uppercase; border-bottom: 1px solid #333; padding-bottom: 10px;
-}
-.modal-content { color: #ddd; font-size: 1rem; margin-bottom: 25px; text-align: left; line-height: 1.5; }
-.modal-actions { display: flex; justify-content: space-between; gap: 15px; }
-
-.btn-modal { 
-    flex: 1; padding: 12px; border: none; font-weight: bold; cursor: pointer; 
-    font-family: var(--font-display); font-size: 1rem; border-radius: 4px; 
-    text-transform: uppercase;
-}
-.btn-cancel { background: #333; color: #fff; border: 1px solid #555; transition:0.2s; }
-.btn-cancel:hover { background: #555; }
-
-.btn-confirm { background: var(--neon-green); color: #000; box-shadow: 0 0 15px var(--neon-green); transition:0.2s;}
-.btn-confirm:hover { transform: scale(1.05); background: #fff; }
+/* --- MODAL --- */
+.custom-modal-box { border: 2px solid var(--neon-green); background: #051005; box-shadow: 0 0 50px rgba(0,255,65,0.2); }
