@@ -1,3 +1,5 @@
+<!-- --- START OF FILE admin.html --- -->
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -56,6 +58,7 @@
         <!-- HIỂN THỊ VÍ CỦA BẠN -->
         <div class="my-wallet">
             <div class="wallet-label">KHO TOKEN CỦA BẠN</div>
+            <!-- ID myBalance sẽ được JS cập nhật -->
             <div id="myBalance" class="wallet-amount">Loading...</div>
             <div style="font-size: 0.8rem; color: #888;">(Liên hệ Super Admin để nhập thêm hàng)</div>
         </div>
@@ -64,7 +67,8 @@
         <div class="panel">
             <h3 style="color:#fff; margin-top:0;">➕ THÊM KHÁCH VÀO QUẢN LÝ</h3>
             <div style="display:flex; gap:10px;">
-                <input type="text" id="targetUser" placeholder="Tên User..." style="width:250px;">
+                <!-- Đã thêm maxlength="20" -->
+                <input type="text" id="targetUser" placeholder="Tên User..." style="width:250px;" maxlength="20">
                 <button onclick="importUser()" class="btn-add-main">KÍCH HOẠT</button>
             </div>
             <p style="color:#666; font-size:0.8rem;">* Nhập tên User đã đăng ký để quản lý họ.</p>
@@ -72,9 +76,10 @@
 
         <h3 style="color:#fff; margin-bottom: 10px;">DANH SÁCH KHÁCH HÀNG</h3>
         
-        <!-- THANH TÌM KIẾM MỚI -->
+        <!-- THANH TÌM KIẾM -->
         <div class="search-bar">
             <span style="color:#00ff41;">🔍</span>
+            <!-- Đã thêm maxlength="20" -->
             <input type="text" id="searchInput" class="search-input" 
                    placeholder="Tìm kiếm khách hàng (nhập tên)..." 
                    maxlength="20"
@@ -95,7 +100,8 @@
                 const res = await fetch('/api/me', { headers: { 'Authorization': token } });
                 const me = await res.json();
                 if (me.username) {
-                    document.getElementById('myBalance').innerText = me.tokens.toLocaleString();
+                    // SỬA: Math.floor để lấy số nguyên, toLocaleString('vi-VN') để có dấu chấm
+                    document.getElementById('myBalance').innerText = Math.floor(me.tokens).toLocaleString('vi-VN');
                 }
             } catch(e) { console.error(e); }
         }
@@ -115,17 +121,18 @@
             }
 
             list.forEach(u => {
+                // SỬA: Math.floor và format cho token khách
+                const displayToken = Math.floor(u.tokens).toLocaleString('vi-VN');
+
                 grid.innerHTML += `
                     <div class="card user-item">
                         <div style="display:flex; justify-content:space-between; color:#fff; font-size:1.1rem;">
-                            <!-- Thêm class username-text để tìm kiếm -->
                             <span class="username-text">${u.username}</span>
                             <span style="border:1px solid #00ff41; color:#00ff41; padding:2px 5px; font-size:0.7rem;">MEMBER</span>
                         </div>
-                        <div class="tk-box">KHÁCH CÒN: ${u.tokens}</div>
+                        <div class="tk-box">KHÁCH CÒN: ${displayToken}</div>
                         
                         <div style="display:flex; gap:5px; margin-top:10px;">
-                            <!-- Input Token giới hạn 20 ký tự -->
                             <input type="number" id="amt-${u._id}" placeholder="SL" 
                                    style="width:70px; padding:5px;"
                                    oninput="if(this.value.length > 20) this.value = this.value.slice(0, 20);">
@@ -138,7 +145,6 @@
                 `;
             });
             
-            // Nếu đang tìm kiếm dở thì lọc lại ngay
             filterUsers();
         }
 
@@ -175,12 +181,12 @@
             const amt = document.getElementById(`amt-${uid}`).value;
             if(!amt || amt <= 0) return alert("Số lượng không hợp lệ!");
 
-            const myBalText = document.getElementById('myBalance').innerText.replace(/,/g,'');
+            // Lấy số dư hiện tại từ giao diện (bỏ dấu chấm để tính toán)
+            const myBalText = document.getElementById('myBalance').innerText.replace(/\./g,'').replace(/,/g,'');
             const myBal = parseInt(myBalText) || 0;
             
-            // Kiểm tra số dư kho
             if(type === 'add' && myBal < amt) {
-                return alert("❌ BẠN KHÔNG ĐỦ HÀNG TRONG KHO!\nCòn lại: " + myBal);
+                return alert("❌ BẠN KHÔNG ĐỦ HÀNG TRONG KHO!\nCòn lại: " + myBal.toLocaleString('vi-VN'));
             }
 
             const endpoint = (type === 'add') ? '/api/add-tokens' : '/api/revoke-tokens';

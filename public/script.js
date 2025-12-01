@@ -1,5 +1,5 @@
 /* =========================================
-   BACCARAT HACKER ENGINE - V3.0 PRO
+   BACCARAT HACKER ENGINE - V3.2 (FUTURE PREDICTION MODE)
    ========================================= */
 
 let currentTableId = null; 
@@ -43,13 +43,13 @@ function updateTokenUI(amount) {
         if(amount === 'VIP' || amount === 'unlimited') {
             el.innerText = "VIP"; el.style.color = "#ff003c"; el.style.textShadow = "0 0 10px #ff003c";
         } else {
-            el.innerText = amount; el.style.color = "#00ff41"; el.style.textShadow = "none";
+            el.innerText = Math.floor(amount).toLocaleString('vi-VN'); 
+            el.style.color = "#00ff41"; el.style.textShadow = "none";
         }
     }
 }
 
 function updateSystemStats() {
-    // Giả lập thông số CPU nhảy nhảy cho nguy hiểm
     const el = document.getElementById('cpuVal');
     if(el) el.innerText = Math.floor(Math.random() * 30) + 10;
 }
@@ -92,9 +92,6 @@ function startTokenDeduction() {
             if (data.status === 'success') {
                 updateTokenUI(data.remaining);
                 localStorage.setItem('tokens', data.remaining);
-                if(data.remaining !== 'VIP') {
-                    // addLog(`SYSTEM: Phí duy trì -3 Token. Còn lại: ${data.remaining}`);
-                }
             } else {
                 clearInterval(deductionTimer);
                 showOutOfTokenPopup();
@@ -132,180 +129,141 @@ socket.on('server_update', (allTables) => {
     if (tableData) {
         const serverHistoryArr = (tableData.result || "").split('');
 
-        // 1. CÓ KẾT QUẢ MỚI
-        if (serverHistoryArr.length > history.length) {
-            const newResult = serverHistoryArr[serverHistoryArr.length - 1];
-            history = serverHistoryArr; 
-            processNewResult(newResult);
-        }
-        // 2. BÀN BỊ RESET HOẶC MỚI VÀO
-        else if (serverHistoryArr.length < history.length || history.length === 0) {
-            history = serverHistoryArr;
-            renderBigRoadGrid(history);
+        // Kiểm tra xem có dữ liệu mới không
+        if (serverHistoryArr.length > history.length || history.length === 0) {
             
-            // Nếu mới vào, chạy phân tích ngay cho ván tiếp theo
-            if(history.length > 0) {
-                analyzeNextTurn(history);
+            // Lấy kết quả thực tế vừa ra để ghi log (nhưng không hiển thị bài này)
+            const realResult = serverHistoryArr[serverHistoryArr.length - 1];
+            
+            history = serverHistoryArr; 
+            
+            // Render cầu (Roadmap) để người dùng soi lịch sử
+            renderBigRoadGrid(history);
+
+            if(realResult) {
+                let winText = (realResult === 'P') ? "CON" : (realResult === 'B' ? "CÁI" : "HÒA");
+                addLog(`>> KẾT QUẢ THỰC TẾ: [ ${winText} ] -> Cập nhật cầu.`);
             }
+
+            // --- QUAN TRỌNG: CHẠY NGAY PHÂN TÍCH & HIỂN THỊ DỰ ĐOÁN VÁN SAU ---
+            // Bỏ qua việc hiển thị bài cũ, hiển thị luôn bài tương lai
+            analyzeAndRenderFuture(history);
         }
     }
 });
 
-function processNewResult(winner) {
-    isProcessing = true; 
-    renderBigRoadGrid(history);
-    addLog(">> NHẬN TÍN HIỆU GÓI TIN MỚI...");
+// --- HÀM XỬ LÝ CHÍNH: DỰ ĐOÁN & HIỂN THỊ BÀI TƯƠNG LAI ---
+function analyzeAndRenderFuture(historyArr) {
+    isProcessing = true;
     
-    // Clear effects
-    document.querySelector('.p-side').classList.remove('side-active-p');
-    document.querySelector('.b-side').classList.remove('side-active-b');
-    const bar = document.querySelector('.prediction-bar');
-    if(bar) bar.classList.remove('win-p', 'win-b');
-    
-    const hand = simulateRealBaccaratHand(winner);
-    
-    // Reset bài
+    // 1. Reset trạng thái
     document.querySelectorAll('.card-slot').forEach(c => { c.className = "card-slot"; c.innerText = ""; });
     document.getElementById('playerScore').innerText = "0";
     document.getElementById('bankerScore').innerText = "0";
+    document.querySelector('.p-side').classList.remove('side-active-p');
+    document.querySelector('.b-side').classList.remove('side-active-b');
+    const barEl = document.querySelector('.prediction-bar');
+    barEl.classList.remove('win-p', 'win-b');
 
-    // Mở bài animation
-    renderSingleCard('p1', hand.pCards[0], 0);
-    renderSingleCard('p2', hand.pCards[1], 200);
-    renderSingleCard('b1', hand.bCards[0], 400);
-    renderSingleCard('b2', hand.bCards[1], 600);
-
-    setTimeout(() => {
-        if(hand.pCards[2]) renderSingleCard('p3', hand.pCards[2], 0);
-        if(hand.bCards[2]) renderSingleCard('b3', hand.bCards[2], 200);
-        
-        document.getElementById('playerScore').innerText = hand.pScore;
-        document.getElementById('bankerScore').innerText = hand.bScore;
-        
-        let winText = (hand.pScore > hand.bScore) ? "NHÀ CON THẮNG" : (hand.bScore > hand.pScore ? "NHÀ CÁI THẮNG" : "HÒA");
-        addLog(`>> KẾT QUẢ: [ ${winText} ]`);
-
-        setTimeout(() => {
-            // SAU KHI CÓ KẾT QUẢ -> CHẠY PHÂN TÍCH VÁN TIẾP THEO
-            analyzeNextTurn(history);
-            isProcessing = false;
-        }, 1000);
-    }, 1200);
-}
-
-// --- THUẬT TOÁN SOI CẦU & DỰ ĐOÁN (MỚI) ---
-function analyzeNextTurn(historyArr) {
     const textEl = document.getElementById('aiPredText');
     const adviceEl = document.getElementById('aiAdvice');
-    const barEl = document.querySelector('.prediction-bar');
-    const pContainer = document.querySelector('.p-side');
-    const bContainer = document.querySelector('.b-side');
 
-    textEl.innerHTML = 'ANALYZING...';
+    textEl.innerHTML = "LOADING AI...";
     textEl.className = "pred-result blink";
 
+    // 2. Chạy thuật toán dự đoán
+    const analysis = getAdvancedAlgorithm(historyArr);
+    const predictedSide = analysis.side; // 'P' hoặc 'B'
+    
+    // 3. Giả lập bộ bài cho Tương lai (Nếu dự đoán P -> Bài P phải thắng)
+    const futureHand = simulateRealBaccaratHand(predictedSide);
+
+    // 4. Hiển thị bài giả lập (Animation)
     setTimeout(() => {
-        // 1. Phân tích cầu từ lịch sử
-        const analysis = getAdvancedAlgorithm(historyArr);
-        const prediction = analysis.side; // 'P' hoặc 'B'
-        const algoName = analysis.name;
-        const reason = analysis.reason;
+        renderSingleCard('p1', futureHand.pCards[0], 0);
+        renderSingleCard('p2', futureHand.pCards[1], 150);
+        renderSingleCard('b1', futureHand.bCards[0], 300);
+        renderSingleCard('b2', futureHand.bCards[1], 450);
 
-        // 2. Tính tỷ lệ thắng (70% - 90%)
-        let confidence = Math.floor(Math.random() * (90 - 70 + 1)) + 70;
-        
-        // 3. Hiển thị UI
-        let winName = '';
-        barEl.classList.remove('win-p', 'win-b');
-        textEl.classList.remove('res-P', 'res-B', 'blink');
-        pContainer.classList.remove('side-active-p');
-        bContainer.classList.remove('side-active-b');
+        setTimeout(() => {
+            if(futureHand.pCards[2]) renderSingleCard('p3', futureHand.pCards[2], 0);
+            if(futureHand.bCards[2]) renderSingleCard('b3', futureHand.bCards[2], 150);
+            
+            // Cập nhật điểm
+            document.getElementById('playerScore').innerText = futureHand.pScore;
+            document.getElementById('bankerScore').innerText = futureHand.bScore;
 
-        if (prediction === 'P') { 
-            winName = 'NHÀ CON (PLAYER)';
-            textEl.classList.add('res-P'); barEl.classList.add('win-p');
-            pContainer.classList.add('side-active-p');
-        } else { 
-            winName = 'NHÀ CÁI (BANKER)';
-            textEl.classList.add('res-B'); barEl.classList.add('win-b');
-            bContainer.classList.add('side-active-b');
-        }
-        
-        textEl.innerHTML = winName;
-        adviceEl.innerHTML = `<span style="color:#fff; font-weight:bold;">[${algoName}]</span>: ${reason}`;
-        
-        // Update thanh phần trăm
-        let confP = (prediction === 'P') ? confidence : (100 - confidence);
-        let confB = (prediction === 'B') ? confidence : (100 - confidence);
-        
-        document.getElementById('confP').innerText = confP + "%"; document.getElementById('barP').style.width = confP + "%";
-        document.getElementById('confB').innerText = confB + "%"; document.getElementById('barB').style.width = confB + "%";
-        
-        addLog(`DỰ ĐOÁN VÁN SAU: ${winName} - Tỷ lệ: ${confidence}%`);
+            // 5. Cập nhật Text và Thanh tỷ lệ (Đồng bộ với bài)
+            let winName = '';
+            let confidence = Math.floor(Math.random() * (95 - 75 + 1)) + 75; // Tỷ lệ cao cho uy tín
+
+            textEl.classList.remove('res-P', 'res-B', 'blink');
+            
+            if (predictedSide === 'P') { 
+                winName = 'DỰ ĐOÁN: NHÀ CON (PLAYER)';
+                textEl.classList.add('res-P'); barEl.classList.add('win-p');
+                document.querySelector('.p-side').classList.add('side-active-p');
+            } else { 
+                winName = 'DỰ ĐOÁN: NHÀ CÁI (BANKER)';
+                textEl.classList.add('res-B'); barEl.classList.add('win-b');
+                document.querySelector('.b-side').classList.add('side-active-b');
+            }
+            
+            textEl.innerHTML = winName;
+            adviceEl.innerHTML = `<span style="color:#fff; font-weight:bold;">[${analysis.name}]</span>: ${analysis.reason}`;
+
+            // Update thanh phần trăm
+            let confP = (predictedSide === 'P') ? confidence : (100 - confidence);
+            let confB = (predictedSide === 'B') ? confidence : (100 - confidence);
+            document.getElementById('confP').innerText = confP + "%"; document.getElementById('barP').style.width = confP + "%";
+            document.getElementById('confB').innerText = confB + "%"; document.getElementById('barB').style.width = confB + "%";
+
+            addLog(`SYSTEM: Đã hiển thị mô phỏng dự đoán -> ${predictedSide}`);
+            isProcessing = false;
+
+        }, 800);
     }, 500);
 }
 
-// --- LOGIC THUẬT TOÁN BACCARAT ---
+// --- THUẬT TOÁN SOI CẦU ---
 function getAdvancedAlgorithm(history) {
     if (!history || history.length < 3) {
-        return { side: (Math.random()>0.5?'P':'B'), name: "KHỞI TẠO AI", reason: "Dữ liệu chưa đủ, chạy ngẫu nhiên." };
+        return { side: (Math.random()>0.5?'P':'B'), name: "AI RANDOM", reason: "Đang thu thập dữ liệu..." };
     }
 
-    // Lọc bỏ Hòa (T) để soi cầu chính xác hơn
     const cleanHistory = history.filter(x => x !== 'T');
     const len = cleanHistory.length;
-    if (len < 3) return { side: 'B', name: "AI BASIC", reason: "Ưu tiên Nhà Cái khi cầu mới." };
+    if (len < 3) return { side: 'B', name: "AI BASIC", reason: "Khởi tạo luồng dữ liệu." };
 
     const last1 = cleanHistory[len - 1];
     const last2 = cleanHistory[len - 2];
     const last3 = cleanHistory[len - 3];
 
-    // 1. THUẬT TOÁN: CẦU BỆT (STREAK)
-    // Nếu ra 3 ván giống nhau liên tiếp -> Đánh theo tiếp
+    // Bệt 3 tay -> Theo bệt
     if (last1 === last2 && last2 === last3) {
-        return { 
-            side: last1, 
-            name: "CẦU BỆT RỒNG", 
-            reason: `Phát hiện bệt ${last1==='P'?'Con':'Cái'} dài, bám theo cầu.` 
-        };
+        return { side: last1, name: "CẦU BỆT RỒNG", reason: `Phát hiện bệt ${last1==='P'?'Con':'Cái'} dài, bám theo cầu.` };
     }
-
-    // 2. THUẬT TOÁN: CẦU 1-1 (PING PONG)
-    // P - B - P -> Đánh B
+    // Cầu 1-1 -> Đánh nghịch
     if (last1 !== last2 && last2 !== last3) {
         const nextSide = (last1 === 'P') ? 'B' : 'P';
-        return { 
-            side: nextSide, 
-            name: "CẦU CHUYỀN 1-1", 
-            reason: "Nhịp 1-1 đang ổn định, đánh nghịch lại." 
-        };
+        return { side: nextSide, name: "CẦU CHUYỀN 1-1", reason: "Nhịp 1-1 đang ổn định, đánh nghịch lại." };
     }
-
-    // 3. THUẬT TOÁN: BẺ CẦU 2-1 (1-2)
-    // Ví dụ: B - B - P -> Khả năng về lại B (Cầu 2-1-2) hoặc P (Cầu 2-2)
-    // Ở đây ta dùng chiến thuật "Nuôi Tụ" (Follow winner)
+    // Follow winner
     if (last2 === last3 && last1 !== last2) {
-        return { 
-            side: last1, 
-            name: "NUÔI TỤ (FOLLOW)", 
-            reason: "Cầu gãy nhịp, ưu tiên theo tay vừa thắng." 
-        };
+        return { side: last1, name: "NUÔI TỤ (FOLLOW)", reason: "Cầu gãy nhịp, ưu tiên theo tay vừa thắng." };
     }
 
-    // 4. THUẬT TOÁN: LỰC NẾN (GIẢ LẬP)
-    // Nếu không vào các thế bài trên, dùng Logic Fibonacci giả lập
+    // Nếu không vào form thì dùng Logic ngẫu nhiên có trọng số
     const rand = Math.random();
-    if (rand > 0.5) {
-        return { side: 'B', name: "FIBONACCI MATRIX", reason: "Lực nến nghiêng về Nhà Cái." };
-    } else {
-        return { side: 'P', name: "CÔNG THỨC 3-2-1", reason: "Biểu đồ nhiệt báo Nhà Con." };
-    }
+    if (rand > 0.5) return { side: 'B', name: "FIBONACCI MATRIX", reason: "Lực nến nghiêng về Nhà Cái." };
+    else return { side: 'P', name: "CÔNG THỨC 3-2-1", reason: "Biểu đồ nhiệt báo Nhà Con." };
 }
 
 // --- CARD RENDERING HELPER ---
 function renderSingleCard(slotId, cardData, delay) {
     setTimeout(() => {
         const el = document.getElementById(slotId);
+        if(!el) return;
         el.className = 'card-slot'; 
         void el.offsetWidth; 
         el.className = `card-slot revealed ${cardData.suit}`; 
@@ -325,11 +283,15 @@ function getCard() {
 }
 function calc(cards) { return cards.reduce((sum, c) => sum + c.value, 0) % 10; }
 
+// --- HÀM GIẢ LẬP BÀI (ĐỂ TẠO RA BỘ BÀI KHỚP VỚI DỰ ĐOÁN) ---
 function simulateRealBaccaratHand(targetWinner) {
+    // Hàm này sẽ random bài mãi cho đến khi ra kết quả đúng với targetWinner (P hoặc B)
     while (true) {
         let p = [getCard(), getCard()]; let b = [getCard(), getCard()];
         let pScore = calc(p); let bScore = calc(b);
         let finished = false;
+        
+        // Luật rút bài cơ bản
         if (pScore >= 8 || bScore >= 8) finished = true; 
         if (!finished) {
             let p3 = null;
@@ -346,10 +308,15 @@ function simulateRealBaccaratHand(targetWinner) {
             }
             if (bDraws) { b.push(getCard()); bScore = calc(b); }
         }
-        if (pScore === bScore && targetWinner !== 'T') continue; 
+
+        // Logic kiểm tra người thắng
         let winner = pScore > bScore ? 'P' : (bScore > pScore ? 'B' : 'T');
+        
+        // Nếu targetWinner là Hòa (T) thì trả về
         if (targetWinner === 'T') return { pCards: p, bCards: b, pScore, bScore }; 
-        else if (winner === targetWinner) return { pCards: p, bCards: b, pScore, bScore };
+        
+        // Nếu kết quả random trùng với DỰ ĐOÁN mong muốn thì trả về bộ bài này
+        if (winner === targetWinner) return { pCards: p, bCards: b, pScore, bScore };
     }
 }
 

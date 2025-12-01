@@ -1,3 +1,5 @@
+<!-- --- START OF FILE login.html --- -->
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -44,7 +46,7 @@
             border: 1px solid #00ff41;
             box-shadow: 0 0 30px rgba(0, 255, 65, 0.15), inset 0 0 20px rgba(0, 20, 0, 0.8);
             backdrop-filter: blur(5px);
-            padding: 2px; /* Tạo khoảng hở cho viền đôi */
+            padding: 2px;
             animation: fadeIn 1s ease-out;
         }
 
@@ -145,7 +147,6 @@
     <div id="toast-container"></div>
 
     <div class="login-wrapper">
-        <!-- Trang trí góc -->
         <div class="corner tl"></div><div class="corner tr"></div>
         <div class="corner bl"></div><div class="corner br"></div>
 
@@ -162,16 +163,19 @@
             <h3 id="formTitle" style="color:#fff; margin-bottom:20px; font-family:'Orbitron'; text-align:center;">ĐĂNG NHẬP</h3>
             
             <div class="input-group">
-                <input type="text" id="user" placeholder="TÊN TÀI KHOẢN...">
+                <!-- SỬA: Thêm maxlength="20" -->
+                <input type="text" id="user" placeholder="TÊN TÀI KHOẢN..." maxlength="20">
             </div>
             
             <div class="input-group">
-                <input type="password" id="pass" placeholder="MẬT KHẨU...">
+                <!-- SỬA: Thêm maxlength="20" -->
+                <input type="password" id="pass" placeholder="MẬT KHẨU..." maxlength="20">
             </div>
 
             <!-- Ô nhập lại mật khẩu (Mặc định ẩn) -->
             <div class="input-group" id="confirmBox" style="display:none;">
-                <input type="password" id="confirmPass" placeholder="XÁC NHẬN MẬT KHẨU...">
+                <!-- SỬA: Thêm maxlength="20" -->
+                <input type="password" id="confirmPass" placeholder="XÁC NHẬN MẬT KHẨU..." maxlength="20">
             </div>
 
             <button onclick="handleAuth()" id="btnAction">KẾT NỐI SERVER</button>
@@ -204,23 +208,21 @@
         const drops = Array(Math.floor(columns)).fill(1);
 
         function draw() {
-            ctx.fillStyle = "rgba(0, 0, 0, 0.05)"; // Tạo vệt mờ
+            ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            ctx.fillStyle = "#00ff41"; // Màu chữ xanh
+            ctx.fillStyle = "#00ff41";
             ctx.font = fontSize + "px monospace";
 
             for (let i = 0; i < drops.length; i++) {
                 const text = chars[Math.floor(Math.random() * chars.length)];
                 ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-
                 if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
                     drops[i] = 0;
                 }
                 drops[i]++;
             }
         }
-        setInterval(draw, 35); // Tốc độ rơi
+        setInterval(draw, 35);
 
         // --- LOGIC ĐĂNG NHẬP / ĐĂNG KÝ ---
         let isLogin = true;
@@ -317,7 +319,6 @@
             }
         }
         
-        // Hỗ trợ ấn Enter để đăng nhập
         document.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') handleAuth();
         });
