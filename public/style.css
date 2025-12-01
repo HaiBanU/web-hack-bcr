@@ -1,5 +1,5 @@
 /* =========================================
-   STYLE.CSS - V11 (FULL NEON GREEN & FIX)
+   STYLE.CSS - GLOBAL CORE (DÙNG CHUNG)
    ========================================= */
 
 :root {
@@ -18,13 +18,13 @@ html, body {
     background-color: var(--bg-black); 
     height: 100%; margin: 0; padding: 0;
     overflow-x: hidden; 
+    color: var(--neon-green); 
+    font-family: var(--font-main);
 }
 
 * { box-sizing: border-box; user-select: none; }
 
-body { color: var(--neon-green); font-family: var(--font-main); }
-
-/* --- BACKGROUNDS --- */
+/* --- BACKGROUND EFFECTS (MATRIX) --- */
 #matrixCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.15; pointer-events: none; }
 
 .cyber-grid-bg {
@@ -38,214 +38,15 @@ body { color: var(--neon-green); font-family: var(--font-main); }
 }
 @keyframes gridMove { 0% { transform: perspective(500px) rotateX(60deg) translateY(0); } 100% { transform: perspective(500px) rotateX(60deg) translateY(40px); } }
 
-/* =========================================
-   LOBBY STYLES (INDEX)
-   ========================================= */
-.lobby-content { position: relative; z-index: 10; padding: 20px; max-width: 1400px; margin: 0 auto; padding-bottom: 80px; }
-
-.lobby-header { text-align: center; margin-bottom: 40px; }
+/* --- COMMON TYPOGRAPHY --- */
 .glitch-text { 
-    font-family: var(--font-display); font-size: 3.5rem; color: #fff; 
+    font-family: var(--font-display); 
+    color: #fff; 
     text-shadow: 0 0 10px var(--neon-green), 0 0 20px var(--neon-green); 
     margin: 0; letter-spacing: 4px; text-transform: uppercase;
 }
-.server-status {
-    display: inline-block; margin-top: 10px; padding: 5px 15px;
-    border: 1px solid var(--neon-green); background: rgba(0, 50, 0, 0.5);
-    color: var(--neon-green); font-size: 0.9rem; letter-spacing: 2px;
-}
 
-/* AUTH BUTTONS */
-#authSection { position: absolute; top: 20px; right: 20px; }
-.btn-join { 
-    background: transparent; border: 1px solid #fff; color: #fff; 
-    padding: 8px 20px; font-family: var(--font-display); cursor: pointer; 
-    transition: 0.3s; font-weight: bold;
-}
-.btn-join:hover { background: var(--neon-green); color: #000; border-color: var(--neon-green); box-shadow: 0 0 15px var(--neon-green); }
-
-/* GRID TABLES SYSTEM */
-.tables-grid { 
-    display: grid; 
-    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); 
-    gap: 25px; 
-}
-
-/* CARD DESIGN (XANH LÁ CHỦ ĐẠO) */
-.casino-card { 
-    background: #050a05; 
-    border: 2px solid var(--neon-green); /* KHUNG XANH LÁ */
-    border-radius: 6px;
-    display: flex; flex-direction: column; overflow: hidden; position: relative; 
-    transition: all 0.3s ease;
-    height: 190px; cursor: pointer;
-    box-shadow: 0 0 10px rgba(0, 255, 65, 0.1);
-}
-
-.casino-card:hover { 
-    transform: translateY(-5px); 
-    box-shadow: 0 0 25px rgba(0, 255, 65, 0.4); 
-    border-color: #fff; /* Hover thì sáng trắng lên */
-}
-
-/* CARD HEADER */
-.cc-header { 
-    background: rgba(0, 40, 0, 0.8); 
-    border-bottom: 1px solid var(--neon-green);
-    padding: 8px 15px; display: flex; justify-content: space-between; align-items: center; 
-}
-.cc-name { font-family: var(--font-display); font-weight: 900; color: #fff; font-size: 1.1rem; letter-spacing: 1px; }
-
-/* CARD BODY (NO SCROLL) */
-.cc-body { display: flex; height: 100%; background: #000; overflow: hidden; }
-
-/* GRID AREA (CHỨA CẦU) */
-.cc-grid-area { 
-    flex: 1; position: relative; 
-    /* Lưới nền rất mờ */
-    background-image: linear-gradient(#111 1px, transparent 1px), linear-gradient(90deg, #111 1px, transparent 1px);
-    background-size: 14px 14px;
-    display: flex; 
-    justify-content: flex-end; /* Đẩy dữ liệu về bên phải */
-    align-items: flex-start;
-    overflow: hidden; /* Cắt bỏ phần thừa */
-    padding-right: 2px;
-} 
-.road-grid-wrapper { display: flex; height: 100%; }
-
-/* PREDICT AREA (BÊN PHẢI CARD) */
-.cc-predict-area { 
-    width: 90px; background: rgba(0, 20, 0, 0.9); border-left: 1px solid var(--neon-green); 
-    display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; z-index: 2;
-}
-.cc-rate { 
-    font-family: var(--font-display); font-weight: 900; color: #000; 
-    background: var(--neon-green); padding: 5px 0; width: 80%; font-size: 1.1rem; margin-top: 5px; 
-    border-radius: 4px; box-shadow: 0 0 10px var(--neon-green);
-}
-
-/* VIP GOLD STYLE */
-.casino-card.gold-tier {
-    border: 2px solid var(--neon-gold);
-    box-shadow: 0 0 15px rgba(255, 215, 0, 0.15);
-}
-.casino-card.gold-tier .cc-header { background: rgba(40, 35, 0, 0.8); border-bottom-color: var(--neon-gold); }
-.casino-card.gold-tier:hover { box-shadow: 0 0 35px rgba(255, 215, 0, 0.6); border-color: #fff; }
-.casino-card.gold-tier .cc-name { color: var(--neon-gold); text-shadow: 0 0 5px var(--neon-gold); }
-.casino-card.gold-tier .cc-rate { background: var(--neon-gold); box-shadow: 0 0 15px var(--neon-gold); }
-.casino-card.gold-tier .cc-predict-area { border-left-color: var(--neon-gold); }
-
-/* BEAD STYLES (HẠT CẦU - INDEX) */
-.road-col { width: 14px; display: flex; flex-direction: column; border-right: 1px solid #222; }
-.road-cell { height: 16.66%; border-bottom: 1px solid #222; display: flex; justify-content: center; align-items: center; }
-
-/* Hạt rỗng (Hollow) đẹp hơn */
-.bead { 
-    width: 9px; height: 9px; 
-    border-radius: 50%; 
-    border: 2px solid currentColor; /* Viền màu */
-    background: transparent; 
-    box-shadow: 0 0 3px currentColor; 
-}
-.bead.b { color: var(--neon-red); } 
-.bead.p { color: var(--neon-blue); } 
-.bead.t { color: var(--neon-green); border-width: 0; background: var(--neon-green); box-shadow: 0 0 6px var(--neon-green); }
-
-/* =========================================
-   TOOL STYLES (TRANG GAME)
-   ========================================= */
-.hacker-layout {
-    display: grid;
-    grid-template-columns: 320px 1fr 320px;
-    grid-template-rows: 65px 1fr 200px; 
-    height: 100vh; gap: 15px; padding: 15px;
-    max-width: 1920px; margin: 0 auto;
-}
-
-/* HEADER TOOL */
-.sys-header { 
-    grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; 
-    background: var(--bg-panel); border: 1px solid var(--neon-green); 
-    padding: 0 20px; box-shadow: 0 0 20px rgba(0,255,65,0.1); border-radius: 6px; 
-}
-.sys-status span { border: 1px solid var(--neon-green); padding: 5px 10px; border-radius: 4px; background: rgba(0,50,0,0.5); font-size: 0.9rem; }
-
-/* SIDE PANELS */
-.panel-left, .panel-right { 
-    background: var(--bg-panel); border: 1px solid #333; padding: 15px; 
-    border-radius: 6px; display: flex; flex-direction: column; 
-    box-shadow: 0 0 15px rgba(0,0,0,0.5);
-}
-
-/* GAME CENTER (MAIN AREA) */
-.game-center {
-    position: relative; 
-    border: 2px solid var(--neon-green); /* Viền chính xanh lá */
-    border-radius: 12px;
-    background: rgba(5, 15, 5, 0.9); 
-    display: flex; flex-direction: column; justify-content: center; align-items: center; 
-    overflow: hidden; 
-    box-shadow: 0 0 50px rgba(0, 50, 0, 0.4), inset 0 0 100px rgba(0,20,0,0.8);
-}
-
-/* PREDICTION PILL (KHUNG DỰ ĐOÁN MỚI) */
-.prediction-wrapper {
-    position: relative; z-index: 5; 
-    width: 80%; max-width: 550px; margin-top: 30px;
-    height: 90px;
-    background: rgba(0, 20, 0, 0.8); 
-    border: 1px solid #555;
-    border-radius: 60px; /* Bo tròn Pill */
-    display: flex; align-items: center;
-    padding: 5px 10px;
-    transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-/* Win Effects */
-.prediction-wrapper.win-p { 
-    border: 2px solid var(--neon-blue); 
-    box-shadow: 0 0 40px rgba(0, 243, 255, 0.3), inset 0 0 20px rgba(0, 243, 255, 0.1); 
-    background: linear-gradient(90deg, rgba(0,0,0,0.9), rgba(0, 243, 255, 0.15));
-}
-.prediction-wrapper.win-b { 
-    border: 2px solid var(--neon-red); 
-    box-shadow: 0 0 40px rgba(255, 0, 60, 0.3), inset 0 0 20px rgba(255, 0, 60, 0.1);
-    background: linear-gradient(90deg, rgba(0,0,0,0.9), rgba(255, 0, 60, 0.15));
-}
-
-/* ROBOT CONTAINER */
-.ai-box {
-    width: 80px; height: 80px;
-    border-radius: 50%;
-    border: 1px solid rgba(0, 255, 65, 0.3);
-    display: flex; justify-content: center; align-items: center;
-    margin-right: 20px;
-    position: relative;
-    background: radial-gradient(circle, rgba(0,255,65,0.15), transparent 70%);
-}
-.ai-img { width: 60px; height: 60px; object-fit: contain; filter: drop-shadow(0 0 5px var(--neon-green)); animation: float 3s ease-in-out infinite; }
-@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-
-/* PREDICT TEXT */
-.pred-info { flex: 1; display: flex; flex-direction: column; justify-content: center; }
-.pred-label { font-size: 0.8rem; color: #888; letter-spacing: 3px; margin-bottom: 2px; text-transform: uppercase; }
-.pred-result { font-size: 3.2rem; font-family: var(--font-display); font-weight: 900; line-height: 1; text-transform: uppercase; padding-bottom: 5px; }
-
-.res-p { color: var(--neon-blue); text-shadow: 0 0 20px var(--neon-blue); }
-.res-b { color: var(--neon-red); text-shadow: 0 0 20px var(--neon-red); }
-.blink-wait { animation: blink 1s infinite; color: #fff; }
-@keyframes blink { 50% { opacity: 0.3; } }
-
-/* CARDS AREA */
-.battle-wrapper { position: relative; z-index: 2; width: 100%; display: flex; justify-content: space-around; margin-top: 20px; }
-.card-slot { width: 85px; height: 115px; background: #080808; border: 1px solid #444; border-radius: 6px; display: flex; justify-content: center; align-items: center; font-size: 2.2rem; color: #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-.card-slot.revealed { background: #fff; color: #000; border: 2px solid #fff; box-shadow: 0 0 25px #fff; transform: scale(1.1); animation: flipReveal 0.4s both; }
-
-/* FOOTER */
-.sys-footer { grid-column: 1 / -1; display: grid; grid-template-columns: 320px 1fr 320px; gap: 15px; }
-.footer-panel { background: var(--bg-panel); border: 1px solid #333; overflow: hidden; display: flex; flex-direction: column; border-radius: 6px; }
-
-/* SCROLLBAR */
+/* --- SCROLLBAR --- */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: #000; }
 ::-webkit-scrollbar-thumb { background: var(--neon-green); border-radius: 3px; }
