@@ -106,7 +106,7 @@
 }
 .bead-grid {
         /* Mobile: 6 Dòng (Dọc) - 5 Cột (Ngang) */
-        grid-template-rows: repeat(6, 1fr) !important;
+        grid-template-rows: repeat(5, 1fr) !important;
         grid-template-columns: repeat(5, 1fr) !important;
         
         /* Đảm bảo vẫn giữ hướng chảy dọc */
