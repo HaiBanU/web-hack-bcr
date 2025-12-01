@@ -322,42 +322,48 @@
 }
 #trendChart { width: 100%; height: 100%; display: block; }
 
-/* 2. BEAD PANEL (UPDATED FIX: 5x5, TO, ĐẸP) */
+/* --- TRONG FILE tool.css --- */
+
+/* 1. KHUNG CHỨA BẢNG CẦU (SỬA LẠI MÀU ĐEN) */
 .bead-panel {
-    /* Nền màu nâu tối giống hình mẫu */
-    background: #1a0b0b; 
-    border: 2px solid #5a2e18; /* Viền nâu sáng hơn */
-    border-radius: 8px;
-    padding: 0; /* Xóa padding để lưới sát viền */
+    /* Quay về nền đen để đồng bộ với các ô khác */
+    background: #000; 
+    border: 1px solid #333; 
+    border-radius: 4px;
+    
+    /* Xóa padding để tận dụng tối đa diện tích cho lưới */
+    padding: 0; 
+    
     display: flex;
     justify-content: center;
     align-items: center;
     overflow: hidden;
     position: relative;
+    box-shadow: inset 0 0 10px #000;
 }
 
-/* 2. LƯỚI 6 DÒNG x 6 CỘT (CHUẨN 36 Ô) */
+/* 2. LƯỚI 6 DÒNG x 6 CỘT (Căn chỉnh để không bị vỡ) */
 .bead-grid {
     display: grid;
-    /* Cố định 6 dòng (Chuẩn Baccarat) và 6 cột */
+    /* Cố định 6 dòng - 6 cột */
     grid-template-rows: repeat(6, 1fr);
     grid-template-columns: repeat(6, 1fr);
     
-    /* QUAN TRỌNG: Điền dọc (Trên xuống dưới) giống hình mẫu */
+    /* Điền dọc: Trên -> Dưới, Trái -> Phải */
     grid-auto-flow: column; 
     
-    /* Không có khoảng cách, dùng viền để ngăn cách */
+    /* Không có khoảng cách giữa các ô (kẻ bảng) */
     gap: 0; 
     
     width: 100%;
     height: 100%;
     
-    /* Viền trên và trái cho lưới */
-    border-top: 1px solid #6e4e37;
-    border-left: 1px solid #6e4e37;
+    /* Kẻ viền trên và trái màu xám tối (thay vì màu nâu) */
+    border-top: 1px solid #333;
+    border-left: 1px solid #333;
 }
 
-/* 3. Ô CHỨA HẠT (KẺ Ô LY) */
+/* 3. Ô CHỨA HẠT (KẺ Ô LY MÀU XÁM) */
 .bead-cell {
     width: 100%;
     height: 100%;
@@ -365,17 +371,20 @@
     justify-content: center;
     align-items: center;
     
-    /* Viền phải và dưới tạo thành ô lưới hoàn chỉnh */
-    border-right: 1px solid #6e4e37;
-    border-bottom: 1px solid #6e4e37;
+    /* Kẻ viền phải và dưới màu xám tối */
+    border-right: 1px solid #333;
+    border-bottom: 1px solid #333;
     
     background: transparent;
+    /* Đảm bảo ô không bị co giãn lung tung */
+    min-width: 0; 
+    min-height: 0; 
 }
 
-/* 4. HẠT CẦU (STYLE PHẲNG GIỐNG HÌNH 2) */
+/* 4. HẠT CẦU (THU NHỎ LẠI ĐỂ KHÔNG BỊ VỠ) */
 .bead-circle {
-    /* Kích thước hạt khoảng 85% ô để có khoảng thở */
-    width: 85%;
+    /* Giảm kích thước xuống 70% - 75% để hạt nằm lọt thỏm trong ô, không bị chạm viền */
+    width: 75%; 
     height: auto;
     aspect-ratio: 1/1; /* Luôn tròn */
     
@@ -384,26 +393,28 @@
     justify-content: center;
     align-items: center;
     
-    font-family: Arial, sans-serif; /* Font đơn giản dễ đọc */
-    font-weight: 900;
-    font-size: clamp(10px, 2cqw, 16px);
+    font-family: Arial, sans-serif; 
+    font-weight: bold;
+    
+    /* Chỉnh font nhỏ lại một chút để vừa vặn */
+    font-size: clamp(8px, 1.5vh, 12px); 
     color: #fff;
     
-    /* Bỏ shadow 3D cầu kỳ, dùng style phẳng rõ nét */
+    /* Style phẳng (Flat) cho dễ nhìn, không bóng bẩy */
     box-shadow: none; 
 }
 
-/* 5. MÀU SẮC CHUẨN CASINO (SOLID COLORS) */
+/* 5. MÀU SẮC HẠT (FLAT COLORS - CHUẨN CASINO) */
 .bead-p { 
-    background-color: #0066ff; /* Xanh dương đậm */
+    background-color: #007bff; /* Xanh dương chuẩn */
     border: none;
 }
 .bead-b { 
-    background-color: #d90000; /* Đỏ tươi */
+    background-color: #dc3545; /* Đỏ chuẩn */
     border: none;
 }
 .bead-t { 
-    background-color: #00b33c; /* Xanh lá */
+    background-color: #28a745; /* Xanh lá chuẩn */
     border: none;
 }
 
