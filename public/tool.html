@@ -1,10 +1,9 @@
-<!-- --- START OF FILE tool.html --- -->
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HACKER AI - SYSTEM V12</title>
+    <title>HACKER AI - SYSTEM V18</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="tool.css">
     <link rel="stylesheet" href="mobile.css">
@@ -17,11 +16,11 @@
 
     <div class="hacker-layout">
         
-        <!-- HEADER: Logo, Tên bàn, Token -->
+        <!-- HEADER -->
         <header class="sys-header">
             <div class="brand-box">
                 <span style="background:#ff003c; color:#fff; padding:3px 8px; font-weight:bold; border-radius:2px; font-size:0.8rem;">SEXY</span>
-                <span style="color:#fff; font-family:'Orbitron'; font-size:1.1rem; margin-left:5px;">// SYSTEM V12</span>
+                <span style="color:#fff; font-family:'Orbitron'; font-size:1.1rem; margin-left:5px;">// SYSTEM V18</span>
             </div>
             
             <h1 id="tableNameDisplay" class="glitch-text" style="font-size:1.4rem; margin:0;">CONNECTING...</h1>
@@ -34,13 +33,13 @@
             </div>
         </header>
 
-        <!-- PANEL TRÁI: LOG HỆ THỐNG -->
+        <!-- PANEL TRÁI -->
         <aside class="panel-left">
             <div style="color:#00ff41; border-bottom:1px solid #333; margin-bottom:5px; font-weight:bold; font-size:0.9rem;">>> SYSTEM LOG</div>
             <div class="log-window" id="systemLog" style="flex:1; overflow-y:auto; font-size:0.7rem; color:#cfc;"></div>
         </aside>
 
-        <!-- GAME CENTER: Khu vực bài và Robot -->
+        <!-- GAME CENTER -->
         <main class="game-center">
             <canvas id="cardRain"></canvas>
 
@@ -71,20 +70,33 @@
                 </div>
             </div>
 
-            <!-- KHUNG DỰ ĐOÁN & ROBOT -->
+            <!-- KHUNG DỰ ĐOÁN & ROBOT & GAUGE (MỚI) -->
             <div class="prediction-wrapper">
+                <!-- 1. Robot -->
                 <div class="ai-box">
-                    <!-- ĐƯỜNG DẪN ẢNH ĐÚNG CỦA BẠN -->
                     <img src="robot.png" class="ai-img" alt="AI">
                 </div>
+
+                <!-- 2. Text Dự đoán -->
                 <div class="pred-info">
                     <div class="pred-label" id="aiAdvice">SYSTEM ANALYZING...</div>
                     <div class="pred-result blink-wait" id="aiPredText">WAITING</div>
                 </div>
+
+                <!-- 3. Vòng tròn % MỚI -->
+                <div class="pred-gauge">
+                    <div class="gauge-circle">
+                        <svg viewBox="0 0 36 36" class="circular-chart">
+                            <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            <path class="circle" id="gaugePath" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        </svg>
+                        <div class="gauge-text" id="gaugeValue">0%</div>
+                    </div>
+                </div>
             </div>
         </main>
 
-        <!-- PANEL PHẢI: TỶ LỆ & MATRIX CODE -->
+        <!-- PANEL PHẢI -->
         <aside class="panel-right">
             <div style="margin-bottom:15px;">
                 <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:5px;">
@@ -98,11 +110,10 @@
                 </div>
                 <div style="background:#222; height:8px; border-radius:4px;"><div id="barB" style="height:100%; background:#ff003c; width:50%;"></div></div>
             </div>
-            <!-- Matrix Code chạy -->
             <div id="matrixCode" style="margin-top:auto; font-size:0.6rem; color:#0f0; word-break:break-all; opacity:0.5; font-family:monospace; height:150px; overflow:hidden;"></div>
         </aside>
 
-        <!-- FOOTER: CHART, ROAD, TRANS LOG -->
+        <!-- FOOTER -->
         <footer class="sys-footer">
             <div class="footer-panel footer-chart">
                 <div style="position:absolute; top:5px; left:5px; font-size:0.7rem; color:#666;">TREND CHART</div>

@@ -1,19 +1,19 @@
 /* =========================================
-   TOOL.CSS - HACKER SYSTEM V15 (FULL)
+   TOOL.CSS - HACKER SYSTEM V18 (FULL)
    ========================================= */
 
 /* --- LAYOUT GRID --- */
 .hacker-layout {
     display: grid;
-    grid-template-columns: 300px 1fr 300px; /* 3 Cột: Trái - Giữa - Phải */
-    grid-template-rows: 60px 1fr 200px;     /* 3 Hàng: Header - Game - Footer */
+    grid-template-columns: 300px 1fr 300px; 
+    grid-template-rows: 60px 1fr 200px;
     height: 100vh; 
     gap: 10px; 
     padding: 10px;
     max-width: 1920px; 
     margin: 0 auto;
     background: #020202;
-    overflow: hidden; /* Chặn thanh cuộn của body */
+    overflow: hidden; 
 }
 
 /* --- HEADER --- */
@@ -41,276 +41,210 @@
     overflow: hidden;
 }
 
-/* --- GAME CENTER (KHU VỰC GIỮA) --- */
+/* --- GAME CENTER (LED BORDER EFFECT - SNAKE) --- */
 .game-center {
     position: relative; 
-    border: 1px solid var(--neon-green);
+    z-index: 0;
+    border: none;
     border-radius: 12px;
-    background: radial-gradient(circle at center, #0a1f0a 0%, #000 90%); 
     display: flex; 
     flex-direction: column; 
     justify-content: center; 
     align-items: center;     
     overflow: hidden; 
     box-shadow: 0 0 50px rgba(0, 50, 0, 0.2);
+    padding: 3px; /* Độ dày viền */
 }
+/* LỚP 1: LED CHẠY */
+.game-center::before {
+    content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: conic-gradient(transparent, transparent, transparent, #00ff41);
+    animation: rotateBorder 4s linear infinite; z-index: -2;
+}
+/* LỚP 2: NỀN ĐEN CHE GIỮA */
+.game-center::after {
+    content: ''; position: absolute; inset: 3px; 
+    background: radial-gradient(circle at center, #0a1f0a 0%, #000 90%); 
+    border-radius: 10px; z-index: -1;
+}
+@keyframes rotateBorder { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
 #cardRain { 
-    position: absolute; 
-    top:0; left:0; 
-    width:100%; height:100%; 
-    z-index: 0; 
-    opacity: 0.2; 
-    pointer-events: none;
+    position: absolute; top:0; left:0; width:100%; height:100%; 
+    z-index: 0; opacity: 0.2; pointer-events: none;
 }
 
-/* --- BATTLE AREA (BÀI PLAYER vs BANKER) --- */
+/* --- BATTLE AREA & WINNING EFFECTS --- */
 .battle-wrapper { 
-    position: relative; 
-    z-index: 10; 
-    width: 95%; 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center;
+    position: relative; z-index: 10; width: 95%; 
+    display: flex; justify-content: space-between; align-items: center;
     margin-bottom: 30px;
 }
 
 .side-container {
-    width: 45%; 
-    text-align: center;
-    background: rgba(0,0,0,0.6); 
-    padding: 15px;
-    border-radius: 10px; 
-    border: 1px solid #333;
-    transition: 0.3s;
+    width: 45%; text-align: center;
+    background: rgba(0,0,0,0.6); padding: 15px;
+    border-radius: 10px; border: 2px solid #333;
+    transition: 0.3s; position: relative; overflow: hidden;
 }
 
-/* Hiệu ứng khi thắng */
+/* Hiệu ứng khi Player Thắng */
 .side-container.winner-p { 
-    border-color: #00f3ff; 
-    box-shadow: 0 0 30px rgba(0, 243, 255, 0.4); 
-    background: rgba(0, 243, 255, 0.05);
+    animation: pulseWinP 0.8s infinite alternate;
+    background: rgba(0, 243, 255, 0.1);
 }
+.side-container.winner-p::after {
+    content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: linear-gradient(to bottom right, transparent, rgba(0, 243, 255, 0.4), transparent);
+    animation: scanEffect 1.5s linear infinite; transform: rotate(45deg);
+}
+
+/* Hiệu ứng khi Banker Thắng */
 .side-container.winner-b { 
-    border-color: #ff003c; 
-    box-shadow: 0 0 30px rgba(255, 0, 60, 0.4); 
-    background: rgba(255, 0, 60, 0.05);
+    animation: pulseWinB 0.8s infinite alternate;
+    background: rgba(255, 0, 60, 0.1);
+}
+.side-container.winner-b::after {
+    content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: linear-gradient(to bottom right, transparent, rgba(255, 0, 60, 0.4), transparent);
+    animation: scanEffect 1.5s linear infinite; transform: rotate(45deg);
 }
 
-/* --- LÁ BÀI 3D (QUAN TRỌNG) --- */
+@keyframes pulseWinP {
+    0% { border-color: #00f3ff; box-shadow: 0 0 10px #00f3ff; }
+    100% { border-color: #fff; box-shadow: 0 0 40px #00f3ff, inset 0 0 20px #00f3ff; }
+}
+@keyframes pulseWinB {
+    0% { border-color: #ff003c; box-shadow: 0 0 10px #ff003c; }
+    100% { border-color: #fff; box-shadow: 0 0 40px #ff003c, inset 0 0 20px #ff003c; }
+}
+@keyframes scanEffect {
+    0% { transform: translateY(-100%) rotate(45deg); }
+    100% { transform: translateY(100%) rotate(45deg); }
+}
+
+/* --- CARDS 3D --- */
 .cards-area { 
-    display: flex; 
-    gap: 10px; 
-    justify-content: center; 
-    margin-top: 15px; 
-    perspective: 1000px; /* Tạo chiều sâu 3D */
+    display: flex; gap: 10px; justify-content: center; margin-top: 15px; 
+    perspective: 1000px;
 }
-
 .card-slot { 
-    width: 70px; 
-    height: 100px; 
-    position: relative; 
+    width: 70px; height: 100px; position: relative; 
     transform-style: preserve-3d;
     transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
 }
-
 .card-back, .card-front {
-    position: absolute; 
-    width: 100%; height: 100%;
-    backface-visibility: hidden; /* Ẩn mặt sau khi xoay */
-    border-radius: 6px;
-    display: flex; 
-    flex-direction: column;
-    justify-content: center; 
-    align-items: center;
-    font-family: 'Orbitron'; 
-    font-weight: bold;
+    position: absolute; width: 100%; height: 100%;
+    backface-visibility: hidden; border-radius: 6px;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    font-family: 'Orbitron'; font-weight: bold;
     box-shadow: 0 2px 5px rgba(0,0,0,0.5);
 }
-
 .card-back {
     background: linear-gradient(135deg, #003b0f, #001a00);
     border: 1px solid var(--neon-green);
     transform: rotateY(0deg);
 }
-/* Dấu chấm hỏi sau lưng bài */
-.card-back::after { 
-    content: '?'; 
-    font-size: 2.5rem; 
-    color: rgba(0, 255, 65, 0.3); 
-}
-
+.card-back::after { content: '?'; font-size: 2.5rem; color: rgba(0, 255, 65, 0.3); }
 .card-front {
-    background: #fff; 
-    color: #000; 
-    font-size: 1.5rem;
-    border: 2px solid #ddd; 
-    transform: rotateY(180deg); /* Mặc định úp mặt front xuống dưới */
+    background: #fff; color: #000; font-size: 1.5rem;
+    border: 2px solid #ddd; transform: rotateY(180deg);
 }
-
-/* Class kích hoạt lật bài */
-.card-slot.flipped { 
-    transform: rotateY(180deg); 
-}
-
+.card-slot.flipped { transform: rotateY(180deg); }
 .score-box { 
-    font-size: 3rem; 
-    font-weight: 900; 
-    margin-top: 10px; 
-    font-family: 'Orbitron'; 
-    text-shadow: 0 0 10px currentColor;
+    font-size: 3rem; font-weight: 900; margin-top: 10px; 
+    font-family: 'Orbitron'; text-shadow: 0 0 10px currentColor;
 }
 
-/* --- KHUNG DỰ ĐOÁN & ROBOT (UPDATED ANIMATION) --- */
+/* --- PREDICTION AREA & GAUGE (MỚI) --- */
 .prediction-wrapper {
-    position: relative; 
-    z-index: 10; 
-    width: 600px; 
-    height: 110px;
-    background: rgba(0, 15, 0, 0.9); 
-    border: 1px solid #444; 
-    border-radius: 60px;
-    display: flex; 
-    align-items: center; 
-    padding: 10px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    position: relative; z-index: 10; width: 650px; height: 110px;
+    background: rgba(0, 15, 0, 0.9); border: 1px solid #444; border-radius: 60px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
-
-/* Khung tròn chứa Robot */
 .ai-box {
-    width: 90px; height: 90px; 
-    border-radius: 50%;
-    background: #000; 
-    border: 2px solid var(--neon-green);
+    width: 90px; height: 90px; border-radius: 50%;
+    background: #000; border: 2px solid var(--neon-green);
     display: flex; justify-content: center; align-items: center;
-    margin-right: 20px; 
-    position: relative; 
-    overflow: hidden;
-    /* Hiệu ứng viền phát sáng co giãn */
+    position: relative; overflow: hidden; flex-shrink: 0;
     animation: glowBox 2s infinite alternate;
 }
-
 @keyframes glowBox {
     from { box-shadow: 0 0 10px var(--neon-green), inset 0 0 5px var(--neon-green); border-color: #00ff41; }
     to { box-shadow: 0 0 25px var(--neon-green), inset 0 0 15px var(--neon-green); border-color: #fff; }
 }
-
-/* Hình Robot */
 .ai-img { 
-    width: 85%; height: 85%; 
-    object-fit: contain; 
-    z-index: 2;
-    /* Hiệu ứng bay lên bay xuống */
+    width: 85%; height: 85%; object-fit: contain; z-index: 2;
     animation: robotFloat 3s ease-in-out infinite;
     filter: drop-shadow(0 0 5px var(--neon-green));
 }
+@keyframes robotFloat { 0% { transform: translateY(0); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0); } }
 
-@keyframes robotFloat {
-    0% { transform: translateY(0); }
-    50% { transform: translateY(-5px); }
-    100% { transform: translateY(0); }
-}
-
-/* Text dự đoán */
-.pred-info { display: flex; flex-direction: column; justify-content: center; }
+.pred-info { flex-grow: 1; text-align: center; margin: 0 20px; }
 .pred-label { font-size: 0.8rem; letter-spacing: 2px; color: #888; margin-bottom: 5px; font-family: 'Share Tech Mono'; }
 .pred-result { font-size: 2.8rem; font-family: 'Orbitron'; font-weight: 900; line-height: 1; text-transform: uppercase; }
-
-/* Màu sắc kết quả */
 .res-wait { color: #fff; animation: blink 0.5s infinite; }
 .res-p { color: #00f3ff; text-shadow: 0 0 20px #00f3ff; }
 .res-b { color: #ff003c; text-shadow: 0 0 20px #ff003c; }
 
-/* --- RIGHT PANEL (MATRIX & BAR) --- */
-.panel-right {
-    display: flex; 
-    flex-direction: column;
-    justify-content: flex-start;
+/* STYLE VÒNG TRÒN GAUGE */
+.pred-gauge {
+    width: 80px; height: 80px; position: relative; flex-shrink: 0;
+    display: flex; justify-content: center; align-items: center;
 }
+.pred-gauge::before {
+    content: ''; position: absolute; inset: -5px; border-radius: 50%;
+    background: conic-gradient(transparent, transparent, var(--target-color, #00ff41));
+    animation: spinGauge 2s linear infinite; z-index: 0;
+    opacity: 0; transition: opacity 0.5s;
+}
+.pred-gauge.active::before { opacity: 1; }
+.gauge-circle {
+    position: relative; width: 100%; height: 100%; z-index: 1;
+    background: #000; border-radius: 50%;
+    display: flex; justify-content: center; align-items: center;
+}
+.circular-chart { display: block; margin: 0 auto; max-width: 100%; max-height: 100%; }
+.circle-bg { fill: none; stroke: #222; stroke-width: 2.5; }
+.circle { fill: none; stroke-width: 2.5; stroke-linecap: round; transition: stroke-dasharray 1s ease-out, stroke 0.3s; }
+.stroke-p { stroke: #00f3ff; filter: drop-shadow(0 0 5px #00f3ff); }
+.stroke-b { stroke: #ff003c; filter: drop-shadow(0 0 5px #ff003c); }
+.gauge-text {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    font-family: 'Orbitron'; font-weight: bold; font-size: 1.2rem; color: #fff;
+}
+@keyframes spinGauge { 100% { transform: rotate(360deg); } }
+
+/* --- RIGHT PANEL --- */
+.panel-right { display: flex; flex-direction: column; justify-content: flex-start; }
 #matrixCode {
-    margin-top: 15px;
-    flex: 1; /* Chiếm hết chiều cao còn lại */
-    font-size: 0.7rem; 
-    color: var(--neon-green); 
-    opacity: 0.7; 
-    font-family: 'Share Tech Mono', monospace; 
-    overflow: hidden;
-    background: rgba(0, 10, 0, 0.5);
-    padding: 8px;
-    border-radius: 4px;
-    border: 1px dashed #333;
-    line-height: 1.5;
-    word-break: break-all;
+    margin-top: 15px; flex: 1; font-size: 0.7rem; color: var(--neon-green); opacity: 0.7; 
+    font-family: 'Share Tech Mono', monospace; overflow: hidden;
+    background: rgba(0, 10, 0, 0.5); padding: 8px; border-radius: 4px; border: 1px dashed #333;
+    line-height: 1.5; word-break: break-all;
 }
 
-/* --- FOOTER (GRID 3 CỘT) --- */
+/* --- FOOTER (WAVE CHART) --- */
 .sys-footer { 
-    grid-column: 1 / -1; 
-    display: grid; 
-    grid-template-columns: 300px 1fr 300px; /* Khớp với layout chính */
-    gap: 10px; 
+    grid-column: 1 / -1; display: grid; grid-template-columns: 300px 1fr 300px; gap: 10px; 
 }
-
 .footer-panel { 
-    background: rgba(5,10,5,0.95); 
-    border: 1px solid #333; 
-    border-radius: 6px; 
-    overflow: hidden; 
-    position: relative;
-    height: 100%;
+    background: rgba(5,10,5,0.95); border: 1px solid #333; border-radius: 6px; 
+    overflow: hidden; position: relative; height: 100%;
 }
-
-/* 1. Biểu đồ */
+.footer-chart { 
+    background: linear-gradient(rgba(0, 255, 65, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 65, 0.05) 1px, transparent 1px);
+    background-size: 20px 20px; background-color: #000;
+}
 #trendChart { width: 100%; height: 100%; display: block; }
 
-/* 2. Bảng Cầu (Big Road) */
-.road-container { 
-    display: flex; 
-    height: 100%; 
-    background: #000; 
-    width: 100%;
-}
-.tool-road-col { 
-    width: 30px; /* Độ rộng mỗi cột cầu */
-    border-right: 1px solid #222; 
-    display: flex; 
-    flex-direction: column; 
-}
-.tool-road-cell { 
-    flex: 1; /* Chia đều chiều cao cho 6 ô */
-    border-bottom: 1px solid #222; 
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-    position: relative; 
-}
+.road-container { display: flex; height: 100%; background: #000; width: 100%; }
+.tool-road-col { width: 30px; border-right: 1px solid #222; display: flex; flex-direction: column; }
+.tool-road-cell { flex: 1; border-bottom: 1px solid #222; display: flex; justify-content: center; align-items: center; position: relative; }
+.tool-bead { width: 18px; height: 18px; border-radius: 50%; border: 3px solid; background: transparent; }
+.tool-p { border-color: #00f3ff; } .tool-b { border-color: #ff003c; }
+.tool-bead.has-tie::after { content: ''; position: absolute; width: 3px; height: 22px; background: #00ff41; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); }
 
-/* Hạt Cầu (Bead) */
-.tool-bead { 
-    width: 18px; height: 18px; 
-    border-radius: 50%; 
-    border: 3px solid; 
-    background: transparent; 
-}
-.tool-p { border-color: #00f3ff; } 
-.tool-b { border-color: #ff003c; }
-
-/* Dấu gạch xanh cho TIE (Hòa) */
-.tool-bead.has-tie::after { 
-    content: ''; 
-    position: absolute; 
-    width: 3px; height: 22px; 
-    background: #00ff41; 
-    top: 50%; left: 50%; 
-    transform: translate(-50%, -50%) rotate(-45deg); 
-}
-
-/* 3. Log Giao Dịch */
-.trans-item { 
-    display: flex; 
-    justify-content: space-between; 
-    border-bottom: 1px solid #222; 
-    padding: 4px 0; 
-    font-family: monospace; 
-}
-
+.trans-item { display: flex; justify-content: space-between; border-bottom: 1px solid #222; padding: 4px 0; font-family: monospace; }
 @keyframes blink { 50% { opacity: 0.3; } }
