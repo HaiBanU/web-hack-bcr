@@ -340,10 +340,12 @@ function renderBeadPlate(res) {
     const grid = document.getElementById('beadPlateGrid');
     if(!grid) return;
 
-    // 1. CỐ ĐỊNH 25 Ô (5x5)
-    const totalCells = 25; 
+    // CHUẨN HÌNH MẪU: 6 dòng x 6 cột = 36 ô
+    const ROWS = 6;
+    const COLS = 6;
+    const totalCells = ROWS * COLS; 
 
-    // 2. XỬ LÝ DỮ LIỆU: LẤY 25 KẾT QUẢ MỚI NHẤT
+    // Lấy 36 kết quả mới nhất
     let displayData = [];
     if (res.length > totalCells) {
         displayData = res.slice(res.length - totalCells, res.length);
@@ -353,18 +355,24 @@ function renderBeadPlate(res) {
     
     let html = '';
 
-    // 3. VÒNG LẶP ĐỂ VẼ ĐÚNG 25 Ô (Trái -> Phải, Trên -> Dưới)
+    // LƯU Ý QUAN TRỌNG: 
+    // Vì CSS dùng "grid-auto-flow: column" (điền dọc),
+    // nên ta chỉ cần render các phần tử HTML theo đúng thứ tự mảng,
+    // CSS sẽ tự động xếp nó: Ô 1 (Cột 1, Dòng 1) -> Ô 2 (Cột 1, Dòng 2)...
+    
     for(let i = 0; i < totalCells; i++) {
         const item = displayData[i]; 
         
         if (item) {
             let cls = ''; let txt = '';
+            // Logic text chuẩn
             if (item === 'P') { cls = 'bead-p'; txt = 'P'; }
             else if (item === 'B') { cls = 'bead-b'; txt = 'B'; }
             else if (item === 'T') { cls = 'bead-t'; txt = 'T'; }
             
             html += `<div class="bead-cell"><div class="bead-circle ${cls}">${txt}</div></div>`;
         } else {
+            // Ô trống vẫn phải có viền
             html += `<div class="bead-cell"></div>`;
         }
     }
