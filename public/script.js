@@ -1,5 +1,5 @@
 /* =========================================
-   BACCARAT HACKER ENGINE - V3.2 (FUTURE PREDICTION MODE)
+   BACCARAT HACKER ENGINE - V7.0
    ========================================= */
 
 let currentTableId = null; 
@@ -9,7 +9,7 @@ const socket = io();
 
 // TIMER CONFIG
 let deductionTimer = null;
-const DEDUCTION_INTERVAL = 30000; // 30 giây trừ tiền 1 lần
+const DEDUCTION_INTERVAL = 30000; 
 
 window.addEventListener('DOMContentLoaded', () => {
     // 1. Cập nhật Token
@@ -28,30 +28,27 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('tableNameDisplay').innerHTML = tableName;
     addLog(`CONNECTED: ${tableName} [SECURE SOCKET]`);
     
-    // 3. Hiệu ứng nền
     setInterval(updateSystemStats, 1000);
     setInterval(generateMatrixCode, 80);
 
-    // 4. Trừ tiền
     startTokenDeduction();
 });
 
 // --- UI HELPERS ---
 function updateTokenUI(amount) {
-    const el = document.getElementById('liveTokenDisplay');
+    const el = document.getElementById('headerTokenDisplay');
     if(el) {
         if(amount === 'VIP' || amount === 'unlimited') {
-            el.innerText = "VIP"; el.style.color = "#ff003c"; el.style.textShadow = "0 0 10px #ff003c";
+            el.innerText = "VIP"; el.style.color = "#ff003c";
         } else {
             el.innerText = Math.floor(amount).toLocaleString('vi-VN'); 
-            el.style.color = "#00ff41"; el.style.textShadow = "none";
+            el.style.color = "#fff";
         }
     }
 }
 
 function updateSystemStats() {
-    const el = document.getElementById('cpuVal');
-    if(el) el.innerText = Math.floor(Math.random() * 30) + 10;
+    // const el = document.getElementById('cpuVal'); 
 }
 
 function generateMatrixCode() {
@@ -129,15 +126,11 @@ socket.on('server_update', (allTables) => {
     if (tableData) {
         const serverHistoryArr = (tableData.result || "").split('');
 
-        // Kiểm tra xem có dữ liệu mới không
         if (serverHistoryArr.length > history.length || history.length === 0) {
             
-            // Lấy kết quả thực tế vừa ra để ghi log (nhưng không hiển thị bài này)
             const realResult = serverHistoryArr[serverHistoryArr.length - 1];
-            
             history = serverHistoryArr; 
             
-            // Render cầu (Roadmap) để người dùng soi lịch sử
             renderBigRoadGrid(history);
 
             if(realResult) {
@@ -145,19 +138,20 @@ socket.on('server_update', (allTables) => {
                 addLog(`>> KẾT QUẢ THỰC TẾ: [ ${winText} ] -> Cập nhật cầu.`);
             }
 
-            // --- QUAN TRỌNG: CHẠY NGAY PHÂN TÍCH & HIỂN THỊ DỰ ĐOÁN VÁN SAU ---
-            // Bỏ qua việc hiển thị bài cũ, hiển thị luôn bài tương lai
             analyzeAndRenderFuture(history);
         }
     }
 });
 
-// --- HÀM XỬ LÝ CHÍNH: DỰ ĐOÁN & HIỂN THỊ BÀI TƯƠNG LAI ---
+// --- DỰ ĐOÁN & HIỂN THỊ ---
 function analyzeAndRenderFuture(historyArr) {
     isProcessing = true;
     
-    // 1. Reset trạng thái
-    document.querySelectorAll('.card-slot').forEach(c => { c.className = "card-slot"; c.innerText = ""; });
+    // Reset UI
+    document.querySelectorAll('.card-slot').forEach(c => { 
+        c.className = "card-slot"; 
+        c.innerText = ""; 
+    });
     document.getElementById('playerScore').innerText = "0";
     document.getElementById('bankerScore').innerText = "0";
     document.querySelector('.p-side').classList.remove('side-active-p');
@@ -168,17 +162,16 @@ function analyzeAndRenderFuture(historyArr) {
     const textEl = document.getElementById('aiPredText');
     const adviceEl = document.getElementById('aiAdvice');
 
-    textEl.innerHTML = "LOADING AI...";
+    textEl.innerHTML = "..."; 
     textEl.className = "pred-result blink";
 
-    // 2. Chạy thuật toán dự đoán
+    // Chạy AI
     const analysis = getAdvancedAlgorithm(historyArr);
-    const predictedSide = analysis.side; // 'P' hoặc 'B'
+    const predictedSide = analysis.side; 
     
-    // 3. Giả lập bộ bài cho Tương lai (Nếu dự đoán P -> Bài P phải thắng)
+    // Giả lập bài
     const futureHand = simulateRealBaccaratHand(predictedSide);
 
-    // 4. Hiển thị bài giả lập (Animation)
     setTimeout(() => {
         renderSingleCard('p1', futureHand.pCards[0], 0);
         renderSingleCard('p2', futureHand.pCards[1], 150);
@@ -189,91 +182,71 @@ function analyzeAndRenderFuture(historyArr) {
             if(futureHand.pCards[2]) renderSingleCard('p3', futureHand.pCards[2], 0);
             if(futureHand.bCards[2]) renderSingleCard('b3', futureHand.bCards[2], 150);
             
-            // Cập nhật điểm
             document.getElementById('playerScore').innerText = futureHand.pScore;
             document.getElementById('bankerScore').innerText = futureHand.bScore;
 
-            // 5. Cập nhật Text và Thanh tỷ lệ (Đồng bộ với bài)
-            let winName = '';
-            let confidence = Math.floor(Math.random() * (95 - 75 + 1)) + 75; // Tỷ lệ cao cho uy tín
-
-            textEl.classList.remove('res-P', 'res-B', 'blink');
+            // --- CẬP NHẬT CHỮ P / B TO ---
+            let confidence = Math.floor(Math.random() * (95 - 75 + 1)) + 75; 
+            textEl.classList.remove('res-P', 'res-B', 'blink', 'pred-result'); // Xóa class cũ
             
             if (predictedSide === 'P') { 
-                winName = 'DỰ ĐOÁN: NHÀ CON (PLAYER)';
-                textEl.classList.add('res-P'); barEl.classList.add('win-p');
+                textEl.innerHTML = "P";
+                textEl.className = "res-char-p"; 
+                barEl.classList.add('win-p');
                 document.querySelector('.p-side').classList.add('side-active-p');
             } else { 
-                winName = 'DỰ ĐOÁN: NHÀ CÁI (BANKER)';
-                textEl.classList.add('res-B'); barEl.classList.add('win-b');
+                textEl.innerHTML = "B";
+                textEl.className = "res-char-b"; 
+                barEl.classList.add('win-b');
                 document.querySelector('.b-side').classList.add('side-active-b');
             }
             
-            textEl.innerHTML = winName;
-            adviceEl.innerHTML = `<span style="color:#fff; font-weight:bold;">[${analysis.name}]</span>: ${analysis.reason}`;
+            adviceEl.innerHTML = `<span style="color:#fff;">${analysis.name}</span>`;
 
-            // Update thanh phần trăm
+            // Thanh %
             let confP = (predictedSide === 'P') ? confidence : (100 - confidence);
             let confB = (predictedSide === 'B') ? confidence : (100 - confidence);
             document.getElementById('confP').innerText = confP + "%"; document.getElementById('barP').style.width = confP + "%";
             document.getElementById('confB').innerText = confB + "%"; document.getElementById('barB').style.width = confB + "%";
 
-            addLog(`SYSTEM: Đã hiển thị mô phỏng dự đoán -> ${predictedSide}`);
+            // Vẽ lại Chart
+            drawTrendChart(historyArr);
+
+            addLog(`SYSTEM: Dự đoán -> ${predictedSide}`);
             isProcessing = false;
 
         }, 800);
     }, 500);
 }
 
-// --- THUẬT TOÁN SOI CẦU ---
 function getAdvancedAlgorithm(history) {
     if (!history || history.length < 3) {
-        return { side: (Math.random()>0.5?'P':'B'), name: "AI RANDOM", reason: "Đang thu thập dữ liệu..." };
+        return { side: (Math.random()>0.5?'P':'B'), name: "AI RANDOM", reason: "Wait..." };
     }
-
     const cleanHistory = history.filter(x => x !== 'T');
     const len = cleanHistory.length;
-    if (len < 3) return { side: 'B', name: "AI BASIC", reason: "Khởi tạo luồng dữ liệu." };
-
+    if (len < 3) return { side: 'B', name: "BASIC", reason: "Init..." };
     const last1 = cleanHistory[len - 1];
     const last2 = cleanHistory[len - 2];
     const last3 = cleanHistory[len - 3];
-
-    // Bệt 3 tay -> Theo bệt
-    if (last1 === last2 && last2 === last3) {
-        return { side: last1, name: "CẦU BỆT RỒNG", reason: `Phát hiện bệt ${last1==='P'?'Con':'Cái'} dài, bám theo cầu.` };
-    }
-    // Cầu 1-1 -> Đánh nghịch
-    if (last1 !== last2 && last2 !== last3) {
-        const nextSide = (last1 === 'P') ? 'B' : 'P';
-        return { side: nextSide, name: "CẦU CHUYỀN 1-1", reason: "Nhịp 1-1 đang ổn định, đánh nghịch lại." };
-    }
-    // Follow winner
-    if (last2 === last3 && last1 !== last2) {
-        return { side: last1, name: "NUÔI TỤ (FOLLOW)", reason: "Cầu gãy nhịp, ưu tiên theo tay vừa thắng." };
-    }
-
-    // Nếu không vào form thì dùng Logic ngẫu nhiên có trọng số
-    const rand = Math.random();
-    if (rand > 0.5) return { side: 'B', name: "FIBONACCI MATRIX", reason: "Lực nến nghiêng về Nhà Cái." };
-    else return { side: 'P', name: "CÔNG THỨC 3-2-1", reason: "Biểu đồ nhiệt báo Nhà Con." };
+    if (last1 === last2 && last2 === last3) return { side: last1, name: "BỆT RỒNG", reason: "Bệt dài" };
+    if (last1 !== last2 && last2 !== last3) return { side: (last1 === 'P' ? 'B' : 'P'), name: "CẦU 1-1", reason: "Nhịp 1-1" };
+    if (last2 === last3 && last1 !== last2) return { side: last1, name: "FOLLOW", reason: "Nuôi tụ" };
+    return (Math.random() > 0.5) ? { side: 'B', name: "MATRIX", reason: "Lực nến" } : { side: 'P', name: "3-2-1", reason: "Biểu đồ" };
 }
 
-// --- CARD RENDERING HELPER ---
 function renderSingleCard(slotId, cardData, delay) {
     setTimeout(() => {
         const el = document.getElementById(slotId);
         if(!el) return;
-        el.className = 'card-slot'; 
+        el.className = `card-slot ${cardData.suit}`; 
         void el.offsetWidth; 
-        el.className = `card-slot revealed ${cardData.suit}`; 
-        
+        el.classList.add('revealed');
         let txt = cardData.raw;
         if(cardData.raw===1) txt="A"; else if(cardData.raw===11) txt="J"; else if(cardData.raw===12) txt="Q"; else if(cardData.raw===13) txt="K";
         el.innerText = txt;
     }, delay);
 }
-
 function getCard() {
     const raw = Math.floor(Math.random() * 13) + 1;
     const value = raw >= 10 ? 0 : raw;
@@ -282,16 +255,11 @@ function getCard() {
     return { raw, value, suit };
 }
 function calc(cards) { return cards.reduce((sum, c) => sum + c.value, 0) % 10; }
-
-// --- HÀM GIẢ LẬP BÀI (ĐỂ TẠO RA BỘ BÀI KHỚP VỚI DỰ ĐOÁN) ---
 function simulateRealBaccaratHand(targetWinner) {
-    // Hàm này sẽ random bài mãi cho đến khi ra kết quả đúng với targetWinner (P hoặc B)
     while (true) {
         let p = [getCard(), getCard()]; let b = [getCard(), getCard()];
         let pScore = calc(p); let bScore = calc(b);
         let finished = false;
-        
-        // Luật rút bài cơ bản
         if (pScore >= 8 || bScore >= 8) finished = true; 
         if (!finished) {
             let p3 = null;
@@ -308,52 +276,32 @@ function simulateRealBaccaratHand(targetWinner) {
             }
             if (bDraws) { b.push(getCard()); bScore = calc(b); }
         }
-
-        // Logic kiểm tra người thắng
         let winner = pScore > bScore ? 'P' : (bScore > pScore ? 'B' : 'T');
-        
-        // Nếu targetWinner là Hòa (T) thì trả về
         if (targetWinner === 'T') return { pCards: p, bCards: b, pScore, bScore }; 
-        
-        // Nếu kết quả random trùng với DỰ ĐOÁN mong muốn thì trả về bộ bài này
         if (winner === targetWinner) return { pCards: p, bCards: b, pScore, bScore };
     }
 }
-
-// --- BIG ROAD GRID ---
 function renderBigRoadGrid(resultArr) {
     const gridEl = document.getElementById('bigRoadGrid');
     if(!gridEl) return;
-    
     let processedData = [];
     let data = resultArr;
     if(data.length > 150) data = data.slice(-150);
-
     for(let char of data) {
-        if (char === 'T') {
-            if (processedData.length > 0) processedData[processedData.length - 1].hasTie = true;
-        } else {
-            processedData.push({ type: char, hasTie: false });
-        }
+        if (char === 'T') { if (processedData.length > 0) processedData[processedData.length - 1].hasTie = true; } 
+        else { processedData.push({ type: char, hasTie: false }); }
     }
-
     let columns = []; let currentCol = []; let lastType = null;
     processedData.forEach(item => {
-        if (lastType !== null && item.type !== lastType) {
-            columns.push(currentCol); currentCol = [];
-        }
+        if (lastType !== null && item.type !== lastType) { columns.push(currentCol); currentCol = []; }
         currentCol.push(item); lastType = item.type;
-        if(currentCol.length >= 6) {
-             columns.push(currentCol); currentCol = []; lastType = null;
-        }
+        if(currentCol.length >= 6) { columns.push(currentCol); currentCol = []; lastType = null; }
     });
     if (currentCol.length > 0) columns.push(currentCol);
     while(columns.length < 30) { columns.push([]); }
-
     let html = '';
     let displayCols = columns; 
     if(displayCols.length > 60) displayCols = displayCols.slice(-60);
-
     displayCols.forEach(col => {
         html += '<div class="tool-road-col">'; 
         for (let r = 0; r < 6; r++) { 
@@ -368,7 +316,67 @@ function renderBigRoadGrid(resultArr) {
         }
         html += '</div>'; 
     });
-
     gridEl.innerHTML = html;
     setTimeout(() => { gridEl.scrollLeft = gridEl.scrollWidth; }, 50);
+}
+function drawTrendChart(historyArr) {
+    const canvas = document.getElementById('trendChart');
+    if (!canvas) return;
+    
+    const rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.height;
+    
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width;
+    const h = canvas.height;
+    
+    ctx.clearRect(0, 0, w, h);
+
+    let data = historyArr.slice(-30); 
+    if(data.length < 2) return;
+
+    let points = [];
+    let currentVal = h / 2;
+    let stepX = w / (data.length - 1); 
+    const amplitude = 15; 
+
+    points.push({x: 0, y: currentVal});
+
+    data.forEach((char, index) => {
+        if (char === 'B') currentVal -= amplitude; 
+        else if (char === 'P') currentVal += amplitude; 
+        if (currentVal < 10) currentVal = 10;
+        if (currentVal > h - 10) currentVal = h - 10;
+        points.push({x: (index + 1) * stepX, y: currentVal});
+    });
+
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    
+    for (let i = 1; i < points.length; i++) {
+        const xc = (points[i].x + points[i - 1].x) / 2;
+        const yc = (points[i].y + points[i - 1].y) / 2;
+        ctx.quadraticCurveTo(points[i - 1].x, points[i - 1].y, xc, yc);
+    }
+    ctx.lineTo(points[points.length-1].x, points[points.length-1].y);
+
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#00ff41';
+    ctx.shadowColor = '#00ff41';
+    ctx.shadowBlur = 10;
+    ctx.stroke();
+
+    ctx.lineTo(w, h);
+    ctx.lineTo(0, h);
+    ctx.closePath();
+    
+    const gradient = ctx.createLinearGradient(0, 0, 0, h);
+    gradient.addColorStop(0, 'rgba(0, 255, 65, 0.2)');
+    gradient.addColorStop(1, 'rgba(0, 255, 65, 0)');
+    ctx.fillStyle = gradient;
+    ctx.fill();
+
+    const strEl = document.getElementById('chartStr');
+    if(strEl) strEl.innerText = (Math.floor(Math.random() * 15) + 80) + "%";
 }

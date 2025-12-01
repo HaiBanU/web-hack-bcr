@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHẦN MỀM DỰ ĐOÁN CAO CẤP</title>
+    <title>HACKER AI - SYSTEM V7</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@500;900&display=swap" rel="stylesheet">
 </head>
@@ -13,22 +13,26 @@
 
     <div class="hacker-layout">
         
-        <!-- HEADER -->
+        <!-- HEADER (ORDER 1) -->
         <header class="sys-header">
             <div class="brand-box">
                 <span class="sexy-tag">SEXY</span>
-                <span class="root-text">// ADMIN ACCESS</span>
+                <span class="root-text">// ADMIN</span>
             </div>
+            
             <div class="table-identity">
-                <span class="target-label">MỤC TIÊU:</span>
                 <h1 id="tableNameDisplay" class="glitch-name">CONNECTING...</h1>
             </div>
+
             <div class="sys-status">
-                <button onclick="window.location.href='index.html'" class="btn-exit">THOÁT RA</button>
+                <div class="header-token-box">
+                    TOKEN: <span id="headerTokenDisplay" style="color:#fff; font-weight:bold;">---</span>
+                </div>
+                <button onclick="window.location.href='index.html'" class="btn-exit">THOÁT</button>
             </div>
         </header>
 
-        <!-- LOG -->
+        <!-- PANEL TRÁI (ORDER 4 - Mobile) -->
         <aside class="panel-left">
             <div class="panel-head">>> SYSTEM LOG</div>
             <div class="log-window" id="systemLog">
@@ -36,48 +40,49 @@
             </div>
         </aside>
 
-        <!-- GAME CENTER -->
+        <!-- GAME CENTER (ORDER 3 - Mobile) -->
         <main class="game-center">
             <div class="battle-wrapper">
+                <!-- NHÀ CON -->
                 <div class="side-container p-side">
                     <div class="side-label">NHÀ CON</div>
                     <div class="cards-area">
-                        <div class="card-slot" id="p1"></div><div class="card-slot" id="p2"></div><div class="card-slot" id="p3" style="opacity:0.7; transform:scale(0.9)"></div>
+                        <div class="card-slot" id="p1"></div>
+                        <div class="card-slot" id="p2"></div>
+                        <div class="card-slot" id="p3" style="opacity:0.7; transform:scale(0.9)"></div>
                     </div>
                     <div class="score-box p-score" id="playerScore">-</div>
                 </div>
+
                 <div class="vs-divider">VS</div>
+
+                <!-- NHÀ CÁI -->
                 <div class="side-container b-side">
                     <div class="side-label">NHÀ CÁI</div>
                     <div class="cards-area">
-                        <div class="card-slot" id="b1"></div><div class="card-slot" id="b2"></div><div class="card-slot" id="b3" style="opacity:0.7; transform:scale(0.9)"></div>
+                        <div class="card-slot" id="b1"></div>
+                        <div class="card-slot" id="b2"></div>
+                        <div class="card-slot" id="b3" style="opacity:0.7; transform:scale(0.9)"></div>
                     </div>
                     <div class="score-box b-score" id="bankerScore">-</div>
                 </div>
             </div>
+
+            <!-- THANH DỰ ĐOÁN -->
             <div class="prediction-bar">
                 <div class="scan-line"></div>
                 <div class="pred-left">
-                    <div class="pred-title">KẾT QUẢ PHÂN TÍCH AI</div>
+                    <div class="pred-title">PHÂN TÍCH AI</div>
                     <span id="aiAdvice" style="font-size: 0.8rem; color:#aaa;">Đang chờ dữ liệu...</span>
                 </div>
                 <div class="pred-content">
-                    <div class="pred-result blink" id="aiPredText">WAITING...</div>
+                    <div class="pred-result blink" id="aiPredText">...</div>
                 </div>
             </div>
         </main>
 
-        <!-- RIGHT PANEL (Thêm phần hiển thị Token) -->
+        <!-- PANEL PHẢI (ORDER 5 - Mobile) -->
         <aside class="panel-right">
-            
-            <!-- HỘP TOKEN MỚI THÊM -->
-            <div class="analysis-box" style="margin-bottom: 10px; border-color: #00ff41;">
-                <div class="box-title" style="color:#00ff41; border-left-color:#00ff41;">SỐ DƯ TÀI KHOẢN</div>
-                <div style="text-align: center; font-family: 'Orbitron'; font-size: 1.5rem; color: #fff; padding: 10px;">
-                    <span id="liveTokenDisplay">---</span> <span style="font-size:0.8rem; color:#666;">TOKEN</span>
-                </div>
-            </div>
-
             <div class="analysis-box">
                 <div class="box-title">TỶ LỆ CHIẾN THẮNG</div>
                 <div class="stat-group">
@@ -89,18 +94,34 @@
                     <div class="stat-bar-bg"><div class="stat-bar-fill b-fill" id="barB" style="width:0%"></div></div>
                 </div>
             </div>
+
             <div class="analysis-box matrix-box" style="flex:1; display:flex; flex-direction:column; margin-top:10px;">
                 <div class="box-title">DECODING STREAM</div>
                 <div id="matrixCode" class="code-rain">Initializing...</div>
             </div>
         </aside>
 
-        <!-- FOOTER -->
+        <!-- FOOTER (ORDER 2 - Mobile: Đẩy lên trên) -->
         <footer class="sys-footer">
             <div class="road-container" id="bigRoadGrid"></div>
+
+            <div class="footer-side-panel">
+                <div class="fs-header">
+                    <span>BIỂU ĐỒ SIGNAL</span>
+                    <span class="live-dot">●</span>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="trendChart"></canvas>
+                </div>
+                <div class="fs-stats">
+                    <span>VOL: <strong style="color:#00f3ff">HIGH</strong></span>
+                    <span>STR: <strong style="color:#00ff41" id="chartStr">92%</strong></span>
+                </div>
+            </div>
         </footer>
 
     </div>
+    
     <script src="/socket.io/socket.io.js"></script>
     <script src="script.js"></script>
 </body>
