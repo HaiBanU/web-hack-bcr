@@ -335,36 +335,39 @@ function renderBigRoadGrid(rawHistory) {
     grid.innerHTML = html;
 }
 
-// --- 8. BEAD PLATE (UPDATED: AUTO SIZE FOR MOBILE/DESKTOP) ---
+// --- 8. BEAD PLATE (UPDATED: 5x5 - TRÁI SANG PHẢI) ---
 function renderBeadPlate(res) {
     const grid = document.getElementById('beadPlateGrid');
     if(!grid) return;
 
-    // --- SỬA ĐOẠN NÀY ---
-    // Cố định luôn là 25 ô (5x5) cho to đẹp
+    // 1. CỐ ĐỊNH 25 Ô (5x5)
     const totalCells = 25; 
 
-    // Cắt dữ liệu lấy 25 kết quả gần nhất
-    let displayData = res.slice(-totalCells); 
+    // 2. XỬ LÝ DỮ LIỆU: LẤY 25 KẾT QUẢ MỚI NHẤT
+    let displayData = [];
+    if (res.length > totalCells) {
+        displayData = res.slice(res.length - totalCells, res.length);
+    } else {
+        displayData = res;
+    }
     
     let html = '';
-    displayData.forEach(item => {
-        let cls = ''; let txt = '';
-        if (item === 'P') { cls = 'bead-p'; txt = 'P'; }
-        else if (item === 'B') { cls = 'bead-b'; txt = 'B'; }
-        else if (item === 'T') { cls = 'bead-t'; txt = 'T'; }
+
+    // 3. VÒNG LẶP ĐỂ VẼ ĐÚNG 25 Ô (Trái -> Phải, Trên -> Dưới)
+    for(let i = 0; i < totalCells; i++) {
+        const item = displayData[i]; 
         
-        // Thêm shadow màu tương ứng để hạt phát sáng nhẹ
-        let glowStyle = "";
-        if(item === 'P') glowStyle = "box-shadow: 0 0 10px rgba(0, 123, 255, 0.6), inset 0 0 5px rgba(255,255,255,0.4);";
-        if(item === 'B') glowStyle = "box-shadow: 0 0 10px rgba(220, 53, 69, 0.6), inset 0 0 5px rgba(255,255,255,0.4);";
-        
-        html += `<div class="bead-cell"><div class="bead-circle ${cls}" style="${glowStyle}">${txt}</div></div>`;
-    });
-    
-    // Lấp đầy ô trống
-    const emptyCount = totalCells - displayData.length;
-    for(let i = 0; i < emptyCount; i++) { html += `<div class="bead-cell"></div>`; }
+        if (item) {
+            let cls = ''; let txt = '';
+            if (item === 'P') { cls = 'bead-p'; txt = 'P'; }
+            else if (item === 'B') { cls = 'bead-b'; txt = 'B'; }
+            else if (item === 'T') { cls = 'bead-t'; txt = 'T'; }
+            
+            html += `<div class="bead-cell"><div class="bead-circle ${cls}">${txt}</div></div>`;
+        } else {
+            html += `<div class="bead-cell"></div>`;
+        }
+    }
     
     grid.innerHTML = html;
 }
@@ -372,19 +375,18 @@ function renderBeadPlate(res) {
 window.addEventListener('resize', () => { if(history.length > 0) renderBeadPlate(history); });
 
 /* =========================================
-   NEW WAVE CHART: STATEFUL (GIỮ TRẠNG THÁI CAO)
+   NEW WAVE CHART: STATEFUL
    ========================================= */
 let waveCanvas, waveCtx;
 let waveFrame = 0;
 let waveW, waveH;
 
-// Cấu hình sóng (Thêm target để giữ trạng thái)
 let waveConfig = {
     pAmp: 20,       // Độ cao hiện tại Player
     bAmp: 20,       // Độ cao hiện tại Banker
-    targetP: 20,    // Đích đến Player (Sẽ giữ ở đây)
+    targetP: 20,    // Đích đến Player
     targetB: 20,    // Đích đến Banker
-    speed: 0.08,    // Tốc độ trôi nhanh hơn chút cho mượt
+    speed: 0.08,    
     pColor: "rgba(0, 243, 255, 0.6)", 
     bColor: "rgba(255, 0, 60, 0.6)"   
 };
@@ -411,32 +413,21 @@ function animateWave() {
     if (!waveCtx) return;
     waveCtx.clearRect(0, 0, waveW, waveH);
     
-    // LOGIC MỚI: Di chuyển từ từ đến mức đích (Lerp) thay vì tự giảm
-    // 0.05 là tốc độ thay đổi độ cao (càng lớn càng nhanh)
     waveConfig.pAmp += (waveConfig.targetP - waveConfig.pAmp) * 0.05;
     waveConfig.bAmp += (waveConfig.targetB - waveConfig.bAmp) * 0.05;
 
     waveCtx.globalCompositeOperation = 'screen';
 
-    // 1. VẼ SÓNG ĐỎ (BANKER)
-    // Nếu Banker đang cao hơn -> Thêm hiệu ứng Glow (Bóng phát sáng)
-    if(waveConfig.bAmp > waveConfig.pAmp) {
-        waveCtx.shadowBlur = 20; waveCtx.shadowColor = "#ff003c";
-    } else {
-        waveCtx.shadowBlur = 0;
-    }
+    // Banker Wave
+    if(waveConfig.bAmp > waveConfig.pAmp) { waveCtx.shadowBlur = 20; waveCtx.shadowColor = "#ff003c"; } 
+    else { waveCtx.shadowBlur = 0; }
     drawSineWave(waveConfig.bAmp, 0.02, 1.5, waveConfig.bColor);
 
-    // 2. VẼ SÓNG XANH (PLAYER)
-    // Nếu Player đang cao hơn -> Glow Xanh
-    if(waveConfig.pAmp > waveConfig.bAmp) {
-        waveCtx.shadowBlur = 20; waveCtx.shadowColor = "#00f3ff";
-    } else {
-        waveCtx.shadowBlur = 0;
-    }
+    // Player Wave
+    if(waveConfig.pAmp > waveConfig.bAmp) { waveCtx.shadowBlur = 20; waveCtx.shadowColor = "#00f3ff"; } 
+    else { waveCtx.shadowBlur = 0; }
     drawSineWave(waveConfig.pAmp, 0.025, 0, waveConfig.pColor);
 
-    // Reset
     waveCtx.shadowBlur = 0;
     waveCtx.globalCompositeOperation = 'source-over';
 
@@ -448,12 +439,11 @@ function drawSineWave(amplitude, frequency, phaseShift, color) {
     waveCtx.beginPath();
     waveCtx.moveTo(0, waveH);
     let grad = waveCtx.createLinearGradient(0, 0, 0, waveH);
-    grad.addColorStop(0, color.replace("0.6", "0.9")); // Đỉnh sóng đậm hơn
+    grad.addColorStop(0, color.replace("0.6", "0.9"));
     grad.addColorStop(1, "rgba(0,0,0,0)"); 
 
     waveCtx.fillStyle = grad;
     for (let x = 0; x <= waveW; x += 5) {
-        // Vẽ sóng Sin
         let y = (waveH / 1.3) + Math.sin(x * frequency + waveFrame + phaseShift) * -amplitude;
         waveCtx.lineTo(x, y);
     }
@@ -463,22 +453,10 @@ function drawSineWave(amplitude, frequency, phaseShift, color) {
     waveCtx.fill();
 }
 
-// LOGIC CẬP NHẬT KẾT QUẢ
 function updateChartData(hist) {
     if (!hist || hist.length === 0) return;
     const lastResult = hist[hist.length - 1];
-
-    // Set ĐÍCH ĐẾN (Target) thay vì set trực tiếp
-    // Sóng thắng sẽ cao 80, sóng thua thấp xuống 15
-    if (lastResult === 'P') {
-        waveConfig.targetP = 80; 
-        waveConfig.targetB = 15; 
-    } else if (lastResult === 'B') {
-        waveConfig.targetB = 80; 
-        waveConfig.targetP = 15; 
-    } else {
-        // Hòa thì cả 2 bằng nhau ở mức trung bình
-        waveConfig.targetP = 40; 
-        waveConfig.targetB = 40;
-    }
+    if (lastResult === 'P') { waveConfig.targetP = 80; waveConfig.targetB = 15; } 
+    else if (lastResult === 'B') { waveConfig.targetB = 80; waveConfig.targetP = 15; } 
+    else { waveConfig.targetP = 40; waveConfig.targetB = 40; }
 }
