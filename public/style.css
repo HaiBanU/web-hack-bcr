@@ -1,5 +1,5 @@
 /* =========================================
-   STYLE.CSS - CORE & DESKTOP & EFFECTS
+   STYLE.CSS - ĐẦY ĐỦ (FULL)
    ========================================= */
 :root {
     --neon-green: #00ff41;
@@ -23,7 +23,7 @@ body {
     overflow: hidden; 
 }
 
-/* --- [NEW] HIỆU ỨNG NỀN CYBERPUNK --- */
+/* HIỆU ỨNG NỀN CYBERPUNK */
 .cyber-grid-bg {
     position: fixed; top: 0; left: 0; width: 200vw; height: 200vh;
     background-image: 
@@ -40,9 +40,74 @@ body {
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: #000; }
 ::-webkit-scrollbar-thumb { background: var(--neon-green); border-radius: 2px; }
+#matrixCanvas { position: fixed; top: 0; left: 0; z-index: -1; width: 100%; height: 100%; }
 
 /* =========================================
-   LAYOUT CHUNG (TOOL)
+   1. SẢNH CHỜ (LOBBY) - PHẦN BỊ THIẾU
+   ========================================= */
+body.lobby-body { overflow-y: auto !important; height: auto !important; min-height: 100vh; }
+.lobby-content { position: relative; z-index: 10; padding: 15px; max-width: 1400px; margin: 0 auto; padding-bottom: 80px; }
+
+/* Header Lobby */
+.lobby-header { display: flex; flex-direction: column; align-items: center; position: relative; margin-bottom: 30px; padding-top: 10px; }
+.glitch-text { font-family: var(--font-display); font-size: 2.5rem; color: #fff; text-shadow: 0 0 10px var(--neon-green); letter-spacing: 3px; text-align: center; margin-top: 10px; }
+.server-info { display: inline-flex; gap: 15px; background: rgba(0,20,0,0.8); border: 1px solid var(--neon-green); padding: 5px 15px; font-size: 0.8rem; margin-top: 10px; }
+
+/* Auth Section */
+#authSection { position: absolute; top: 10px; right: 20px; z-index: 100; text-align: right; width: auto; }
+.user-panel-cyber { display: flex; align-items: center; gap: 15px; background: rgba(0, 10, 0, 0.9); border: 1px solid #00ff41; padding: 8px 15px; border-radius: 4px; box-shadow: 0 0 15px rgba(0, 255, 65, 0.15); backdrop-filter: blur(5px); }
+.user-name { font-family: 'Orbitron'; color: #fff; font-weight: bold; text-shadow: 0 0 5px #00ff41; font-size: 1rem; }
+.token-badge { background: #003300; border: 1px dashed #00ff41; padding: 2px 8px; color: #00ff41; font-family: monospace; font-weight: bold; border-radius: 2px; font-size: 0.9rem; }
+.btn-logout-cyber { background: transparent; border: 1px solid #ff003c; color: #ff003c; padding: 5px 12px; font-family: 'Share Tech Mono'; cursor: pointer; font-size: 0.85rem; transition: 0.3s; font-weight: bold; }
+.btn-logout-cyber:hover { background: #ff003c; color: #fff; box-shadow: 0 0 10px #ff003c; }
+
+/* Grid Cards (Bàn chơi) */
+.tables-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
+.casino-card { background: #000; border: 1px solid #333; border-top: 2px solid var(--neon-green); display: flex; flex-direction: column; overflow: hidden; cursor: pointer; transition: 0.3s; }
+.casino-card:hover { transform: translateY(-5px); box-shadow: 0 0 15px rgba(0,255,65,0.3); border-color: var(--neon-green); }
+
+.cc-header { background: #111; padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; }
+.cc-name { font-family: var(--font-display); font-weight: bold; color: #fff; font-size: 1rem; }
+.cc-rate { background: #00ff41; color: #000; font-weight: 900; font-family: var(--font-display); font-size: 0.8rem; padding: 2px 6px; margin-left: 10px; border-radius: 2px; box-shadow: 0 0 8px #00ff41; animation: pulseRate 1.5s infinite alternate; }
+
+.cc-body { display: flex; height: 97px; background: #000; border-bottom: 1px solid #222; }
+.cc-grid-area { flex: 1; background: #fff; overflow: hidden; position: relative; } 
+.cc-predict-area { width: 80px; background: #051005; border-left: 1px solid #333; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 5px; }
+.cc-footer { background: #000; padding: 5px 10px; display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: #888; }
+.btn-join { background: #ff9800; color: #000; border: none; padding: 3px 10px; font-weight: bold; font-family: var(--font-display); cursor: pointer; }
+
+/* Bảng cầu trong Lobby */
+.road-grid-wrapper { display: flex; height: 100%; width: 100%; }
+.road-col { width: 14px; display: flex; flex-direction: column; border-right: 1px solid #eee; }
+.road-cell { flex: 1; border-bottom: 1px solid #eee; display: flex; justify-content: center; align-items: center; }
+.bead { width: 10px; height: 10px; border-radius: 50%; border: 2px solid; position: relative; }
+.bead.b { border-color: #ff003c; } 
+.bead.p { border-color: #0099ff; } 
+.bead.t { border-color: #00c853; } 
+.tie-slash::after { content: ''; position: absolute; width: 2px; height: 140%; background-color: #00c853; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); }
+
+/* --- MODAL (POPUP XÁC NHẬN) - ĐÂY LÀ PHẦN LỖI TRONG ẢNH --- */
+.custom-modal-overlay { 
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+    background: rgba(0, 0, 0, 0.85); z-index: 99999; 
+    display: none; /* Mặc định ẩn, JS sẽ bật lên flex */
+    justify-content: center; align-items: center; backdrop-filter: blur(3px); 
+}
+.custom-modal-box { 
+    background: #000500; border: 2px solid #00ff41; padding: 30px; 
+    width: 90%; max-width: 400px; text-align: center; 
+    box-shadow: 0 0 30px rgba(0, 255, 65, 0.2); 
+    position: relative; animation: modalPop 0.3s ease-out; 
+}
+.modal-title { font-family: 'Orbitron'; color: #00ff41; font-size: 1.4rem; font-weight: bold; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; text-shadow: 0 0 10px #00ff41; }
+.modal-content { color: #fff; font-family: monospace; line-height: 1.8; margin-bottom: 30px; font-size: 1.1rem; }
+.modal-actions { display: flex; gap: 15px; justify-content: center; }
+.btn-modal { flex: 1; padding: 12px; border: none; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; font-size: 1rem; }
+.btn-confirm { background: #00ff41; color: #000; box-shadow: 0 0 15px rgba(0, 255, 65, 0.4); }
+.btn-cancel { background: #222; color: #aaa; border: 1px solid #444; }
+
+/* =========================================
+   2. TRANG TOOL (CHI TIẾT BÀN)
    ========================================= */
 .hacker-layout { display: grid; grid-template-columns: 280px 1fr 280px; grid-template-rows: 60px 1fr 140px; height: 100vh; gap: 10px; padding: 10px; position: relative; z-index: 1; }
 
@@ -86,7 +151,6 @@ body {
 .log-window { flex: 1; overflow-y: auto; font-size: 0.7rem; color: #cfc; font-family: monospace; }
 .log-line { margin-bottom: 3px; border-bottom: 1px dashed #002200; }
 
-/* --- [NEW] LÀM NỔI BẬT TỶ LỆ CHIẾN THẮNG --- */
 .analysis-box { margin-bottom: 10px; background: rgba(0,0,0,0.8) !important; border: 1px solid #333; padding: 5px; position: relative; overflow: hidden; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
 .analysis-box::before {
     content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 4px; padding: 1px;
@@ -124,3 +188,12 @@ body {
 .blink { animation: blinking 1s infinite; }
 @keyframes blinking { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 @keyframes pulseRate { from { box-shadow: 0 0 5px currentColor; transform: scale(1); } to { box-shadow: 0 0 15px currentColor; transform: scale(1.05); } }
+@keyframes modalPop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes goldPulse { from { box-shadow: 0 0 5px rgba(255, 215, 0, 0.2); transform: translateY(0); } to { box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); transform: translateY(-3px); } }
+
+/* CÁC CLASS TRẠNG THÁI KHÁC */
+.high-rate { border-color: var(--neon-gold) !important; box-shadow: 0 0 15px rgba(255, 215, 0, 0.2); animation: goldPulse 2s infinite alternate; }
+.high-rate .cc-rate { background: var(--neon-gold); color: #000; box-shadow: 0 0 10px var(--neon-gold); }
+.interrupted-card { border-color: #555 !important; opacity: 0.9; }
+.interrupted-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); display: flex; justify-content: center; align-items: center; z-index: 5; backdrop-filter: blur(1px); }
+.int-content { text-align: center; border: 1px dashed #ff9800; padding: 5px 10px; background: rgba(0,0,0,0.8); transform: rotate(-5deg); box-shadow: 0 0 10px rgba(255, 152, 0, 0.3); }

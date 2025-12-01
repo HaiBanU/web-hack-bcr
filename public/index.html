@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CỔNG XÂM NHẬP - SYSTEM LOBBY</title>
-    <!-- Link CSS Gốc -->
+    <!-- CSS CHÍNH -->
     <link rel="stylesheet" href="style.css">
-    <!-- Link CSS Mobile (Mới) -->
+    <!-- CSS MOBILE -->
     <link rel="stylesheet" href="mobile.css">
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@500;900&display=swap" rel="stylesheet">
     <script src="/socket.io/socket.io.js"></script>
     <style>
+        /* Toast thông báo nhanh */
         #toast-container { position: fixed; top: 20px; right: 20px; z-index: 99999; }
         .toast {
             background: rgba(0,0,0,0.9); color: #fff; border-left: 4px solid;
@@ -24,16 +25,17 @@
     </style>
 </head>
 <body class="lobby-body">
-    <!-- HIỆU ỨNG NỀN CYBERPUNK (MỚI) -->
+    
+    <!-- NỀN LƯỚI CYBERPUNK -->
     <div class="cyber-grid-bg"></div>
 
-    <!-- KHUNG POPUP XÁC NHẬN -->
+    <!-- MODAL XÁC NHẬN (Mặc định ẩn, sẽ hiện khi bấm vào bàn) -->
     <div id="confirmModal" class="custom-modal-overlay">
         <div class="custom-modal-box">
             <div class="modal-title">⚠️ XÁC NHẬN XÂM NHẬP</div>
             <div class="modal-content">
                 Xác nhận vào bàn?<br><br>
-                <div style="border:1px dashed #333; padding:10px; border-radius:4px; background:rgba(0,0,0,0.5);">
+                <div style="border:1px dashed #333; padding:10px; border-radius:4px; background: rgba(0,0,0,0.5);">
                     <div style="display:flex; justify-content:space-between;">
                         <span style="color:#aaa">Phí vào cửa:</span>
                         <span style="color:#00ff41; font-weight:bold;">3 Token</span>
@@ -52,7 +54,6 @@
     </div>
 
     <div id="toast-container"></div>
-    <!-- Canvas ma trận cũ vẫn giữ để tạo hiệu ứng mưa code mờ -->
     <canvas id="matrixCanvas"></canvas>
     
     <div class="lobby-content">
