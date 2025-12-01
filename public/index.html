@@ -3,39 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CỔNG HACK  - SYSTEM LOBBY</title>
-    <!-- CSS CHÍNH -->
+    <title>CỔNG HACK - SYSTEM LOBBY</title>
     <link rel="stylesheet" href="style.css">
-    <!-- CSS MOBILE -->
     <link rel="stylesheet" href="mobile.css">
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@500;900&display=swap" rel="stylesheet">
     <script src="/socket.io/socket.io.js"></script>
-    <style>
-        /* Toast thông báo nhanh */
-        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 99999; }
-        .toast {
-            background: rgba(0,0,0,0.9); color: #fff; border-left: 4px solid;
-            padding: 12px 20px; margin-bottom: 10px; min-width: 200px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5); font-family: monospace;
-            display: flex; align-items: center; animation: slideIn 0.3s ease forwards;
-        }
-        .toast.success { border-color: #0f0; color: #0f0; }
-        .toast.error { border-color: #f00; color: #f00; }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
-    </style>
 </head>
 <body class="lobby-body">
     
-    <!-- NỀN LƯỚI CYBERPUNK -->
+    <!-- MATRIX BG -->
+    <canvas id="matrixCanvas"></canvas>
     <div class="cyber-grid-bg"></div>
 
-    <!-- MODAL XÁC NHẬN (Mặc định ẩn, sẽ hiện khi bấm vào bàn) -->
+    <!-- MODAL XÁC NHẬN -->
     <div id="confirmModal" class="custom-modal-overlay">
         <div class="custom-modal-box">
-            <div class="modal-title">⚠️ XÁC NHẬN HACK </div>
+            <div class="modal-title">⚠️ XÁC NHẬN HACK</div>
             <div class="modal-content">
-                Xác nhận vào bàn?<br><br>
-                <div style="border:1px dashed #333; padding:10px; border-radius:4px; background: rgba(0,0,0,0.5);">
+                <p>Bạn có chắc chắn muốn kết nối vào bàn này?</p>
+                <div style="border:1px dashed #333; padding:10px; margin-top:10px; border-radius:4px; background: rgba(0,0,0,0.5);">
                     <div style="display:flex; justify-content:space-between;">
                         <span style="color:#aaa">Phí vào cửa:</span>
                         <span style="color:#00ff41; font-weight:bold;">3 Token</span>
@@ -48,86 +34,81 @@
             </div>
             <div class="modal-actions">
                 <button class="btn-modal btn-cancel" onclick="closeModal()">HỦY BỎ</button>
-                <button class="btn-modal btn-confirm" id="btnConfirmAction">HACK  NGAY</button>
+                <button class="btn-modal btn-confirm" id="btnConfirmAction">HACK NGAY</button>
             </div>
         </div>
     </div>
 
-    <div id="toast-container"></div>
-    <canvas id="matrixCanvas"></canvas>
-    
     <div class="lobby-content">
         <header class="lobby-header">
             <!-- Auth Section -->
             <div id="authSection"></div>
 
-            <h1 class="glitch-text">HACK SEXY BACARTAT</h1>
+            <h1 class="glitch-text">HACK SEXY BACCARAT</h1>
             <div class="server-info">
-                <span>SERVER: <strong style="color:#0f0">ASIA_VNI_01</strong></span>
+                <span>SERVER: <strong style="color:#0f0">ASIA_VNI_01</strong></span> | 
                 <span>STATUS: <strong class="blink" style="color:#0f0">ONLINE</strong></span>
             </div>
         </header>
 
         <div class="tables-grid" id="tablesGrid">
-            <div style="color:#0f0; grid-column:1/-1; text-align:center; padding:50px;">ĐANG QUÉT DỮ LIỆU...</div>
+            <div style="color:#0f0; text-align:center; padding:50px;">ĐANG QUÉT DỮ LIỆU...</div>
         </div>
     </div>
 
+    <!-- Script riêng cho trang Lobby -->
     <script src="lobby.js"></script> 
+    
     <script>
+        // Matrix Effect cho Lobby
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resize); resize();
+        
+        const chars = "01_XY_HACK";
+        const drops = Array(Math.floor(canvas.width/20)).fill(1);
+        
+        function draw() {
+            ctx.fillStyle = "rgba(0,0,0,0.05)"; ctx.fillRect(0,0,canvas.width,canvas.height);
+            ctx.fillStyle = "#0F0"; ctx.font = "14px monospace";
+            for(let i=0;i<drops.length;i++){
+                const t = chars[Math.floor(Math.random()*chars.length)];
+                ctx.fillText(t, i*20, drops[i]*20);
+                if(drops[i]*20 > canvas.height && Math.random()>0.975) drops[i]=0;
+                drops[i]++;
+            }
+        }
+        setInterval(draw, 50);
+
+        // Auth Logic
         const authSection = document.getElementById('authSection');
         const token = localStorage.getItem('token');
-        const username = localStorage.getItem('username');
-
-        async function fetchLiveBalance() {
-            if (!token) { renderGuest(); return; }
+        
+        async function checkAuth() {
+            if(!token) { renderGuest(); return; }
             try {
                 const res = await fetch('/api/me', { headers: { 'Authorization': token } });
-                if (res.ok) {
-                    const data = await res.json();
-                    renderUser(data.username, data.tokens);
-                    localStorage.setItem('tokens', data.tokens);
-                } else {
-                    localStorage.clear(); renderGuest();
-                }
-            } catch (e) {
-                console.error("Lỗi lấy thông tin user", e);
-                renderUser(username, localStorage.getItem('tokens') || "ERR");
-            }
+                const data = await res.json();
+                if(data.username) renderUser(data.username, data.tokens);
+                else renderGuest();
+            } catch(e) { renderGuest(); }
         }
 
         function renderUser(name, tokens) {
             authSection.innerHTML = `
                 <div class="user-panel-cyber">
-                    <div style="display:flex; flex-direction:column; align-items:flex-start; margin-right:auto;">
-                        <div class="user-name">${name.toUpperCase()}</div>
-                        <div class="token-badge">TOKEN: ${tokens}</div>
-                    </div>
-                    <button onclick="logout()" class="btn-logout-cyber">THOÁT</button>
+                    <div class="user-name">${name.toUpperCase()}</div>
+                    <div class="token-badge">TOKEN: ${tokens}</div>
+                    <button onclick="localStorage.clear(); location.href='login.html'" class="btn-logout-cyber">THOÁT</button>
                 </div>
             `;
         }
-
         function renderGuest() {
-            authSection.innerHTML = `
-                <button onclick="window.location.href='login.html'" style="background: #00ff41; color: black; border: 1px solid #fff; padding: 8px 20px; cursor: pointer; font-weight: bold; font-family: 'Orbitron'; box-shadow: 0 0 10px #0f0;">
-                    ĐĂNG NHẬP
-                </button>
-            `;
+            authSection.innerHTML = `<button onclick="location.href='login.html'" class="btn-join">ĐĂNG NHẬP</button>`;
         }
-
-        function logout() { localStorage.clear(); window.location.href = 'login.html'; }
         function closeModal() { document.getElementById('confirmModal').style.display = 'none'; }
-        fetchLiveBalance();
-
-        window.showToast = function(msg, type='success') {
-            const container = document.getElementById('toast-container');
-            const d = document.createElement('div');
-            d.className = `toast ${type}`;
-            d.innerHTML = (type==='success'?'✅ ':'❌ ') + msg;
-            container.appendChild(d);
-            setTimeout(()=>d.remove(), 3000);
-        }
+        checkAuth();
     </script>
 </body>
 </html>
