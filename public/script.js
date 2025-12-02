@@ -485,56 +485,88 @@ function updateChartData(hist) {
 // BỔ SUNG: HÀM VẼ CÁC CHẤM CỘT MỐC LỊCH SỬ
 // =======================================================
 function drawHistoryCandles() {
-    // Khoảng cách giữa các nến
-    const spacing = 20; 
-    // Chiều cao của mỗi nến
-    const candleHeight = 25; 
-    // Độ dày của nến
-    waveCtx.lineWidth = 4; 
-    // Hiệu ứng phát sáng
-    waveCtx.shadowBlur = 5; 
+    // --- CẤU HÌNH ---
+    const spacing = 20;      // Khoảng cách giữa các nến
+    const minHeight = 10;    // Chiều cao nến ngắn nhất (khi bắt đầu dây)
+    const maxHeight = 40;    // Chiều cao nến dài nhất
+    const maxStreak = 5;     // Số lần thắng liên tiếp để đạt chiều cao tối đa
 
-    // Vị trí Y của đường trung tâm
-    const centerY = waveH / 2;
+    // --- LOGIC TÍNH TOÁN DÂY (STREAK) ---
+    let streaksData = [];
+    let streakCounter = 0;
+    let lastType = null;
+
+    // Lặp qua lịch sử để gán độ dài dây cho mỗi kết quả
+    for (const result of history) {
+        if (result === 'T') {
+            // Hòa (T) không làm thay đổi dây P hoặc B, nó là một điểm riêng
+            streaksData.push({ type: 'T', streak: 0 });
+            continue;
+        }
+
+        if (result === lastType) {
+            streakCounter++;
+        } else {
+            streakCounter = 1; // Reset khi có kết quả mới
+        }
+        
+        streaksData.push({ type: result, streak: streakCounter });
+        lastType = result;
+    }
+
+    // --- LOGIC VẼ ---
+    const centerY = waveH / 2; // Vị trí đường trung tâm
 
     // Vẽ đường kẻ ngang trung tâm
     waveCtx.beginPath();
     waveCtx.moveTo(0, centerY);
     waveCtx.lineTo(waveW, centerY);
-    waveCtx.strokeStyle = 'rgba(255, 255, 255, 0.2)'; // Màu xám mờ
+    waveCtx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
     waveCtx.lineWidth = 1;
-    waveCtx.shadowBlur = 0; // Tắt shadow cho đường kẻ
+    waveCtx.shadowBlur = 0;
     waveCtx.stroke();
 
-    // Lấy dữ liệu lịch sử để vẽ
+    // Lấy số nến vừa đủ hiển thị trên màn hình
     const maxCandles = Math.floor(waveW / spacing);
-    const data = history.filter(r => r !== 'T').slice(-maxCandles);
+    const dataToDraw = streaksData.slice(-maxCandles);
 
-    data.forEach((result, i) => {
-        // Tính vị trí X từ phải qua trái
-        const x = waveW - (data.length - i) * spacing + (spacing / 2);
+    dataToDraw.forEach((item, i) => {
+        const x = waveW - (dataToDraw.length - i) * spacing + (spacing / 2);
 
-        waveCtx.beginPath();
-        
-        // Vẽ nến tương ứng với kết quả
-        if (result === 'P') { // Nến XANH đi lên
-            waveCtx.strokeStyle = '#00ff41'; // Màu neon green
+        // Xử lý riêng cho Hòa (T)
+        if (item.type === 'T') {
+            waveCtx.beginPath();
+            waveCtx.arc(x, centerY, 4, 0, Math.PI * 2); // Vẽ chấm tròn ở giữa
+            waveCtx.fillStyle = '#00ff41'; // Màu xanh lá
             waveCtx.shadowColor = '#00ff41';
-            waveCtx.moveTo(x, centerY); // Bắt đầu từ giữa
-            waveCtx.lineTo(x, centerY - candleHeight); // Vẽ lên trên
-        } else { // Nến ĐỎ đi xuống
-            waveCtx.strokeStyle = '#ff003c'; // Màu neon red
-            waveCtx.shadowColor = '#ff003c';
-            waveCtx.moveTo(x, centerY); // Bắt đầu từ giữa
-            waveCtx.lineTo(x, centerY + candleHeight); // Vẽ xuống dưới
+            waveCtx.shadowBlur = 8;
+            waveCtx.fill();
+            return; // Chuyển sang phần tử tiếp theo
         }
-        
-        // Hoàn thành việc vẽ nến
+
+        // Tính toán chiều cao nến dựa trên độ dài dây
+        const streakRatio = Math.min(item.streak, maxStreak) / maxStreak;
+        const candleHeight = minHeight + streakRatio * (maxHeight - minHeight);
+
+        // Vẽ nến
+        waveCtx.beginPath();
         waveCtx.lineWidth = 4;
         waveCtx.shadowBlur = 8;
+        
+        if (item.type === 'P') { // Player - Xanh dương
+            waveCtx.strokeStyle = '#00f3ff';
+            waveCtx.shadowColor = '#00f3ff';
+            waveCtx.moveTo(x, centerY);
+            waveCtx.lineTo(x, centerY - candleHeight); // Vẽ lên trên
+        } else { // Banker - Đỏ
+            waveCtx.strokeStyle = '#ff003c';
+            waveCtx.shadowColor = '#ff003c';
+            waveCtx.moveTo(x, centerY);
+            waveCtx.lineTo(x, centerY + candleHeight); // Vẽ xuống dưới
+        }
         waveCtx.stroke();
     });
 
-    // Reset lại shadow sau khi vẽ xong
+    // Reset lại shadow
     waveCtx.shadowBlur = 0;
 }
