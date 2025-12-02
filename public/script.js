@@ -427,7 +427,7 @@ function animateWave() {
     
     waveConfig.pAmp += (waveConfig.targetP - waveConfig.pAmp) * 0.05;
     waveConfig.bAmp += (waveConfig.targetB - waveConfig.bAmp) * 0.05;
-
+    drawHistoryDots();
     waveCtx.globalCompositeOperation = 'screen';
 
     // Banker Wave
