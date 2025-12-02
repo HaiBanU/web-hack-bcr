@@ -58,11 +58,11 @@
                     <div class="score-box" id="playerScore" style="color:#00f3ff;">0</div>
                 </div>
                 
-                <<!-- Cụm VS mới với hiệu ứng tia sét -->
-<div class="vs-container">
-    <div class="vs-ring"></div>
-    <div class="vs-text" data-text="VS">VS</div>
-</div>
+                <!-- Cụm VS mới với hiệu ứng tia sét -->
+                <div class="vs-container">
+                    <div class="vs-ring"></div>
+                    <div class="vs-text" data-text="VS">VS</div>
+                </div>
 
                 <!-- BANKER SIDE -->
                 <div class="side-container b-side">
@@ -79,7 +79,6 @@
             <!-- KHUNG DỰ ĐOÁN & ROBOT -->
             <div class="prediction-wrapper">
                 <div class="ai-box">
-                    <!-- Bạn cần có file robot.png hoặc xóa thẻ img này đi -->
                     <img src="robot.png" class="ai-img" alt="AI" onerror="this.style.display='none'">
                 </div>
                 <div class="pred-info">
@@ -96,6 +95,26 @@
                     </div>
                 </div>
             </div>
+
+            <!-- KHỐI THỐNG KÊ MỚI -->
+            <div class="stats-wrapper">
+                <!-- Player Stats -->
+                <div class="stat-box player-stat">
+                    <div class="stat-value" id="playerWins">0</div>
+                    <div class="stat-label">PLAYER</div>
+                </div>
+                <!-- Tie Stats -->
+                <div class="stat-box tie-stat">
+                    <div class="stat-value" id="tieWins">0</div>
+                    <div class="stat-label">HÒA</div>
+                </div>
+                <!-- Banker Stats -->
+                <div class="stat-box banker-stat">
+                    <div class="stat-value" id="bankerWins">0</div>
+                    <div class="stat-label">BANKER</div>
+                </div>
+            </div>
+            
         </main>
 
         <!-- PANEL PHẢI: TỈ LỆ & MATRIX -->

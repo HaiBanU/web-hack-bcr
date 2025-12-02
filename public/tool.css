@@ -97,7 +97,7 @@
     display: flex; 
     justify-content: space-between; 
     align-items: center;
-    margin-bottom: 20px; 
+    margin-bottom: 15px; 
     min-height: 250px; /* Đảm bảo đủ cao cho VS */
 }
 
@@ -322,9 +322,7 @@
 }
 #trendChart { width: 100%; height: 100%; display: block; }
 
-/* --- TRONG FILE tool.css --- */
-
-/* 1. KHUNG CHỨA BẢNG CẦU (SỬA LẠI MÀU ĐEN) */
+/* 2. BEAD PLATE */
 .bead-panel {
     background: #000; 
     border: 1px solid #333; 
@@ -337,68 +335,46 @@
     position: relative;
     box-shadow: inset 0 0 10px #000;
 }
-
-/* 2. LƯỚI 5x5 (ĐIỀN DỌC - TRÔI NGANG) */
 .bead-grid {
     display: grid;
-    /* Cố định 5 dòng - 5 cột */
     grid-template-rows: repeat(5, 1fr);
     grid-template-columns: repeat(5, 1fr);
-    
-    /* QUAN TRỌNG: Điền hết cột 1 rồi mới sang cột 2 (Vertical Flow) */
     grid-auto-flow: column; 
-    
     gap: 0; 
     width: 100%;
     height: 100%;
-    
-    /* Viền bao quanh lưới */
     border-top: 1px solid #333;
     border-left: 1px solid #333;
 }
-
-/* 3. Ô CHỨA HẠT */
 .bead-cell {
     width: 100%;
     height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
-    
-    /* Viền ngăn cách */
     border-right: 1px solid #333;
     border-bottom: 1px solid #333;
-    
     background: transparent;
     min-width: 0; min-height: 0;
 }
-
-/* 4. HẠT CẦU (THU NHỎ CÒN 60%) -> ĐẢM BẢO KHÔNG VỠ */
 .bead-circle {
-    /* Kích thước an toàn tuyệt đối */
     width: 30%; 
     height: auto;
     aspect-ratio: 1/1; 
-    
     border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
-    
     font-family: Arial, sans-serif; 
     font-weight: bold;
-    
-    /* Font chữ tự co giãn */
     font-size: clamp(4px, 1.4vh, 12px); 
     color: #fff;
-    
     box-shadow: none; 
 }
-
-/* 5. MÀU SẮC CHUẨN */
 .bead-p { background-color: #007bff; }
 .bead-b { background-color: #dc3545; }
 .bead-t { background-color: #28a745; }
+
 /* 3. BIG ROAD */
 .road-panel { background: #000; padding-top: 20px; }
 .road-container { display: flex; height: 100%; width: 100%; justify-content: flex-start; padding-left: 5px; }
@@ -412,3 +388,87 @@
 .trans-panel { background: rgba(0, 10, 0, 0.5); padding-top: 20px; }
 .trans-log-content { flex: 1; overflow-y: hidden; padding: 0 5px; font-family: monospace; font-size: 0.7rem; display: flex; flex-direction: column-reverse; }
 .trans-item { display: flex; justify-content: space-between; border-bottom: 1px solid #222; padding: 3px 0; animation: fadeIn 0.3s ease-out; }
+
+/* =========================================================
+   GAME STATS (PLAYER / TIE / BANKER COUNTER) - MÃ MỚI
+   ========================================================= */
+.stats-wrapper {
+    position: relative;
+    z-index: 10;
+    width: 90%;
+    max-width: 600px; /* Giới hạn chiều rộng cho đẹp */
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    margin-top: 20px; /* Khoảng cách với khung dự đoán ở trên */
+    padding: 0 10px;
+}
+
+.stat-box {
+    flex: 1; /* Chia đều không gian */
+    height: 70px;
+    background: #050505;
+    border: 1px solid #333;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Orbitron', sans-serif;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+/* Hiệu ứng viền LED chạy */
+.stat-box::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(transparent, transparent, var(--led-color, #fff));
+    animation: rotateBorder 3s linear infinite;
+    opacity: 0.7;
+}
+.stat-box::after {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    background: #0a0a0a;
+    border-radius: 4px;
+    z-index: 1;
+}
+
+.stat-value, .stat-label {
+    position: relative;
+    z-index: 2; /* Nổi lên trên nền */
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 900;
+    line-height: 1;
+    text-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
+    animation: pulseText 1.5s infinite alternate;
+}
+
+.stat-label {
+    font-size: 0.7rem;
+    font-family: 'Share Tech Mono', monospace;
+    letter-spacing: 2px;
+    opacity: 0.8;
+    margin-top: 5px;
+}
+
+/* Định nghĩa màu cho từng loại */
+.player-stat { --led-color: #00f3ff; color: #00f3ff; }
+.tie-stat    { --led-color: #00ff41; color: #00ff41; }
+.banker-stat { --led-color: #ff003c; color: #ff003c; }
+
+@keyframes pulseText {
+    from { transform: scale(1); }
+    to { transform: scale(1.05); }
+}

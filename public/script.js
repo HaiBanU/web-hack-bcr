@@ -94,6 +94,9 @@ socket.on('server_update', (allTables) => {
             
             // Cập nhật lịch sử game
             history = serverRes;
+
+            // Cập nhật thống kê số ván thắng (MÃ MỚI)
+            updateGameStats(history);
             
             // Render các bảng cầu
             renderBigRoadGrid(history);
@@ -478,44 +481,32 @@ function updateChartData(hist) {
 
 // --- HÀM VẼ NẾN DỰA TRÊN THẮNG/THUA ---
 function drawHistoryCandles() {
-    // --- CẤU HÌNH ---
-    const spacing = 16;          // GIẢM: Khoảng cách giữa các nến, làm chúng gần nhau hơn
-const candleWidth = 14;      // THÊM: Độ rộng của mỗi nến
-const minHeight = 15;        
-const maxHeight = 45;        
-const heightStep = 5;       // Chiều cao tăng thêm cho mỗi lần trong chuỗi
+    const spacing = 16;
+    const candleWidth = 14;
+    const minHeight = 15;        
+    const maxHeight = 45;        
+    const heightStep = 5;
 
-    // --- LOGIC TÍNH TOÁN DỮ LIỆU CHUỖI (STREAK) ---
     let processedData = [];
     let streakCounter = 0;
-    let lastResultType = null; // Chỉ theo dõi 'P' hoặc 'B'
+    let lastResultType = null;
 
-    // Lặp qua lịch sử để gán độ dài chuỗi cho mỗi kết quả
     for (const result of history) {
-        
-        // Trường hợp đặc biệt: HÒA (T)
         if (result === 'T') {
-            // Hòa là một điểm riêng và không làm ảnh hưởng (reset) chuỗi P hoặc B
             processedData.push({ type: 'T', streak: 0 });
-            continue; // Bỏ qua phần còn lại, xử lý kết quả tiếp theo
+            continue;
         }
-
-        // Nếu kết quả hiện tại tiếp nối chuỗi
         if (result === lastResultType) {
             streakCounter++;
         } else {
-            // Nếu chuỗi bị ngắt, reset lại
             streakCounter = 1;
         }
-        
         processedData.push({ type: result, streak: streakCounter });
-        lastResultType = result; // Cập nhật loại kết quả cuối cùng
+        lastResultType = result;
     }
 
-    // --- LOGIC VẼ ---
-    const centerY = waveH / 2; // Vị trí đường trung tâm
+    const centerY = waveH / 2;
 
-    // Vẽ đường kẻ ngang trung tâm
     waveCtx.beginPath();
     waveCtx.moveTo(0, centerY);
     waveCtx.lineTo(waveW, centerY);
@@ -524,14 +515,11 @@ const heightStep = 5;       // Chiều cao tăng thêm cho mỗi lần trong chu
     waveCtx.shadowBlur = 0;
     waveCtx.stroke();
 
-    // Lấy số nến vừa đủ hiển thị trên màn hình
     const maxCandles = Math.floor(waveW / spacing);
     const dataToDraw = processedData.slice(-maxCandles);
 
     dataToDraw.forEach((item, i) => {
         const x = waveW - (dataToDraw.length - i) * spacing + (spacing / 2);
-
-        // Vẽ HÒA (T) là một chấm tròn xanh lá
         if (item.type === 'T') {
             waveCtx.beginPath();
             waveCtx.arc(x, centerY, 4, 0, Math.PI * 2);
@@ -539,24 +527,18 @@ const heightStep = 5;       // Chiều cao tăng thêm cho mỗi lần trong chu
             waveCtx.shadowColor = '#00ff41';
             waveCtx.shadowBlur = 8;
             waveCtx.fill();
-            return; // Vẽ xong, chuyển sang nến tiếp theo
+            return;
         }
-
-        // Tính toán chiều cao nến dựa trên độ dài chuỗi
-        // Ví dụ: chuỗi 3 -> cao = 15 + (3-1)*5 = 25
         const candleHeight = Math.min(maxHeight, minHeight + (item.streak - 1) * heightStep);
-
-        // Bắt đầu vẽ nến
         waveCtx.beginPath();
         waveCtx.lineWidth = candleWidth;
         waveCtx.shadowBlur = 8;
-        
-        if (item.type === 'P') { // Player - Xanh dương, vẽ lên trên
+        if (item.type === 'P') {
             waveCtx.strokeStyle = '#00f3ff';
             waveCtx.shadowColor = '#00f3ff';
             waveCtx.moveTo(x, centerY);
             waveCtx.lineTo(x, centerY - candleHeight);
-        } else { // Banker - Đỏ, vẽ xuống dưới
+        } else {
             waveCtx.strokeStyle = '#ff003c';
             waveCtx.shadowColor = '#ff003c';
             waveCtx.moveTo(x, centerY);
@@ -564,7 +546,30 @@ const heightStep = 5;       // Chiều cao tăng thêm cho mỗi lần trong chu
         }
         waveCtx.stroke();
     });
-
-    // Reset lại shadow
     waveCtx.shadowBlur = 0;
+}
+
+// =======================================================
+// --- 9. GAME STATS COUNTER (MÃ MỚI) ---
+// =======================================================
+function updateGameStats(historyArr) {
+    const playerWinsEl = document.getElementById('playerWins');
+    const bankerWinsEl = document.getElementById('bankerWins');
+    const tieWinsEl = document.getElementById('tieWins');
+
+    if (!playerWinsEl || !bankerWinsEl || !tieWinsEl) return;
+
+    let pCount = 0;
+    let bCount = 0;
+    let tCount = 0;
+
+    historyArr.forEach(result => {
+        if (result === 'P') pCount++;
+        else if (result === 'B') bCount++;
+        else if (result === 'T') tCount++;
+    });
+
+    playerWinsEl.innerText = pCount;
+    bankerWinsEl.innerText = bCount;
+    tieWinsEl.innerText = tCount;
 }
