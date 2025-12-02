@@ -487,86 +487,72 @@ function updateChartData(hist) {
 function drawHistoryCandles() {
     // --- CẤU HÌNH ---
     const spacing = 20;      // Khoảng cách giữa các nến
-    const minHeight = 10;    // Chiều cao nến ngắn nhất (khi bắt đầu dây)
-    const maxHeight = 40;    // Chiều cao nến dài nhất
-    const maxStreak = 5;     // Số lần thắng liên tiếp để đạt chiều cao tối đa
+    const yStep = 8;         // "Biên độ" di chuyển của mỗi nến
+    const maxOffset = waveH * 0.4; // Giới hạn di chuyển để không bị ra khỏi khung
 
-    // --- LOGIC TÍNH TOÁN DÂY (STREAK) ---
-    let streaksData = [];
-    let streakCounter = 0;
+    // --- LOGIC TÍNH TOÁN VỊ TRÍ NẾN ---
+    let processedData = [];
+    let currentY = waveH / 2; // Bắt đầu từ giữa
     let lastType = null;
 
-    // Lặp qua lịch sử để gán độ dài dây cho mỗi kết quả
     for (const result of history) {
+        let startY = currentY;
+
+        // Nếu là Hòa (T), nó là một điểm tại vị trí hiện tại và không thay đổi xu hướng
         if (result === 'T') {
-            // Hòa (T) không làm thay đổi dây P hoặc B, nó là một điểm riêng
-            streaksData.push({ type: 'T', streak: 0 });
-            continue;
+            processedData.push({ type: 'T', y: currentY });
+            continue; // Không cập nhật lastType, để xu hướng tiếp tục sau đó
         }
 
-        if (result === lastType) {
-            streakCounter++;
-        } else {
-            streakCounter = 1; // Reset khi có kết quả mới
+        // Nếu xu hướng bị đảo ngược (ví dụ: B rồi P)
+        if (lastType !== null && result !== lastType) {
+            // Nến mới sẽ bắt đầu từ vị trí của nến cũ
+            startY = currentY;
+            // Nhưng xu hướng mới sẽ bắt đầu lại gần trung tâm
+            // Điều này tạo ra một bước nhảy lớn, thể hiện sự đảo chiều
+            currentY = waveH / 2 + (result === 'P' ? -yStep : yStep);
+        } else { // Nếu xu hướng tiếp tục
+            currentY += (result === 'P' ? -yStep : yStep);
         }
         
-        streaksData.push({ type: result, streak: streakCounter });
+        // Giới hạn lại Y để không vẽ ra ngoài canvas
+        currentY = Math.max(waveH/2 - maxOffset, Math.min(waveH/2 + maxOffset, currentY));
+
+        let endY = currentY;
+        processedData.push({ type: result, startY, endY });
         lastType = result;
     }
 
     // --- LOGIC VẼ ---
-    const centerY = waveH / 2; // Vị trí đường trung tâm
-
-    // Vẽ đường kẻ ngang trung tâm
-    waveCtx.beginPath();
-    waveCtx.moveTo(0, centerY);
-    waveCtx.lineTo(waveW, centerY);
-    waveCtx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-    waveCtx.lineWidth = 1;
-    waveCtx.shadowBlur = 0;
-    waveCtx.stroke();
-
-    // Lấy số nến vừa đủ hiển thị trên màn hình
     const maxCandles = Math.floor(waveW / spacing);
-    const dataToDraw = streaksData.slice(-maxCandles);
+    const dataToDraw = processedData.slice(-maxCandles);
 
     dataToDraw.forEach((item, i) => {
         const x = waveW - (dataToDraw.length - i) * spacing + (spacing / 2);
 
-        // Xử lý riêng cho Hòa (T)
-        if (item.type === 'T') {
-            waveCtx.beginPath();
-            waveCtx.arc(x, centerY, 4, 0, Math.PI * 2); // Vẽ chấm tròn ở giữa
-            waveCtx.fillStyle = '#00ff41'; // Màu xanh lá
-            waveCtx.shadowColor = '#00ff41';
-            waveCtx.shadowBlur = 8;
-            waveCtx.fill();
-            return; // Chuyển sang phần tử tiếp theo
-        }
-
-        // Tính toán chiều cao nến dựa trên độ dài dây
-        const streakRatio = Math.min(item.streak, maxStreak) / maxStreak;
-        const candleHeight = minHeight + streakRatio * (maxHeight - minHeight);
-
-        // Vẽ nến
         waveCtx.beginPath();
         waveCtx.lineWidth = 4;
         waveCtx.shadowBlur = 8;
-        
-        if (item.type === 'P') { // Player - Xanh dương
-            waveCtx.strokeStyle = '#00f3ff';
-            waveCtx.shadowColor = '#00f3ff';
-            waveCtx.moveTo(x, centerY);
-            waveCtx.lineTo(x, centerY - candleHeight); // Vẽ lên trên
-        } else { // Banker - Đỏ
-            waveCtx.strokeStyle = '#ff003c';
-            waveCtx.shadowColor = '#ff003c';
-            waveCtx.moveTo(x, centerY);
-            waveCtx.lineTo(x, centerY + candleHeight); // Vẽ xuống dưới
+
+        if (item.type === 'T') {
+            waveCtx.fillStyle = '#00ff41'; // Xanh lá
+            waveCtx.shadowColor = '#00ff41';
+            waveCtx.arc(x, item.y, 4, 0, Math.PI * 2);
+            waveCtx.fill();
+        } else {
+             // Nến xanh (Player) hay đỏ (Banker) không phụ thuộc vào hướng, chỉ phụ thuộc vào kết quả
+            if (item.type === 'P') {
+                waveCtx.strokeStyle = '#00f3ff'; // Xanh dương
+                waveCtx.shadowColor = '#00f3ff';
+            } else {
+                waveCtx.strokeStyle = '#ff003c'; // Đỏ
+                waveCtx.shadowColor = '#ff003c';
+            }
+            waveCtx.moveTo(x, item.startY);
+            waveCtx.lineTo(x, item.endY);
+            waveCtx.stroke();
         }
-        waveCtx.stroke();
     });
 
-    // Reset lại shadow
     waveCtx.shadowBlur = 0;
 }
