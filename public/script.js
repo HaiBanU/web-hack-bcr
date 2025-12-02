@@ -427,7 +427,7 @@ function animateWave() {
     
     waveConfig.pAmp += (waveConfig.targetP - waveConfig.pAmp) * 0.05;
     waveConfig.bAmp += (waveConfig.targetB - waveConfig.bAmp) * 0.05;
-    drawHistoryDots();
+    drawHistoryCandles();
     waveCtx.globalCompositeOperation = 'screen';
 
     // Banker Wave
@@ -484,38 +484,57 @@ function updateChartData(hist) {
 // =======================================================
 // BỔ SUNG: HÀM VẼ CÁC CHẤM CỘT MỐC LỊCH SỬ
 // =======================================================
-function drawHistoryDots() {
-    // Khoảng cách giữa các chấm, khớp với grid background (20px)
-    const spacing = 20;
-    
-    // Tính xem có bao nhiêu chấm có thể vừa trên màn hình
-    const maxDots = Math.floor(waveW / spacing);
-    
-    // Lấy các kết quả cuối cùng (bỏ qua 'T') để hiển thị
-    const data = history.filter(r => r !== 'T').slice(-maxDots);
+function drawHistoryCandles() {
+    // Khoảng cách giữa các nến
+    const spacing = 20; 
+    // Chiều cao của mỗi nến
+    const candleHeight = 25; 
+    // Độ dày của nến
+    waveCtx.lineWidth = 4; 
+    // Hiệu ứng phát sáng
+    waveCtx.shadowBlur = 5; 
+
+    // Vị trí Y của đường trung tâm
+    const centerY = waveH / 2;
+
+    // Vẽ đường kẻ ngang trung tâm
+    waveCtx.beginPath();
+    waveCtx.moveTo(0, centerY);
+    waveCtx.lineTo(waveW, centerY);
+    waveCtx.strokeStyle = 'rgba(255, 255, 255, 0.2)'; // Màu xám mờ
+    waveCtx.lineWidth = 1;
+    waveCtx.shadowBlur = 0; // Tắt shadow cho đường kẻ
+    waveCtx.stroke();
+
+    // Lấy dữ liệu lịch sử để vẽ
+    const maxCandles = Math.floor(waveW / spacing);
+    const data = history.filter(r => r !== 'T').slice(-maxCandles);
 
     data.forEach((result, i) => {
-        // Tính vị trí X: Bắt đầu từ phải qua trái
+        // Tính vị trí X từ phải qua trái
         const x = waveW - (data.length - i) * spacing + (spacing / 2);
 
-        // Vị trí Y: P ở trên, B ở dưới
-        const highY = waveH * 0.35; // Vị trí cho Player
-        const lowY = waveH * 0.65;  // Vị trí cho Banker
-        const y = (result === 'P') ? highY : lowY;
-
-        // Màu sắc
-        const color = (result === 'P') ? waveConfig.pColor : waveConfig.bColor;
-
-        // Bắt đầu vẽ
         waveCtx.beginPath();
-        // Vẽ vòng tròn (x, y, bán kính, góc bắt đầu, góc kết thúc)
-        waveCtx.arc(x, y, 3.5, 0, Math.PI * 2); 
-        waveCtx.fillStyle = color.replace('0.6', '1'); // Làm màu đậm hơn
-        waveCtx.fill();
         
-        // Thêm viền trắng mờ cho nổi bật
-        waveCtx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
-        waveCtx.lineWidth = 1;
+        // Vẽ nến tương ứng với kết quả
+        if (result === 'P') { // Nến XANH đi lên
+            waveCtx.strokeStyle = '#00ff41'; // Màu neon green
+            waveCtx.shadowColor = '#00ff41';
+            waveCtx.moveTo(x, centerY); // Bắt đầu từ giữa
+            waveCtx.lineTo(x, centerY - candleHeight); // Vẽ lên trên
+        } else { // Nến ĐỎ đi xuống
+            waveCtx.strokeStyle = '#ff003c'; // Màu neon red
+            waveCtx.shadowColor = '#ff003c';
+            waveCtx.moveTo(x, centerY); // Bắt đầu từ giữa
+            waveCtx.lineTo(x, centerY + candleHeight); // Vẽ xuống dưới
+        }
+        
+        // Hoàn thành việc vẽ nến
+        waveCtx.lineWidth = 4;
+        waveCtx.shadowBlur = 8;
         waveCtx.stroke();
     });
+
+    // Reset lại shadow sau khi vẽ xong
+    waveCtx.shadowBlur = 0;
 }
