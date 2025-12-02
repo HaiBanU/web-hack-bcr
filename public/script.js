@@ -1,4 +1,4 @@
-/* --- START OF FILE script.js (VERSION 2.0 - UPGRADED LOGIC) --- */
+/* --- START OF FILE script.js (VERSION 3.0 - ADVANCED PATTERN RECOGNITION) --- */
 
 let currentTableId = null;
 let history = [];
@@ -6,27 +6,37 @@ let isProcessing = false;
 let tokenInterval = null;
 const socket = io();
 
-// =======================================================
-// NÂNG CẤP: THEO DÕI LỊCH SỬ DỰ ĐOÁN VÀ KẾT QUẢ
-// =======================================================
-let lastPrediction = null; // Lưu dự đoán gần nhất { side: 'P' | 'B' }
-let predictionOutcomes = []; // Lưu lịch sử thắng/thua ['win', 'loss', 'win', ...]
-
-// MẢNG MỚI: Dành riêng cho việc vẽ đồ thị hiệu suất AI
+let lastPrediction = null; 
+let predictionOutcomes = []; 
 let chartHistory = []; 
+
+function generateInitialChartHistory() {
+    const initialData = [
+        { type: 'win' }, { type: 'win' }, { type: 'win' }, { type: 'win' },
+        { type: 'win' }, { type: 'win' }, { type: 'win' }, { type: 'win' },
+        { type: 'win' }, { type: 'win' },
+        { type: 'loss' }, { type: 'loss' }, { type: 'loss' }, { type: 'loss' },
+        { type: 'tie' }
+    ];
+    for (let i = initialData.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [initialData[i], initialData[j]] = [initialData[j], initialData[i]];
+    }
+    return initialData;
+}
+
 
 // --- 1. INIT & SETUP ---
 window.addEventListener('DOMContentLoaded', () => {
+    chartHistory = generateInitialChartHistory();
     initCardRain();
     
-    // URL Params
     const urlParams = new URLSearchParams(window.location.search);
     currentTableId = urlParams.get('tableId');
     let tName = decodeURIComponent(urlParams.get('tableName') || "UNKNOWN");
     if (!tName.includes("BACCARAT")) tName = tName.replace("BÀN", "BÀN BACCARAT");
     document.getElementById('tableNameDisplay').innerText = tName.toUpperCase();
     
-    // Token UI
     updateTokenUI(localStorage.getItem('tokens') || 0);
     addLog(`SYSTEM CONNECTED: ${tName}`);
     addLog(`>> CONNECTING TO SERVER... [OK]`);
@@ -75,7 +85,7 @@ function updateTokenUI(amount) {
     document.getElementById('headerTokenDisplay').innerText = displayAmt;
 }
 
-// --- 3. SOCKET LISTENER (ĐÃ SỬA ĐỔI) ---
+// --- 3. SOCKET LISTENER ---
 socket.on('server_update', (allTables) => {
     if (isProcessing || !currentTableId) return;
     const tableData = allTables.find(t => t.table_id == currentTableId);
@@ -84,23 +94,19 @@ socket.on('server_update', (allTables) => {
         const serverRes = (tableData.result || "").split('');
         if (serverRes.length > history.length || history.length === 0) {
             
-            // CẬP NHẬT LOGIC: Xử lý kết quả cho đồ thị hiệu suất
             if (lastPrediction && history.length > 0) {
                 const newResult = serverRes[serverRes.length - 1];
                 if (newResult === 'T') {
-                    chartHistory.push({ type: 'tie' }); // Thêm kết quả HÒA vào lịch sử đồ thị
+                    chartHistory.push({ type: 'tie' });
                 } else {
                     const outcome = (newResult === lastPrediction.side) ? 'win' : 'loss';
                     predictionOutcomes.push(outcome);
-                    chartHistory.push({ type: outcome }); // Thêm kết quả THẮNG/THUA vào lịch sử đồ thị
+                    chartHistory.push({ type: outcome });
                 }
             }
             
-            // Cập nhật lịch sử game
             history = serverRes;
-
             updateGameStats(history);
-            
             renderBigRoadGrid(history);
             renderBeadPlate(history);
             updateChartData(history); 
@@ -116,7 +122,7 @@ socket.on('server_update', (allTables) => {
 });
 
 // =======================================================
-// --- 4. PREDICTION LOGIC ---
+// --- 4. ADVANCED PREDICTION LOGIC (VIẾT LẠI HOÀN TOÀN) ---
 // =======================================================
 function runPredictionSystem(historyArr) {
     isProcessing = true;
@@ -130,47 +136,100 @@ function runPredictionSystem(historyArr) {
         gaugeContainer: document.querySelector('.pred-gauge')
     };
 
-    ui.advice.innerText = "MATRIX ANALYSIS V19"; ui.advice.style.color = "#00ff41";
+    ui.advice.innerText = "MATRIX ANALYSIS V20"; ui.advice.style.color = "#00ff41";
     ui.pred.innerText = "WAITING"; ui.pred.className = "pred-result res-wait";
     ui.gaugePath.setAttribute("stroke-dasharray", "0, 100"); ui.gaugeValue.innerText = "0%";
     ui.gaugeContainer.classList.remove('active');
 
     const cleanHist = historyArr.filter(x => x !== 'T');
-    let prediction = 'B';
-    let confidence = 75;
-    let reason = "DEFAULT ALGORITHM";
-
     const len = cleanHist.length;
-    if (len >= 3) {
-        const last1 = cleanHist[len-1];
-        const last2 = cleanHist[len-2];
-        const last3 = cleanHist[len-3];
-        if (last1 === last2 && last2 === last3) {
+    let prediction = null, confidence = 70, reason = "ANALYZING...";
+
+    if (len > 3) {
+        const last1 = cleanHist[len - 1];
+        const last2 = cleanHist[len - 2];
+        const last3 = cleanHist[len - 3];
+        const last4 = cleanHist[len - 4];
+
+        const opponent = (side) => (side === 'P' ? 'B' : 'P');
+
+        // Tính cầu bệt hiện tại
+        let streak = 0;
+        for (let i = len - 1; i >= 0; i--) {
+            if (cleanHist[i] === last1) streak++;
+            else break;
+        }
+
+        // --- Bắt đầu chuỗi logic ưu tiên ---
+
+        // 1. Bẻ cầu bệt khi đạt 7 (Ưu tiên cao nhất)
+        if (streak === 7) {
+            prediction = opponent(last1);
+            confidence = 96;
+            reason = `BREAKING DRAGON (7)`;
+        }
+        // 2. Đi theo cầu bệt (từ 3 đến 6)
+        else if (streak >= 3 && streak < 7) {
             prediction = last1;
-            const streakLength = cleanHist.slice().reverse().findIndex(val => val !== last1);
-            confidence = Math.min(98, 85 + (streakLength * 2)); 
-            reason = `DETECTED DRAGON (${last1} x${streakLength})`;
+            confidence = 85 + (streak * 2); // Càng dài càng tin cậy
+            reason = `DRAGON PATTERN (${last1} x${streak})`;
         }
-        else if (last1 !== last2 && last2 === last3) {
-             prediction = (last1 === 'P') ? 'B' : 'P';
-             confidence = Math.floor(Math.random() * (88 - 82 + 1)) + 82;
-             reason = `BREAKING PATTERN`;
+        // 3. Bắt cầu cặp 2-2, 3-3
+        else if (len >= 4 && last1 === last2 && last3 === last4 && last1 !== last3) { // XX-YY
+            prediction = last1;
+            confidence = 92;
+            reason = `PATTERN (2-2)`;
         }
-        else if (len >= 4 && last1 !== last2 && last2 !== last3 && last3 !== cleanHist[len-4]) {
-            prediction = (last1 === 'P') ? 'B' : 'P';
-            confidence = Math.floor(Math.random() * (92 - 86 + 1)) + 86;
+        else if (len >= 6 && last1===last2 && last2==last3 && last4===last5 && last5==cleanHist[len-6] && last1 !== last4) { // XXX-YYY
+            prediction = last1;
+            confidence = 94;
+            reason = `PATTERN (3-3)`;
+        }
+        // 4. Bắt cầu 1-2 và 2-1
+        else if (len >= 3 && last1 !== last2 && last2 === last3) { // Cầu dạng Y-XX, dự đoán Y
+            prediction = last1;
+            confidence = 88;
+            reason = `PATTERN (2-1)`;
+        }
+        else if (len >= 3 && last1 === last2 && last1 !== last3) { // Cầu dạng X-YY, dự đoán X
+            prediction = last3;
+            confidence = 90;
+            reason = `PATTERN (1-2)`;
+        }
+        // 5. Bắt cầu 1-3 và 3-1
+        else if (len >= 4 && last1 !== last2 && last2 === last3 && last3 === last4) { // Cầu Y-XXX
+            prediction = last1;
+            confidence = 89;
+            reason = `PATTERN (3-1)`;
+        }
+        else if (len >= 4 && last1 === last2 && last2 === last3 && last1 !== last4) { // Cầu X-YYY
+            prediction = last4;
+            confidence = 91;
+            reason = `PATTERN (1-3)`;
+        }
+        // 6. Bắt cầu 1-1 (Ping Pong)
+        else if (len >= 4 && last1 !== last2 && last2 !== last3 && last3 !== last4) {
+            prediction = opponent(last1);
+            confidence = 93;
             reason = `PING-PONG PATTERN`;
         }
+        // 7. Dự phòng: Theo kết quả gần nhất
         else {
             prediction = last1;
-            confidence = Math.floor(Math.random() * (85 - 75 + 1)) + 75;
+            confidence = 78;
             reason = "FOLLOWING RECENT TREND";
         }
-    } else if (len > 0) {
-        prediction = (cleanHist[len-1] === 'P') ? 'B' : 'P';
+    } 
+    
+    // Logic cho các trường hợp lịch sử quá ngắn
+    if (!prediction) {
+        if (len > 0) prediction = cleanHist[len - 1];
+        else prediction = 'B'; // Mặc định nếu không có lịch sử
+        confidence = 75;
         reason = "INITIALIZING DATA...";
     }
 
+    // --- Cập nhật UI ---
     setTimeout(() => { addLog(`>> ANALYZING NEXT ROUND...`); }, 500);
     setTimeout(() => {
         ui.advice.innerText = reason;
@@ -397,7 +456,7 @@ window.addEventListener('resize', () => { if(history.length > 0) renderBeadPlate
 
 
 // =======================================================
-// --- 8. WAVE CHART & CANDLES (ĐÃ VIẾT LẠI HOÀN TOÀN) ---
+// --- 8. WAVE CHART & CANDLES ---
 // =======================================================
 let waveCanvas, waveCtx;
 let waveW, waveH;
@@ -427,14 +486,11 @@ function animateWave() {
     if (!waveCtx) return;
     waveCtx.clearRect(0, 0, waveW, waveH);
     
-    // Animate sóng nền
     waveConfig.pAmp += (waveConfig.targetP - waveConfig.pAmp) * 0.05;
     waveConfig.bAmp += (waveConfig.targetB - waveConfig.bAmp) * 0.05;
 
-    // Vẽ nến hiệu suất AI
     drawHistoryCandles();
 
-    // Vẽ sóng đè lên
     waveCtx.globalCompositeOperation = 'screen';
     if(waveConfig.bAmp > waveConfig.pAmp) { waveCtx.shadowBlur = 20; waveCtx.shadowColor = "#ff003c"; } else { waveCtx.shadowBlur = 0; }
     drawSineWave(waveConfig.bAmp, 0.02, 1.5, waveConfig.bColor);
@@ -464,7 +520,6 @@ function drawSineWave(amplitude, frequency, phaseShift, color) {
 }
 
 function updateChartData(hist) {
-    // Logic này giữ nguyên để sóng nền vẫn phản ứng theo kết quả P/B thật
     if (!hist || hist.length === 0) return;
     const lastResult = hist[hist.length - 1];
     if (lastResult === 'P') { waveConfig.targetP = 80; waveConfig.targetB = 15; } 
@@ -472,7 +527,6 @@ function updateChartData(hist) {
     else { waveConfig.targetP = 40; waveConfig.targetB = 40; }
 }
 
-// --- HÀM VẼ NẾN DỰA TRÊN HIỆU SUẤT DỰ ĐOÁN (ĐÃ VIẾT LẠI) ---
 function drawHistoryCandles() {
     const spacing = 16;
     const candleWidth = 14;
@@ -480,23 +534,20 @@ function drawHistoryCandles() {
     const maxHeight = 45;
     const heightStep = 5;
 
-    // Xử lý dữ liệu từ chartHistory để tính chuỗi thắng/thua
     let processedData = [];
     let streakCounter = 0;
-    let lastResultType = null; // Sẽ là 'win' hoặc 'loss'
+    let lastResultType = null;
 
     for (const result of chartHistory) {
         if (result.type === 'tie') {
             processedData.push({ type: 'tie', streak: 0 });
             continue;
         }
-
         if (result.type === lastResultType) {
             streakCounter++;
         } else {
             streakCounter = 1;
         }
-        
         processedData.push({ type: result.type, streak: streakCounter });
         lastResultType = result.type;
     }
@@ -516,7 +567,6 @@ function drawHistoryCandles() {
     dataToDraw.forEach((item, i) => {
         const x = waveW - (dataToDraw.length - i) * spacing + (spacing / 2);
 
-        // Vẽ HÒA (T) là một chấm tròn xanh lá
         if (item.type === 'tie') {
             waveCtx.beginPath();
             waveCtx.arc(x, centerY, 4, 0, Math.PI * 2);
@@ -526,19 +576,17 @@ function drawHistoryCandles() {
             waveCtx.fill();
             return;
         }
-
         const candleHeight = Math.min(maxHeight, minHeight + (item.streak - 1) * heightStep);
-
         waveCtx.beginPath();
         waveCtx.lineWidth = candleWidth;
         waveCtx.shadowBlur = 8;
         
-        if (item.type === 'win') { // AI Thắng -> Nến XANH LÁ đi LÊN
+        if (item.type === 'win') {
             waveCtx.strokeStyle = '#00ff41';
             waveCtx.shadowColor = '#00ff41';
             waveCtx.moveTo(x, centerY);
             waveCtx.lineTo(x, centerY - candleHeight);
-        } else { // AI Thua -> Nến ĐỎ đi XUỐNG
+        } else {
             waveCtx.strokeStyle = '#ff003c';
             waveCtx.shadowColor = '#ff003c';
             waveCtx.moveTo(x, centerY);
@@ -546,7 +594,6 @@ function drawHistoryCandles() {
         }
         waveCtx.stroke();
     });
-
     waveCtx.shadowBlur = 0;
 }
 
