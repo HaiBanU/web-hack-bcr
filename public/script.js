@@ -1,10 +1,16 @@
-/* --- START OF FILE script.js --- */
+/* --- START OF FILE script.js (VERSION 2.0 - UPGRADED LOGIC) --- */
 
 let currentTableId = null;
 let history = [];
 let isProcessing = false;
 let tokenInterval = null;
 const socket = io();
+
+// =======================================================
+// NÂNG CẤP: THEO DÕI LỊCH SỬ DỰ ĐOÁN VÀ KẾT QUẢ
+// =======================================================
+let lastPrediction = null; // Lưu dự đoán gần nhất { side: 'P' | 'B' }
+let predictionOutcomes = []; // Lưu lịch sử thắng/thua ['win', 'loss', 'win', ...]
 
 // --- 1. INIT & SETUP ---
 window.addEventListener('DOMContentLoaded', () => {
@@ -27,11 +33,11 @@ window.addEventListener('DOMContentLoaded', () => {
 
     setInterval(generateMatrixCode, 100); 
     resetCardsUI();      
-    startWaveChartLoop(); // Khởi chạy biểu đồ sóng mới
+    startWaveChartLoop();
     startFakeTransactions();
 });
 
-// --- 2. TOKEN LOGIC ---
+// --- 2. TOKEN LOGIC (Giữ nguyên) ---
 async function deductToken(type) {
     const token = localStorage.getItem('token');
     if (!token) window.location.href = 'login.html';
@@ -66,104 +72,138 @@ function updateTokenUI(amount) {
     document.getElementById('headerTokenDisplay').innerText = displayAmt;
 }
 
-// --- 3. SOCKET LISTENER ---
+// --- 3. SOCKET LISTENER (Nâng cấp) ---
 socket.on('server_update', (allTables) => {
     if (isProcessing || !currentTableId) return;
     const tableData = allTables.find(t => t.table_id == currentTableId);
     
     if (tableData) {
         const serverRes = (tableData.result || "").split('');
-        // Chỉ cập nhật khi có kết quả mới hoặc lần đầu load
         if (serverRes.length > history.length || history.length === 0) {
+            
+            // =======================================================
+            // NÂNG CẤP: Xử lý kết quả thắng/thua của dự đoán trước đó
+            // =======================================================
+            if (lastPrediction && history.length > 0) {
+                const newResult = serverRes[serverRes.length - 1];
+                if (newResult !== 'T') { // Chỉ tính thắng/thua cho P và B
+                    const outcome = (newResult === lastPrediction.side) ? 'win' : 'loss';
+                    predictionOutcomes.push(outcome);
+                }
+            }
+            
+            // Cập nhật lịch sử game
             history = serverRes;
             
             // Render các bảng cầu
             renderBigRoadGrid(history);
             renderBeadPlate(history);
-            
-            // Cập nhật biểu đồ sóng
-            updateChartData(history); 
+            updateChartData(history); // Cập nhật sóng nền
 
             if (history.length > 0) {
                 const lastWin = history[history.length - 1];
                 addLog(`-------------------------------`);
                 addLog(`>> KẾT QUẢ VỪA RA: [ ${lastWin} ]`);
+                // Chạy hệ thống để dự đoán cho ván TIẾP THEO
                 runPredictionSystem(history);
             }
         }
     }
 });
 
-// --- 4. PREDICTION LOGIC (SYSTEM AI) ---
+// =======================================================
+// --- 4. PREDICTION LOGIC (VIẾT LẠI HOÀN TOÀN) ---
+// =======================================================
 function runPredictionSystem(historyArr) {
     isProcessing = true;
     resetCardsUI();
     
-    const adviceEl = document.getElementById('aiAdvice');
-    const predEl = document.getElementById('aiPredText');
-    const gaugePath = document.getElementById('gaugePath');
-    const gaugeValue = document.getElementById('gaugeValue');
-    const gaugeContainer = document.querySelector('.pred-gauge');
-    
-    // Reset State
-    adviceEl.innerText = "MATRIX ANALYSIS V18"; adviceEl.style.color = "#00ff41";
-    predEl.innerText = "WAITING"; predEl.className = "pred-result res-wait";
-    gaugePath.setAttribute("stroke-dasharray", "0, 100"); gaugeValue.innerText = "0%";
-    gaugeContainer.classList.remove('active');
-    
-    const cleanHist = historyArr.filter(x => x !== 'T');
-    let prediction = 'B'; let confidence = 50; let reason = "MATRIX SCANNING";
+    const ui = {
+        advice: document.getElementById('aiAdvice'),
+        pred: document.getElementById('aiPredText'),
+        gaugePath: document.getElementById('gaugePath'),
+        gaugeValue: document.getElementById('gaugeValue'),
+        gaugeContainer: document.querySelector('.pred-gauge')
+    };
 
-    // Fake AI Logic
-    if (cleanHist.length >= 3) {
-        const len = cleanHist.length;
-        const last1 = cleanHist[len-1]; const last2 = cleanHist[len-2];
-        if (last1 === last2) { 
-            prediction = last1; 
-            confidence = Math.floor(Math.random() * (98 - 88) + 88); 
-            reason = `DETECTED DRAGON (${last1})`; 
-        } else { 
-            prediction = (last1 === 'P') ? 'B' : 'P'; 
-            confidence = Math.floor(Math.random() * (92 - 82) + 82); 
-            reason = "PING-PONG PATTERN"; 
+    ui.advice.innerText = "MATRIX ANALYSIS V19"; ui.advice.style.color = "#00ff41";
+    ui.pred.innerText = "WAITING"; ui.pred.className = "pred-result res-wait";
+    ui.gaugePath.setAttribute("stroke-dasharray", "0, 100"); ui.gaugeValue.innerText = "0%";
+    ui.gaugeContainer.classList.remove('active');
+
+    const cleanHist = historyArr.filter(x => x !== 'T');
+    let prediction = 'B';
+    let confidence = 75;
+    let reason = "DEFAULT ALGORITHM";
+
+    // --- LOGIC DỰ ĐOÁN NÂNG CẤP ---
+    const len = cleanHist.length;
+    if (len >= 3) {
+        const last1 = cleanHist[len-1];
+        const last2 = cleanHist[len-2];
+        const last3 = cleanHist[len-3];
+
+        // 1. Ưu tiên cao nhất: Bắt cầu BỆT (Dragon)
+        if (last1 === last2 && last2 === last3) {
+            prediction = last1;
+            // Càng bệt dài, độ tin cậy càng cao
+            const streakLength = cleanHist.slice().reverse().findIndex(val => val !== last1);
+            confidence = Math.min(98, 85 + (streakLength * 2)); 
+            reason = `DETECTED DRAGON (${last1} x${streakLength})`;
         }
-    } else { 
-        prediction = (Math.random() > 0.5) ? 'P' : 'B'; 
-        reason = "INITIALIZING DATA..."; 
+        // 2. Bắt cầu 1-1 (Ping-pong)
+        else if (last1 !== last2 && last2 === last3) {
+             // Ví dụ: B, B, P -> Có khả năng bẻ cầu, bắt đầu 1-1
+             prediction = (last1 === 'P') ? 'B' : 'P';
+             confidence = Math.floor(Math.random() * (88 - 82 + 1)) + 82;
+             reason = `BREAKING PATTERN`;
+        }
+        else if (len >= 4 && last1 !== last2 && last2 !== last3 && last3 !== cleanHist[len-4]) {
+            prediction = (last1 === 'P') ? 'B' : 'P';
+            confidence = Math.floor(Math.random() * (92 - 86 + 1)) + 86;
+            reason = `PING-PONG PATTERN`;
+        }
+        // 3. Logic dự phòng: Theo kết quả gần nhất
+        else {
+            prediction = last1;
+            confidence = Math.floor(Math.random() * (85 - 75 + 1)) + 75;
+            reason = "FOLLOWING RECENT TREND";
+        }
+    } else if (len > 0) {
+        prediction = (cleanHist[len-1] === 'P') ? 'B' : 'P';
+        reason = "INITIALIZING DATA...";
     }
 
+    // --- Cập nhật UI và mô phỏng ---
     setTimeout(() => { addLog(`>> ANALYZING NEXT ROUND...`); }, 500);
-    setTimeout(() => { 
-        // Hiển thị kết quả
-        adviceEl.innerText = reason;
-        predEl.innerText = (prediction === 'P') ? "PLAYER" : "BANKER";
-        predEl.className = (prediction === 'P') ? "pred-result res-p" : "pred-result res-b";
+    setTimeout(() => {
+        ui.advice.innerText = reason;
+        ui.pred.innerText = (prediction === 'P') ? "PLAYER" : "BANKER";
+        ui.pred.className = (prediction === 'P') ? "pred-result res-p" : "pred-result res-b";
+        ui.gaugeValue.innerText = confidence + "%";
+        ui.gaugePath.setAttribute("stroke-dasharray", `${confidence}, 100`);
         
-        gaugeValue.innerText = confidence + "%";
-        gaugePath.setAttribute("stroke-dasharray", `${confidence}, 100`);
-        
-        // Màu vòng tròn
-        if (prediction === 'P') { 
-            gaugePath.className.baseVal = "circle stroke-p"; 
-            gaugeContainer.style.setProperty('--target-color', '#00f3ff'); 
-        } else { 
-            gaugePath.className.baseVal = "circle stroke-b"; 
-            gaugeContainer.style.setProperty('--target-color', '#ff003c'); 
-        }
-        gaugeContainer.classList.add('active');
+        let color = (prediction === 'P') ? '#00f3ff' : '#ff003c';
+        ui.gaugePath.className.baseVal = (prediction === 'P') ? "circle stroke-p" : "circle stroke-b";
+        ui.gaugeContainer.style.setProperty('--target-color', color);
+        ui.gaugeContainer.classList.add('active');
 
-        // Update thanh bar bên phải
-        let confP = (prediction==='P') ? confidence : (100-confidence);
-        let confB = (prediction==='B') ? confidence : (100-confidence);
-        document.getElementById('confP').innerText = confP+"%"; document.getElementById('barP').style.width = confP+"%";
-        document.getElementById('confB').innerText = confB+"%"; document.getElementById('barB').style.width = confB+"%";
+        let confP = (prediction === 'P') ? confidence : (100 - confidence);
+        let confB = (prediction === 'B') ? confidence : (100 - confidence);
+        document.getElementById('confP').innerText = confP + "%"; document.getElementById('barP').style.width = confP + "%";
+        document.getElementById('confB').innerText = confB + "%"; document.getElementById('barB').style.width = confB + "%";
         
         addLog(`>> PREDICTION: [ ${prediction} ] (RATE: ${confidence}%)`);
+        
+        // Cập nhật dự đoán cuối cùng để so sánh ở vòng lặp sau
+        lastPrediction = { side: prediction };
+        
         simulateHandReveal(prediction);
     }, 1500);
 }
 
-// --- 5. CARD SIMULATION ---
+
+// --- 5. CARD SIMULATION (Giữ nguyên) ---
 function getCardValue(card) { if (card.raw >= 10) return 0; return card.raw; }
 function calculateHandScore(hand) { return hand.reduce((sum, card) => sum + getCardValue(card), 0) % 10; }
 function generateFakeHand(targetWinner) {
@@ -237,7 +277,7 @@ function getCard() {
     return { raw, value: raw>=10?0:raw, suit: ['spades','hearts','clubs','diamonds'][Math.floor(Math.random()*4)] };
 }
 
-// --- 6. VISUAL HELPERS ---
+// --- 6. VISUAL HELPERS (Giữ nguyên) ---
 function addLog(msg) {
     const box = document.getElementById('systemLog');
     const time = new Date().toLocaleTimeString('vi-VN', { hour12: false });
@@ -292,7 +332,7 @@ function startFakeTransactions() {
     }, 1500);
 }
 
-// --- 7. BIG ROAD LOGIC ---
+// --- 7. BIG ROAD & BEAD PLATE LOGIC (Giữ nguyên) ---
 function renderBigRoadGrid(rawHistory) {
     const grid = document.getElementById('bigRoadGrid'); 
     if(!grid) return;
@@ -312,17 +352,11 @@ function renderBigRoadGrid(rawHistory) {
         currentCol.push(item); lastType = item.type;
     });
     if(currentCol.length > 0) columns.push(currentCol);
-    
-    // =======================================================
-    // SỬA ĐỔI Ở ĐÂY: Giảm số cột trên di động để không bị vỡ
-    // =======================================================
     const isMobile = window.innerWidth <= 1024;
-    const MAX_COLS = isMobile ? 10 : 20; // Trên mobile chỉ hiện 10 cột, máy tính 20 cột
-    
+    const MAX_COLS = isMobile ? 10 : 20; 
     let displayCols = [];
     if(columns.length > MAX_COLS) displayCols = columns.slice(columns.length - MAX_COLS);
     else { displayCols = columns; while(displayCols.length < MAX_COLS) displayCols.push([]); }
-    
     let html = '';
     displayCols.forEach(col => {
         html += '<div class="tool-road-col">';
@@ -339,81 +373,54 @@ function renderBigRoadGrid(rawHistory) {
     });
     grid.innerHTML = html;
 }
-
-// --- 8. BEAD PLATE (UPDATED: 5x5 - TRÁI SANG PHẢI) ---
-/* --- TRONG FILE script.js --- */
-
 function renderBeadPlate(res) {
     const grid = document.getElementById('beadPlateGrid');
     if(!grid) return;
-
-    const totalCells = 25; // 5x5
-
-    // LOGIC CẮT DỮ LIỆU ĐỂ TẠO HIỆU ỨNG TRÔI:
-    // Luôn lấy tối đa 25 phần tử CUỐI CÙNG của mảng lịch sử.
+    const totalCells = 25;
     let displayData = [];
     if (res.length > totalCells) {
-        // Ví dụ: Có 30 kết quả -> Lấy từ index 5 đến 30.
-        // Cột 1 (index 0-4 cũ) sẽ bị loại bỏ.
         displayData = res.slice(res.length - totalCells, res.length);
     } else {
-        // Nếu chưa đủ 25 kết quả, hiển thị từ đầu.
-        // Nó sẽ điền cột 1, rồi cột 2... các cột bên phải sẽ trống.
         displayData = res;
     }
-    
     let html = '';
-
-    // Render đúng 25 ô
     for(let i = 0; i < totalCells; i++) {
-        const item = displayData[i]; // Lấy dữ liệu
-        
+        const item = displayData[i];
         if (item) {
             let cls = ''; let txt = '';
             if (item === 'P') { cls = 'bead-p'; txt = 'P'; }
             else if (item === 'B') { cls = 'bead-b'; txt = 'B'; }
             else if (item === 'T') { cls = 'bead-t'; txt = 'T'; }
-            
             html += `<div class="bead-cell"><div class="bead-circle ${cls}">${txt}</div></div>`;
         } else {
-            // Render ô trống nếu chưa có dữ liệu
             html += `<div class="bead-cell"></div>`;
         }
     }
-    
     grid.innerHTML = html;
 }
-// Vẽ lại khi resize
 window.addEventListener('resize', () => { if(history.length > 0) renderBeadPlate(history); });
 
-/* =========================================
-   NEW WAVE CHART: STATEFUL
-   ========================================= */
+
+// =======================================================
+// --- 8. WAVE CHART & CANDLES (VIẾT LẠI HOÀN TOÀN) ---
+// =======================================================
 let waveCanvas, waveCtx;
-let waveFrame = 0;
 let waveW, waveH;
 
 let waveConfig = {
-    pAmp: 20,       // Độ cao hiện tại Player
-    bAmp: 20,       // Độ cao hiện tại Banker
-    targetP: 20,    // Đích đến Player
-    targetB: 20,    // Đích đến Banker
-    speed: 0.08,    
-    pColor: "rgba(0, 243, 255, 0.6)", 
-    bColor: "rgba(255, 0, 60, 0.6)"   
+    pAmp: 20, targetP: 20, bAmp: 20, targetB: 20,
+    speed: 0.08, pColor: "rgba(0, 243, 255, 0.6)", bColor: "rgba(255, 0, 60, 0.6)"
 };
 
 function startWaveChartLoop() {
     waveCanvas = document.getElementById('trendChart');
     if (!waveCanvas) return;
     waveCtx = waveCanvas.getContext('2d');
-
     function resize() {
         if (waveCanvas.parentElement) {
             waveCanvas.width = waveCanvas.parentElement.clientWidth;
             waveCanvas.height = waveCanvas.parentElement.clientHeight;
-            waveW = waveCanvas.width;
-            waveH = waveCanvas.height;
+            waveW = waveCanvas.width; waveH = waveCanvas.height;
         }
     }
     window.addEventListener('resize', resize);
@@ -425,25 +432,22 @@ function animateWave() {
     if (!waveCtx) return;
     waveCtx.clearRect(0, 0, waveW, waveH);
     
+    // Animate sóng nền
     waveConfig.pAmp += (waveConfig.targetP - waveConfig.pAmp) * 0.05;
     waveConfig.bAmp += (waveConfig.targetB - waveConfig.bAmp) * 0.05;
+
+    // Vẽ nến thắng/thua
     drawHistoryCandles();
+
+    // Vẽ sóng đè lên
     waveCtx.globalCompositeOperation = 'screen';
-
-    // Banker Wave
-    if(waveConfig.bAmp > waveConfig.pAmp) { waveCtx.shadowBlur = 20; waveCtx.shadowColor = "#ff003c"; } 
-    else { waveCtx.shadowBlur = 0; }
+    if(waveConfig.bAmp > waveConfig.pAmp) { waveCtx.shadowBlur = 20; waveCtx.shadowColor = "#ff003c"; } else { waveCtx.shadowBlur = 0; }
     drawSineWave(waveConfig.bAmp, 0.02, 1.5, waveConfig.bColor);
-
-    // Player Wave
-    if(waveConfig.pAmp > waveConfig.bAmp) { waveCtx.shadowBlur = 20; waveCtx.shadowColor = "#00f3ff"; } 
-    else { waveCtx.shadowBlur = 0; }
+    if(waveConfig.pAmp > waveConfig.bAmp) { waveCtx.shadowBlur = 20; waveCtx.shadowColor = "#00f3ff"; } else { waveCtx.shadowBlur = 0; }
     drawSineWave(waveConfig.pAmp, 0.025, 0, waveConfig.pColor);
-
     waveCtx.shadowBlur = 0;
     waveCtx.globalCompositeOperation = 'source-over';
 
-    waveFrame += waveConfig.speed;
     requestAnimationFrame(animateWave);
 }
 
@@ -453,10 +457,9 @@ function drawSineWave(amplitude, frequency, phaseShift, color) {
     let grad = waveCtx.createLinearGradient(0, 0, 0, waveH);
     grad.addColorStop(0, color.replace("0.6", "0.9"));
     grad.addColorStop(1, "rgba(0,0,0,0)"); 
-
     waveCtx.fillStyle = grad;
     for (let x = 0; x <= waveW; x += 5) {
-        let y = (waveH / 1.3) + Math.sin(x * frequency + waveFrame + phaseShift) * -amplitude;
+        let y = (waveH / 1.3) + Math.sin(x * frequency + Date.now() * 0.001 + phaseShift) * -amplitude;
         waveCtx.lineTo(x, y);
     }
     waveCtx.lineTo(waveW, waveH);
@@ -472,87 +475,96 @@ function updateChartData(hist) {
     else if (lastResult === 'B') { waveConfig.targetB = 80; waveConfig.targetP = 15; } 
     else { waveConfig.targetP = 40; waveConfig.targetB = 40; }
 }
-function updateChartData(hist) {
-    if (!hist || hist.length === 0) return;
-    const lastResult = hist[hist.length - 1];
-    if (lastResult === 'P') { waveConfig.targetP = 80; waveConfig.targetB = 15; } 
-    else if (lastResult === 'B') { waveConfig.targetB = 80; waveConfig.targetP = 15; } 
-    else { waveConfig.targetP = 40; waveConfig.targetB = 40; }
-}
 
-
-// =======================================================
-// BỔ SUNG: HÀM VẼ CÁC CHẤM CỘT MỐC LỊCH SỬ
-// =======================================================
+// --- HÀM VẼ NẾN DỰA TRÊN THẮNG/THUA ---
 function drawHistoryCandles() {
     // --- CẤU HÌNH ---
-    const spacing = 20;      // Khoảng cách giữa các nến
-    const yStep = 8;         // "Biên độ" di chuyển của mỗi nến
-    const maxOffset = waveH * 0.4; // Giới hạn di chuyển để không bị ra khỏi khung
+    const spacing = 16;          // GIẢM: Khoảng cách giữa các nến, làm chúng gần nhau hơn
+const candleWidth = 14;      // THÊM: Độ rộng của mỗi nến
+const minHeight = 15;        
+const maxHeight = 45;        
+const heightStep = 5;       // Chiều cao tăng thêm cho mỗi lần trong chuỗi
 
-    // --- LOGIC TÍNH TOÁN VỊ TRÍ NẾN ---
+    // --- LOGIC TÍNH TOÁN DỮ LIỆU CHUỖI (STREAK) ---
     let processedData = [];
-    let currentY = waveH / 2; // Bắt đầu từ giữa
-    let lastType = null;
+    let streakCounter = 0;
+    let lastResultType = null; // Chỉ theo dõi 'P' hoặc 'B'
 
+    // Lặp qua lịch sử để gán độ dài chuỗi cho mỗi kết quả
     for (const result of history) {
-        let startY = currentY;
-
-        // Nếu là Hòa (T), nó là một điểm tại vị trí hiện tại và không thay đổi xu hướng
+        
+        // Trường hợp đặc biệt: HÒA (T)
         if (result === 'T') {
-            processedData.push({ type: 'T', y: currentY });
-            continue; // Không cập nhật lastType, để xu hướng tiếp tục sau đó
+            // Hòa là một điểm riêng và không làm ảnh hưởng (reset) chuỗi P hoặc B
+            processedData.push({ type: 'T', streak: 0 });
+            continue; // Bỏ qua phần còn lại, xử lý kết quả tiếp theo
         }
 
-        // Nếu xu hướng bị đảo ngược (ví dụ: B rồi P)
-        if (lastType !== null && result !== lastType) {
-            // Nến mới sẽ bắt đầu từ vị trí của nến cũ
-            startY = currentY;
-            // Nhưng xu hướng mới sẽ bắt đầu lại gần trung tâm
-            // Điều này tạo ra một bước nhảy lớn, thể hiện sự đảo chiều
-            currentY = waveH / 2 + (result === 'P' ? -yStep : yStep);
-        } else { // Nếu xu hướng tiếp tục
-            currentY += (result === 'P' ? -yStep : yStep);
+        // Nếu kết quả hiện tại tiếp nối chuỗi
+        if (result === lastResultType) {
+            streakCounter++;
+        } else {
+            // Nếu chuỗi bị ngắt, reset lại
+            streakCounter = 1;
         }
         
-        // Giới hạn lại Y để không vẽ ra ngoài canvas
-        currentY = Math.max(waveH/2 - maxOffset, Math.min(waveH/2 + maxOffset, currentY));
-
-        let endY = currentY;
-        processedData.push({ type: result, startY, endY });
-        lastType = result;
+        processedData.push({ type: result, streak: streakCounter });
+        lastResultType = result; // Cập nhật loại kết quả cuối cùng
     }
 
     // --- LOGIC VẼ ---
+    const centerY = waveH / 2; // Vị trí đường trung tâm
+
+    // Vẽ đường kẻ ngang trung tâm
+    waveCtx.beginPath();
+    waveCtx.moveTo(0, centerY);
+    waveCtx.lineTo(waveW, centerY);
+    waveCtx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+    waveCtx.lineWidth = 1;
+    waveCtx.shadowBlur = 0;
+    waveCtx.stroke();
+
+    // Lấy số nến vừa đủ hiển thị trên màn hình
     const maxCandles = Math.floor(waveW / spacing);
     const dataToDraw = processedData.slice(-maxCandles);
 
     dataToDraw.forEach((item, i) => {
         const x = waveW - (dataToDraw.length - i) * spacing + (spacing / 2);
 
-        waveCtx.beginPath();
-        waveCtx.lineWidth = 4;
-        waveCtx.shadowBlur = 8;
-
+        // Vẽ HÒA (T) là một chấm tròn xanh lá
         if (item.type === 'T') {
-            waveCtx.fillStyle = '#00ff41'; // Xanh lá
+            waveCtx.beginPath();
+            waveCtx.arc(x, centerY, 4, 0, Math.PI * 2);
+            waveCtx.fillStyle = '#00ff41';
             waveCtx.shadowColor = '#00ff41';
-            waveCtx.arc(x, item.y, 4, 0, Math.PI * 2);
+            waveCtx.shadowBlur = 8;
             waveCtx.fill();
-        } else {
-             // Nến xanh (Player) hay đỏ (Banker) không phụ thuộc vào hướng, chỉ phụ thuộc vào kết quả
-            if (item.type === 'P') {
-                waveCtx.strokeStyle = '#00f3ff'; // Xanh dương
-                waveCtx.shadowColor = '#00f3ff';
-            } else {
-                waveCtx.strokeStyle = '#ff003c'; // Đỏ
-                waveCtx.shadowColor = '#ff003c';
-            }
-            waveCtx.moveTo(x, item.startY);
-            waveCtx.lineTo(x, item.endY);
-            waveCtx.stroke();
+            return; // Vẽ xong, chuyển sang nến tiếp theo
         }
+
+        // Tính toán chiều cao nến dựa trên độ dài chuỗi
+        // Ví dụ: chuỗi 3 -> cao = 15 + (3-1)*5 = 25
+        const candleHeight = Math.min(maxHeight, minHeight + (item.streak - 1) * heightStep);
+
+        // Bắt đầu vẽ nến
+        waveCtx.beginPath();
+        waveCtx.lineWidth = candleWidth;
+        waveCtx.shadowBlur = 8;
+        
+        if (item.type === 'P') { // Player - Xanh dương, vẽ lên trên
+            waveCtx.strokeStyle = '#00f3ff';
+            waveCtx.shadowColor = '#00f3ff';
+            waveCtx.moveTo(x, centerY);
+            waveCtx.lineTo(x, centerY - candleHeight);
+        } else { // Banker - Đỏ, vẽ xuống dưới
+            waveCtx.strokeStyle = '#ff003c';
+            waveCtx.shadowColor = '#ff003c';
+            waveCtx.moveTo(x, centerY);
+            waveCtx.lineTo(x, centerY + candleHeight);
+        }
+        waveCtx.stroke();
     });
 
+    // Reset lại shadow
     waveCtx.shadowBlur = 0;
 }
