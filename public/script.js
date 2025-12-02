@@ -12,6 +12,9 @@ const socket = io();
 let lastPrediction = null; // Lưu dự đoán gần nhất { side: 'P' | 'B' }
 let predictionOutcomes = []; // Lưu lịch sử thắng/thua ['win', 'loss', 'win', ...]
 
+// MẢNG MỚI: Dành riêng cho việc vẽ đồ thị hiệu suất AI
+let chartHistory = []; 
+
 // --- 1. INIT & SETUP ---
 window.addEventListener('DOMContentLoaded', () => {
     initCardRain();
@@ -37,7 +40,7 @@ window.addEventListener('DOMContentLoaded', () => {
     startFakeTransactions();
 });
 
-// --- 2. TOKEN LOGIC (Giữ nguyên) ---
+// --- 2. TOKEN LOGIC ---
 async function deductToken(type) {
     const token = localStorage.getItem('token');
     if (!token) window.location.href = 'login.html';
@@ -72,7 +75,7 @@ function updateTokenUI(amount) {
     document.getElementById('headerTokenDisplay').innerText = displayAmt;
 }
 
-// --- 3. SOCKET LISTENER (Nâng cấp) ---
+// --- 3. SOCKET LISTENER (ĐÃ SỬA ĐỔI) ---
 socket.on('server_update', (allTables) => {
     if (isProcessing || !currentTableId) return;
     const tableData = allTables.find(t => t.table_id == currentTableId);
@@ -81,33 +84,31 @@ socket.on('server_update', (allTables) => {
         const serverRes = (tableData.result || "").split('');
         if (serverRes.length > history.length || history.length === 0) {
             
-            // =======================================================
-            // NÂNG CẤP: Xử lý kết quả thắng/thua của dự đoán trước đó
-            // =======================================================
+            // CẬP NHẬT LOGIC: Xử lý kết quả cho đồ thị hiệu suất
             if (lastPrediction && history.length > 0) {
                 const newResult = serverRes[serverRes.length - 1];
-                if (newResult !== 'T') { // Chỉ tính thắng/thua cho P và B
+                if (newResult === 'T') {
+                    chartHistory.push({ type: 'tie' }); // Thêm kết quả HÒA vào lịch sử đồ thị
+                } else {
                     const outcome = (newResult === lastPrediction.side) ? 'win' : 'loss';
                     predictionOutcomes.push(outcome);
+                    chartHistory.push({ type: outcome }); // Thêm kết quả THẮNG/THUA vào lịch sử đồ thị
                 }
             }
             
             // Cập nhật lịch sử game
             history = serverRes;
 
-            // Cập nhật thống kê số ván thắng (MÃ MỚI)
             updateGameStats(history);
             
-            // Render các bảng cầu
             renderBigRoadGrid(history);
             renderBeadPlate(history);
-            updateChartData(history); // Cập nhật sóng nền
+            updateChartData(history); 
 
             if (history.length > 0) {
                 const lastWin = history[history.length - 1];
                 addLog(`-------------------------------`);
                 addLog(`>> KẾT QUẢ VỪA RA: [ ${lastWin} ]`);
-                // Chạy hệ thống để dự đoán cho ván TIẾP THEO
                 runPredictionSystem(history);
             }
         }
@@ -115,7 +116,7 @@ socket.on('server_update', (allTables) => {
 });
 
 // =======================================================
-// --- 4. PREDICTION LOGIC (VIẾT LẠI HOÀN TOÀN) ---
+// --- 4. PREDICTION LOGIC ---
 // =======================================================
 function runPredictionSystem(historyArr) {
     isProcessing = true;
@@ -139,24 +140,18 @@ function runPredictionSystem(historyArr) {
     let confidence = 75;
     let reason = "DEFAULT ALGORITHM";
 
-    // --- LOGIC DỰ ĐOÁN NÂNG CẤP ---
     const len = cleanHist.length;
     if (len >= 3) {
         const last1 = cleanHist[len-1];
         const last2 = cleanHist[len-2];
         const last3 = cleanHist[len-3];
-
-        // 1. Ưu tiên cao nhất: Bắt cầu BỆT (Dragon)
         if (last1 === last2 && last2 === last3) {
             prediction = last1;
-            // Càng bệt dài, độ tin cậy càng cao
             const streakLength = cleanHist.slice().reverse().findIndex(val => val !== last1);
             confidence = Math.min(98, 85 + (streakLength * 2)); 
             reason = `DETECTED DRAGON (${last1} x${streakLength})`;
         }
-        // 2. Bắt cầu 1-1 (Ping-pong)
         else if (last1 !== last2 && last2 === last3) {
-             // Ví dụ: B, B, P -> Có khả năng bẻ cầu, bắt đầu 1-1
              prediction = (last1 === 'P') ? 'B' : 'P';
              confidence = Math.floor(Math.random() * (88 - 82 + 1)) + 82;
              reason = `BREAKING PATTERN`;
@@ -166,7 +161,6 @@ function runPredictionSystem(historyArr) {
             confidence = Math.floor(Math.random() * (92 - 86 + 1)) + 86;
             reason = `PING-PONG PATTERN`;
         }
-        // 3. Logic dự phòng: Theo kết quả gần nhất
         else {
             prediction = last1;
             confidence = Math.floor(Math.random() * (85 - 75 + 1)) + 75;
@@ -177,7 +171,6 @@ function runPredictionSystem(historyArr) {
         reason = "INITIALIZING DATA...";
     }
 
-    // --- Cập nhật UI và mô phỏng ---
     setTimeout(() => { addLog(`>> ANALYZING NEXT ROUND...`); }, 500);
     setTimeout(() => {
         ui.advice.innerText = reason;
@@ -198,7 +191,6 @@ function runPredictionSystem(historyArr) {
         
         addLog(`>> PREDICTION: [ ${prediction} ] (RATE: ${confidence}%)`);
         
-        // Cập nhật dự đoán cuối cùng để so sánh ở vòng lặp sau
         lastPrediction = { side: prediction };
         
         simulateHandReveal(prediction);
@@ -206,7 +198,7 @@ function runPredictionSystem(historyArr) {
 }
 
 
-// --- 5. CARD SIMULATION (Giữ nguyên) ---
+// --- 5. CARD SIMULATION ---
 function getCardValue(card) { if (card.raw >= 10) return 0; return card.raw; }
 function calculateHandScore(hand) { return hand.reduce((sum, card) => sum + getCardValue(card), 0) % 10; }
 function generateFakeHand(targetWinner) {
@@ -280,7 +272,7 @@ function getCard() {
     return { raw, value: raw>=10?0:raw, suit: ['spades','hearts','clubs','diamonds'][Math.floor(Math.random()*4)] };
 }
 
-// --- 6. VISUAL HELPERS (Giữ nguyên) ---
+// --- 6. VISUAL HELPERS ---
 function addLog(msg) {
     const box = document.getElementById('systemLog');
     const time = new Date().toLocaleTimeString('vi-VN', { hour12: false });
@@ -335,7 +327,7 @@ function startFakeTransactions() {
     }, 1500);
 }
 
-// --- 7. BIG ROAD & BEAD PLATE LOGIC (Giữ nguyên) ---
+// --- 7. BIG ROAD & BEAD PLATE LOGIC ---
 function renderBigRoadGrid(rawHistory) {
     const grid = document.getElementById('bigRoadGrid'); 
     if(!grid) return;
@@ -405,7 +397,7 @@ window.addEventListener('resize', () => { if(history.length > 0) renderBeadPlate
 
 
 // =======================================================
-// --- 8. WAVE CHART & CANDLES (VIẾT LẠI HOÀN TOÀN) ---
+// --- 8. WAVE CHART & CANDLES (ĐÃ VIẾT LẠI HOÀN TOÀN) ---
 // =======================================================
 let waveCanvas, waveCtx;
 let waveW, waveH;
@@ -439,7 +431,7 @@ function animateWave() {
     waveConfig.pAmp += (waveConfig.targetP - waveConfig.pAmp) * 0.05;
     waveConfig.bAmp += (waveConfig.targetB - waveConfig.bAmp) * 0.05;
 
-    // Vẽ nến thắng/thua
+    // Vẽ nến hiệu suất AI
     drawHistoryCandles();
 
     // Vẽ sóng đè lên
@@ -472,6 +464,7 @@ function drawSineWave(amplitude, frequency, phaseShift, color) {
 }
 
 function updateChartData(hist) {
+    // Logic này giữ nguyên để sóng nền vẫn phản ứng theo kết quả P/B thật
     if (!hist || hist.length === 0) return;
     const lastResult = hist[hist.length - 1];
     if (lastResult === 'P') { waveConfig.targetP = 80; waveConfig.targetB = 15; } 
@@ -479,34 +472,36 @@ function updateChartData(hist) {
     else { waveConfig.targetP = 40; waveConfig.targetB = 40; }
 }
 
-// --- HÀM VẼ NẾN DỰA TRÊN THẮNG/THUA ---
+// --- HÀM VẼ NẾN DỰA TRÊN HIỆU SUẤT DỰ ĐOÁN (ĐÃ VIẾT LẠI) ---
 function drawHistoryCandles() {
     const spacing = 16;
     const candleWidth = 14;
-    const minHeight = 15;        
-    const maxHeight = 45;        
+    const minHeight = 15;
+    const maxHeight = 45;
     const heightStep = 5;
 
+    // Xử lý dữ liệu từ chartHistory để tính chuỗi thắng/thua
     let processedData = [];
     let streakCounter = 0;
-    let lastResultType = null;
+    let lastResultType = null; // Sẽ là 'win' hoặc 'loss'
 
-    for (const result of history) {
-        if (result === 'T') {
-            processedData.push({ type: 'T', streak: 0 });
+    for (const result of chartHistory) {
+        if (result.type === 'tie') {
+            processedData.push({ type: 'tie', streak: 0 });
             continue;
         }
-        if (result === lastResultType) {
+
+        if (result.type === lastResultType) {
             streakCounter++;
         } else {
             streakCounter = 1;
         }
-        processedData.push({ type: result, streak: streakCounter });
-        lastResultType = result;
+        
+        processedData.push({ type: result.type, streak: streakCounter });
+        lastResultType = result.type;
     }
 
     const centerY = waveH / 2;
-
     waveCtx.beginPath();
     waveCtx.moveTo(0, centerY);
     waveCtx.lineTo(waveW, centerY);
@@ -520,7 +515,9 @@ function drawHistoryCandles() {
 
     dataToDraw.forEach((item, i) => {
         const x = waveW - (dataToDraw.length - i) * spacing + (spacing / 2);
-        if (item.type === 'T') {
+
+        // Vẽ HÒA (T) là một chấm tròn xanh lá
+        if (item.type === 'tie') {
             waveCtx.beginPath();
             waveCtx.arc(x, centerY, 4, 0, Math.PI * 2);
             waveCtx.fillStyle = '#00ff41';
@@ -529,16 +526,19 @@ function drawHistoryCandles() {
             waveCtx.fill();
             return;
         }
+
         const candleHeight = Math.min(maxHeight, minHeight + (item.streak - 1) * heightStep);
+
         waveCtx.beginPath();
         waveCtx.lineWidth = candleWidth;
         waveCtx.shadowBlur = 8;
-        if (item.type === 'P') {
-            waveCtx.strokeStyle = '#00f3ff';
-            waveCtx.shadowColor = '#00f3ff';
+        
+        if (item.type === 'win') { // AI Thắng -> Nến XANH LÁ đi LÊN
+            waveCtx.strokeStyle = '#00ff41';
+            waveCtx.shadowColor = '#00ff41';
             waveCtx.moveTo(x, centerY);
             waveCtx.lineTo(x, centerY - candleHeight);
-        } else {
+        } else { // AI Thua -> Nến ĐỎ đi XUỐNG
             waveCtx.strokeStyle = '#ff003c';
             waveCtx.shadowColor = '#ff003c';
             waveCtx.moveTo(x, centerY);
@@ -546,11 +546,13 @@ function drawHistoryCandles() {
         }
         waveCtx.stroke();
     });
+
     waveCtx.shadowBlur = 0;
 }
 
+
 // =======================================================
-// --- 9. GAME STATS COUNTER (MÃ MỚI) ---
+// --- 9. GAME STATS COUNTER ---
 // =======================================================
 function updateGameStats(historyArr) {
     const playerWinsEl = document.getElementById('playerWins');
