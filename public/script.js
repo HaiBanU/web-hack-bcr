@@ -472,3 +472,50 @@ function updateChartData(hist) {
     else if (lastResult === 'B') { waveConfig.targetB = 80; waveConfig.targetP = 15; } 
     else { waveConfig.targetP = 40; waveConfig.targetB = 40; }
 }
+function updateChartData(hist) {
+    if (!hist || hist.length === 0) return;
+    const lastResult = hist[hist.length - 1];
+    if (lastResult === 'P') { waveConfig.targetP = 80; waveConfig.targetB = 15; } 
+    else if (lastResult === 'B') { waveConfig.targetB = 80; waveConfig.targetP = 15; } 
+    else { waveConfig.targetP = 40; waveConfig.targetB = 40; }
+}
+
+
+// =======================================================
+// BỔ SUNG: HÀM VẼ CÁC CHẤM CỘT MỐC LỊCH SỬ
+// =======================================================
+function drawHistoryDots() {
+    // Khoảng cách giữa các chấm, khớp với grid background (20px)
+    const spacing = 20;
+    
+    // Tính xem có bao nhiêu chấm có thể vừa trên màn hình
+    const maxDots = Math.floor(waveW / spacing);
+    
+    // Lấy các kết quả cuối cùng (bỏ qua 'T') để hiển thị
+    const data = history.filter(r => r !== 'T').slice(-maxDots);
+
+    data.forEach((result, i) => {
+        // Tính vị trí X: Bắt đầu từ phải qua trái
+        const x = waveW - (data.length - i) * spacing + (spacing / 2);
+
+        // Vị trí Y: P ở trên, B ở dưới
+        const highY = waveH * 0.35; // Vị trí cho Player
+        const lowY = waveH * 0.65;  // Vị trí cho Banker
+        const y = (result === 'P') ? highY : lowY;
+
+        // Màu sắc
+        const color = (result === 'P') ? waveConfig.pColor : waveConfig.bColor;
+
+        // Bắt đầu vẽ
+        waveCtx.beginPath();
+        // Vẽ vòng tròn (x, y, bán kính, góc bắt đầu, góc kết thúc)
+        waveCtx.arc(x, y, 3.5, 0, Math.PI * 2); 
+        waveCtx.fillStyle = color.replace('0.6', '1'); // Làm màu đậm hơn
+        waveCtx.fill();
+        
+        // Thêm viền trắng mờ cho nổi bật
+        waveCtx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+        waveCtx.lineWidth = 1;
+        waveCtx.stroke();
+    });
+}

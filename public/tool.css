@@ -389,7 +389,7 @@
     font-weight: bold;
     
     /* Font chữ tự co giãn */
-    font-size: clamp(8px, 1.4vh, 12px); 
+    font-size: clamp(6px, 1.4vh, 12px); 
     color: #fff;
     
     box-shadow: none; 
