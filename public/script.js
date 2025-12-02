@@ -313,7 +313,12 @@ function renderBigRoadGrid(rawHistory) {
     });
     if(currentCol.length > 0) columns.push(currentCol);
     
-    const MAX_COLS = 20; 
+    // =======================================================
+    // SỬA ĐỔI Ở ĐÂY: Giảm số cột trên di động để không bị vỡ
+    // =======================================================
+    const isMobile = window.innerWidth <= 1024;
+    const MAX_COLS = isMobile ? 10 : 20; // Trên mobile chỉ hiện 10 cột, máy tính 20 cột
+    
     let displayCols = [];
     if(columns.length > MAX_COLS) displayCols = columns.slice(columns.length - MAX_COLS);
     else { displayCols = columns; while(displayCols.length < MAX_COLS) displayCols.push([]); }

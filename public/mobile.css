@@ -119,3 +119,50 @@
     .bead-cell {
         direction: ltr !important;
     }
+    /* --- FILE: mobile.css --- */
+
+/* ... (toàn bộ code cũ của bạn giữ nguyên) ... */
+
+/* =========================================
+   BỔ SUNG: SẮP XẾP LẠI FOOTER & SỬA LỖI BIG ROAD
+   ========================================= */
+
+@media screen and (max-width: 1024px) {
+
+    /* --- 1. SẮP XẾP LẠI VỊ TRÍ 4 Ô --- */
+    /* Bằng cách gán vị trí cụ thể cho từng ID, 
+       chúng ta có thể sắp xếp lại chúng theo đúng ý bạn. */
+
+    /* Top-Left: Bảng cầu giọt nước */
+    #beadPlatePanel {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    /* Bottom-Left: Biểu đồ sóng */
+    #waveTrendPanel {
+        grid-column: 1;
+        grid-row: 2;
+    }
+
+    /* Top-Right: Bảng cầu chính */
+    #bigRoadPanel {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    /* Bottom-Right: Giao dịch */
+    #transLogPanel {
+        grid-column: 2;
+        grid-row: 2;
+    }
+
+
+    /* --- 2. SỬA LỖI HIỂN THỊ BIG ROAD BỊ HẸP --- */
+    /* Cho phép các cột tự động co giãn thay vì bị giới hạn chiều rộng,
+       kết hợp với việc giảm số cột trong file script.js sẽ giải quyết vấn đề. */
+    .tool-road-col {
+        max-width: none !important; /* Bỏ giới hạn chiều rộng */
+        flex: 1; /* Cho phép các cột tự chia đều không gian */
+    }
+}

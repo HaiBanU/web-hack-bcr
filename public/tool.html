@@ -118,32 +118,33 @@
         <!-- FOOTER: CHIA 4 CỘT -->
         <footer class="sys-footer">
             
-            <!-- CỘT 1: BIỂU ĐỒ SÓNG -->
-            <div class="footer-panel chart-panel">
+            <!-- CỘT 1: BIỂU ĐỒ SÓNG (THÊM ID) -->
+            <div id="waveTrendPanel" class="footer-panel chart-panel">
                 <div class="panel-label">WAVE TREND</div>
                 <canvas id="trendChart"></canvas>
             </div>
 
-            <!-- CỘT 2: CẦU GIỌT NƯỚC (BEAD PLATE) -->
-            <div class="footer-panel bead-panel">
+            <!-- CỘT 2: CẦU GIỌT NƯỚC (THÊM ID) -->
+            <div id="beadPlatePanel" class="footer-panel bead-panel">
                 <div class="panel-label">BEAD PLATE</div>
                 <div id="beadPlateGrid" class="bead-grid"></div>
             </div>
 
-            <!-- CỘT 3: CẦU LỚN (BIG ROAD) -->
-            <div class="footer-panel road-panel">
+            <!-- CỘT 3: CẦU LỚN (THÊM ID) -->
+            <div id="bigRoadPanel" class="footer-panel road-panel">
                 <div class="panel-label">BIG ROAD</div>
                 <div class="road-container" id="bigRoadGrid"></div>
             </div>
 
-            <!-- CỘT 4: GIAO DỊCH -->
-            <div class="footer-panel trans-panel">
+            <!-- CỘT 4: GIAO DỊCH (THÊM ID) -->
+            <div id="transLogPanel" class="footer-panel trans-panel">
                 <div class="panel-label">LIVE TRANS</div>
                 <div id="transLog" class="trans-log-content"></div>
             </div>
 
         </footer>
     </div>
+    
     
     <!-- Load Socket.io -->
     <script src="/socket.io/socket.io.js"></script>
