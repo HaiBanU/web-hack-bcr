@@ -1,4 +1,4 @@
-/* --- START OF FILE script.js (VERSION 3.0 - ADVANCED PATTERN RECOGNITION) --- */
+/* --- START OF FILE script.js (VERSION 4.0 - DYNAMIC FAKE HISTORY) --- */
 
 let currentTableId = null;
 let history = [];
@@ -10,45 +10,79 @@ let lastPrediction = null;
 let predictionOutcomes = []; 
 let chartHistory = []; 
 
-function generateInitialChartHistory() {
-    const initialData = [
-        { type: 'win' }, { type: 'win' }, { type: 'win' }, { type: 'win' },
-        { type: 'win' }, { type: 'win' }, { type: 'win' }, { type: 'win' },
-        { type: 'win' }, { type: 'win' },
-        { type: 'loss' }, { type: 'loss' }, { type: 'loss' }, { type: 'loss' },
-        { type: 'tie' }
-    ];
+// === HÀM TẠO DỮ LIỆU GIẢ (ĐÃ NÂNG CẤP) ===
+// Hàm này giờ sẽ nhận vào tổng số ván cần tạo
+function generateInitialChartHistory(totalRounds) {
+    if (totalRounds <= 0) return [];
+
+    // Tỷ lệ mong muốn: ~70% thắng, 25% thua, 5% hòa
+    const winCount = Math.round(totalRounds * 0.70);
+    const tieCount = Math.round(totalRounds * 0.05);
+    const lossCount = totalRounds - winCount - tieCount;
+
+    let initialData = [];
+    for (let i = 0; i < winCount; i++) initialData.push({ type: 'win' });
+    for (let i = 0; i < lossCount; i++) initialData.push({ type: 'loss' });
+    for (let i = 0; i < tieCount; i++) initialData.push({ type: 'tie' });
+
+    // Xáo trộn mảng để kết quả trông ngẫu nhiên
     for (let i = initialData.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [initialData[i], initialData[j]] = [initialData[j], initialData[i]];
     }
+    
     return initialData;
 }
 
 
-// --- 1. INIT & SETUP ---
-window.addEventListener('DOMContentLoaded', () => {
-    chartHistory = generateInitialChartHistory();
-    initCardRain();
-    
+// --- 1. INIT & SETUP (ĐÃ VIẾT LẠI HOÀN TOÀN) ---
+window.addEventListener('DOMContentLoaded', async () => {
+    // Lấy thông tin bàn từ URL trước
     const urlParams = new URLSearchParams(window.location.search);
     currentTableId = urlParams.get('tableId');
     let tName = decodeURIComponent(urlParams.get('tableName') || "UNKNOWN");
     if (!tName.includes("BACCARAT")) tName = tName.replace("BÀN", "BÀN BACCARAT");
     document.getElementById('tableNameDisplay').innerText = tName.toUpperCase();
-    
-    updateTokenUI(localStorage.getItem('tokens') || 0);
-    addLog(`SYSTEM CONNECTED: ${tName}`);
-    addLog(`>> CONNECTING TO SERVER... [OK]`);
 
-    deductToken('entry');
-    startPeriodicDeduction();
+    // Hàm khởi tạo chính
+    async function initializeTool() {
+        try {
+            // Bước 1: Gọi API để lấy trạng thái hiện tại của tất cả các bàn
+            const response = await fetch('/api/tables');
+            const data = await response.json();
 
-    setInterval(generateMatrixCode, 100); 
-    resetCardsUI();      
-    startWaveChartLoop();
-    startFakeTransactions();
+            if (data.status === 'success' && data.data) {
+                const currentTable = data.data.find(t => t.table_id == currentTableId);
+                
+                // Bước 2: Nếu tìm thấy bàn, lấy số ván đã chơi
+                if (currentTable && currentTable.result) {
+                    const numRounds = currentTable.result.length;
+                    // Bước 3: Tạo lịch sử đồ thị giả mạo với đúng số ván
+                    chartHistory = generateInitialChartHistory(numRounds);
+                }
+            }
+        } catch (error) {
+            console.error("Lỗi khi lấy dữ liệu ban đầu, sẽ dùng mảng rỗng:", error);
+            chartHistory = []; // Nếu lỗi, bắt đầu với đồ thị trống
+        }
+
+        // Bước 4: Khởi tạo tất cả các thành phần giao diện khác
+        initCardRain();
+        updateTokenUI(localStorage.getItem('tokens') || 0);
+        addLog(`SYSTEM CONNECTED: ${tName}`);
+        addLog(`>> CONNECTING TO SERVER... [OK]`);
+        deductToken('entry');
+        startPeriodicDeduction();
+        setInterval(generateMatrixCode, 100); 
+        resetCardsUI();      
+        startWaveChartLoop(); // Bây giờ, hàm này sẽ vẽ đồ thị với dữ liệu giả đã được tạo
+        startFakeTransactions();
+    }
+
+    // Chạy hàm khởi tạo
+    await initializeTool();
 });
+
 
 // --- 2. TOKEN LOGIC ---
 async function deductToken(type) {
@@ -122,7 +156,7 @@ socket.on('server_update', (allTables) => {
 });
 
 // =======================================================
-// --- 4. ADVANCED PREDICTION LOGIC (VIẾT LẠI HOÀN TOÀN) ---
+// --- 4. ADVANCED PREDICTION LOGIC ---
 // =======================================================
 function runPredictionSystem(historyArr) {
     isProcessing = true;
@@ -150,70 +184,58 @@ function runPredictionSystem(historyArr) {
         const last2 = cleanHist[len - 2];
         const last3 = cleanHist[len - 3];
         const last4 = cleanHist[len - 4];
-
         const opponent = (side) => (side === 'P' ? 'B' : 'P');
-
-        // Tính cầu bệt hiện tại
         let streak = 0;
         for (let i = len - 1; i >= 0; i--) {
             if (cleanHist[i] === last1) streak++;
             else break;
         }
 
-        // --- Bắt đầu chuỗi logic ưu tiên ---
-
-        // 1. Bẻ cầu bệt khi đạt 7 (Ưu tiên cao nhất)
         if (streak === 7) {
             prediction = opponent(last1);
             confidence = 96;
             reason = `BREAKING DRAGON (7)`;
         }
-        // 2. Đi theo cầu bệt (từ 3 đến 6)
         else if (streak >= 3 && streak < 7) {
             prediction = last1;
-            confidence = 85 + (streak * 2); // Càng dài càng tin cậy
+            confidence = 85 + (streak * 2);
             reason = `DRAGON PATTERN (${last1} x${streak})`;
         }
-        // 3. Bắt cầu cặp 2-2, 3-3
-        else if (len >= 4 && last1 === last2 && last3 === last4 && last1 !== last3) { // XX-YY
+        else if (len >= 4 && last1 === last2 && last3 === last4 && last1 !== last3) {
             prediction = last1;
             confidence = 92;
             reason = `PATTERN (2-2)`;
         }
-        else if (len >= 6 && last1===last2 && last2==last3 && last4===last5 && last5==cleanHist[len-6] && last1 !== last4) { // XXX-YYY
+        else if (len >= 6 && last1===last2 && last2==last3 && last4===cleanHist[len-5] && cleanHist[len-5]==cleanHist[len-6] && last1 !== last4) {
             prediction = last1;
             confidence = 94;
             reason = `PATTERN (3-3)`;
         }
-        // 4. Bắt cầu 1-2 và 2-1
-        else if (len >= 3 && last1 !== last2 && last2 === last3) { // Cầu dạng Y-XX, dự đoán Y
+        else if (len >= 3 && last1 !== last2 && last2 === last3) {
             prediction = last1;
             confidence = 88;
             reason = `PATTERN (2-1)`;
         }
-        else if (len >= 3 && last1 === last2 && last1 !== last3) { // Cầu dạng X-YY, dự đoán X
+        else if (len >= 3 && last1 === last2 && last1 !== last3) {
             prediction = last3;
             confidence = 90;
             reason = `PATTERN (1-2)`;
         }
-        // 5. Bắt cầu 1-3 và 3-1
-        else if (len >= 4 && last1 !== last2 && last2 === last3 && last3 === last4) { // Cầu Y-XXX
+        else if (len >= 4 && last1 !== last2 && last2 === last3 && last3 === last4) {
             prediction = last1;
             confidence = 89;
             reason = `PATTERN (3-1)`;
         }
-        else if (len >= 4 && last1 === last2 && last2 === last3 && last1 !== last4) { // Cầu X-YYY
+        else if (len >= 4 && last1 === last2 && last2 === last3 && last1 !== last4) {
             prediction = last4;
             confidence = 91;
             reason = `PATTERN (1-3)`;
         }
-        // 6. Bắt cầu 1-1 (Ping Pong)
         else if (len >= 4 && last1 !== last2 && last2 !== last3 && last3 !== last4) {
             prediction = opponent(last1);
             confidence = 93;
             reason = `PING-PONG PATTERN`;
         }
-        // 7. Dự phòng: Theo kết quả gần nhất
         else {
             prediction = last1;
             confidence = 78;
@@ -221,15 +243,13 @@ function runPredictionSystem(historyArr) {
         }
     } 
     
-    // Logic cho các trường hợp lịch sử quá ngắn
     if (!prediction) {
         if (len > 0) prediction = cleanHist[len - 1];
-        else prediction = 'B'; // Mặc định nếu không có lịch sử
+        else prediction = 'B';
         confidence = 75;
         reason = "INITIALIZING DATA...";
     }
 
-    // --- Cập nhật UI ---
     setTimeout(() => { addLog(`>> ANALYZING NEXT ROUND...`); }, 500);
     setTimeout(() => {
         ui.advice.innerText = reason;
