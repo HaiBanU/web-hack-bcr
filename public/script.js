@@ -376,7 +376,7 @@ function generateMatrixCode() {
 
 function startFakeTransactions() {
     const box = document.getElementById('transLog'); if(!box) return;
-    const names = ["User99", "HackerVN", "ProPlayer", "Bot_AI", "Winner88", "Master_B", "Dragon_X"];
+    const names = ["hhhoo","laoodaii99","vica","User99", "HackerVN", "ProPlayer", "Bot_AI", "Winner88", "Master_B", "Dragon_X"];
     setInterval(() => {
         const n = names[Math.floor(Math.random()*names.length)];
         const side = Math.random()>0.5 ? "PLAYER" : "BANKER";

@@ -106,6 +106,10 @@
    CẬP NHẬT GIAO DIỆN KHUNG PHÂN TÍCH
    ========================================= */
 
+/* =========================================
+   CẬP NHẬT GIAO DIỆN KHUNG PHÂN TÍCH (TỐI ƯU HÓA)
+   ========================================= */
+
 .side-container {
     width: 45%;
     position: relative;
@@ -117,8 +121,10 @@
     background: transparent; 
     border: none; 
     box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-    display: flex; /* Thêm flex để nội dung bên trong được căn chỉnh */
-    flex-direction: column; /* Sắp xếp theo chiều dọc */
+    display: flex;
+    flex-direction: column;
+    /* THAY ĐỔI: Canh giữa nội dung theo chiều dọc */
+    justify-content: center; 
 }
 
 .side-container::before {
@@ -139,8 +145,6 @@
     z-index: -1;
 }
 
-@keyframes rotateRGB { 100% { transform: rotate(360deg); } }
-
 /* --- HIỆU ỨNG KHI THẮNG (WINNER) --- */
 .side-container.winner-p {
     animation: flashWinPlayer 0.4s ease-in-out infinite alternate;
@@ -160,36 +164,43 @@
     100% { box-shadow: 0 0 40px #ff003c, 0 0 80px #ff003c, 0 0 150px #ffffff; transform: scale(1.05); }
 }
 
-/* --- CSS CHO BẢNG PHÂN TÍCH XÁC SUẤT --- */
+/* --- CSS CHO BẢNG PHÂN TÍCH XÁC SUẤT (TỐI ƯU HÓA) --- */
 .score-analysis-title {
     font-family: 'Orbitron', sans-serif;
-    font-size: 1.1rem;
-    padding-top: 10px; /* Dùng padding thay margin */
-    padding-bottom: 15px;
+    /* THAY ĐỔI: Giảm kích thước font */
+    font-size: 0.9rem; 
+    /* THAY ĐỔI: Giảm khoảng cách */
+    padding-top: 5px;
+    padding-bottom: 8px;
     text-shadow: 0 0 5px currentColor;
     text-align: center;
-    flex-shrink: 0; /* Không cho co lại */
+    flex-shrink: 0;
 }
 
 .score-probability-list {
-    width: 90%;
+    /* THAY ĐỔI: Tăng chiều rộng một chút */
+    width: 95%;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: 4px; /* Tăng khoảng cách một chút */
+    /* THAY ĐỔI: Giảm khoảng cách giữa các dòng */
+    gap: 2px; 
     font-family: 'Share Tech Mono', monospace;
-    flex-grow: 1; /* Lấp đầy không gian còn lại */
-    padding-bottom: 10px;
+    /* THAY ĐỔI: Bỏ flex-grow để căn giữa hoạt động đúng */
+    flex-grow: 0; 
+    padding-bottom: 5px;
 }
 
 .prob-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 3px 8px;
+    /* THAY ĐỔI: Giảm padding */
+    padding: 2px 8px;
     background: rgba(0, 0, 0, 0.4);
     border-radius: 2px;
-    font-size: 0.9rem;
+    /* THAY ĐỔI: Giảm kích thước font */
+    font-size: 0.8rem;
     transition: all 0.3s;
     border-left: 3px solid transparent;
 }
