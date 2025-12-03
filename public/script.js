@@ -1,4 +1,4 @@
-// --- START OF FULLY UPDATED script.js (v3 - Probability Clamping) ---
+// --- START OF FULLY UPDATED script.js (v4.1 - Vietnamese Translation) ---
 
 let currentTableId = null;
 let history = [];
@@ -29,7 +29,7 @@ function generateInitialChartHistory(totalRounds) {
 window.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     currentTableId = urlParams.get('tableId');
-    let tName = decodeURIComponent(urlParams.get('tableName') || "UNKNOWN");
+    let tName = decodeURIComponent(urlParams.get('tableName') || "BÀN KHÔNG XÁC ĐỊNH");
     if (!tName.includes("BACCARAT")) tName = tName.replace("BÀN", "BÀN BACCARAT");
     document.getElementById('tableNameDisplay').innerText = tName.toUpperCase();
 
@@ -45,14 +45,14 @@ window.addEventListener('DOMContentLoaded', async () => {
                 }
             }
         } catch (error) {
-            console.error("Lỗi khi lấy dữ liệu ban đầu, sẽ dùng mảng rỗng:", error);
+            console.error("Lỗi khi lấy dữ liệu ban đầu:", error);
             chartHistory = [];
         }
 
         initCardRain();
         updateTokenUI(localStorage.getItem('tokens') || 0);
-        addLog(`SYSTEM CONNECTED: ${tName}`);
-        addLog(`>> CONNECTING TO SERVER... [OK]`);
+        addLog(`HỆ THỐNG ĐÃ KẾT NỐI: ${tName}`);
+        addLog(`>> KẾT NỐI MÁY CHỦ... [OK]`);
         deductToken('entry');
         startPeriodicDeduction();
         setInterval(generateMatrixCode, 100); 
@@ -84,8 +84,8 @@ async function deductToken(type) {
             let remaining = data.remaining; 
             if(remaining === 'VIP') remaining = 999999;
             updateTokenUI(remaining);
-            if (type === 'entry') addLog(`>> ENTRY FEE: -5 TOKENS`);
-            else addLog(`>> MAINTENANCE FEE: -5 TOKENS`);
+            if (type === 'entry') addLog(`>> PHÍ VÀO BÀN: -5 TOKENS`);
+            else addLog(`>> PHÍ DUY TRÌ: -5 TOKENS`);
         } else {
             alert("❌ HẾT TOKEN! Vui lòng liên hệ Admin.");
             window.location.href = 'index.html';
@@ -114,7 +114,6 @@ socket.on('server_update', (allTables) => {
         const oldLength = history.length;
 
         if (oldLength > 10 && newLength < 5) {
-            console.warn(`PHÁT HIỆN RESET BÀN! Ván cũ: ${oldLength}, Ván mới: ${newLength}`);
             const modal = document.getElementById('resetModalOverlay');
             if (modal) modal.style.display = 'flex';
             if (tokenInterval) clearInterval(tokenInterval);
@@ -160,14 +159,14 @@ function runPredictionSystem(historyArr) {
         gaugeContainer: document.querySelector('.pred-gauge')
     };
 
-    ui.advice.innerText = "MATRIX ANALYSIS V20"; ui.advice.style.color = "#00ff41";
-    ui.pred.innerText = "WAITING"; ui.pred.className = "pred-result res-wait";
+    ui.advice.innerText = "PHÂN TÍCH MA TRẬN V20"; ui.advice.style.color = "#00ff41";
+    ui.pred.innerText = "ĐANG CHỜ"; ui.pred.className = "pred-result res-wait";
     ui.gaugePath.setAttribute("stroke-dasharray", "0, 100"); ui.gaugeValue.innerText = "0%";
     ui.gaugeContainer.classList.remove('active');
 
     const cleanHist = historyArr.filter(x => x !== 'T');
     const len = cleanHist.length;
-    let prediction = null, confidence = 70, reason = "ANALYZING...";
+    let prediction = null, confidence = 70, reason = "ĐANG PHÂN TÍCH...";
 
     if (len > 3) {
         const last1 = cleanHist[len - 1], last2 = cleanHist[len - 2], last3 = cleanHist[len - 3], last4 = cleanHist[len - 4];
@@ -175,24 +174,24 @@ function runPredictionSystem(historyArr) {
         let streak = 0;
         for (let i = len - 1; i >= 0; i--) { if (cleanHist[i] === last1) streak++; else break; }
 
-        if (streak === 7) { prediction = opponent(last1); confidence = 96; reason = `BREAKING DRAGON (7)`; }
-        else if (streak >= 3 && streak < 7) { prediction = last1; confidence = 85 + (streak * 2); reason = `DRAGON PATTERN (${last1} x${streak})`; }
-        else if (len >= 4 && last1 === last2 && last3 === last4 && last1 !== last3) { prediction = last1; confidence = 92; reason = `PATTERN (2-2)`; }
-        else if (len >= 6 && last1===last2 && last2==last3 && last4===cleanHist[len-5] && cleanHist[len-5]==cleanHist[len-6] && last1 !== last4) { prediction = last1; confidence = 94; reason = `PATTERN (3-3)`; }
-        else if (len >= 3 && last1 !== last2 && last2 === last3) { prediction = last1; confidence = 88; reason = `PATTERN (2-1)`; }
-        else if (len >= 3 && last1 === last2 && last1 !== last3) { prediction = last3; confidence = 90; reason = `PATTERN (1-2)`; }
-        else if (len >= 4 && last1 !== last2 && last2 === last3 && last3 === last4) { prediction = last1; confidence = 89; reason = `PATTERN (3-1)`; }
-        else if (len >= 4 && last1 === last2 && last2 === last3 && last1 !== last4) { prediction = last4; confidence = 91; reason = `PATTERN (1-3)`; }
-        else if (len >= 4 && last1 !== last2 && last2 !== last3 && last3 !== last4) { prediction = opponent(last1); confidence = 93; reason = `PING-PONG PATTERN`; }
-        else { prediction = last1; confidence = 78; reason = "FOLLOWING RECENT TREND"; }
+        if (streak === 7) { prediction = opponent(last1); confidence = 96; reason = `BẺ CẦU RỒNG (7)`; }
+        else if (streak >= 3 && streak < 7) { prediction = last1; confidence = 85 + (streak * 2); reason = `CẦU BỆT (${last1} x${streak})`; }
+        else if (len >= 4 && last1 === last2 && last3 === last4 && last1 !== last3) { prediction = last1; confidence = 92; reason = `CẦU (2-2)`; }
+        else if (len >= 6 && last1===last2 && last2==last3 && last4===cleanHist[len-5] && cleanHist[len-5]==cleanHist[len-6] && last1 !== last4) { prediction = last1; confidence = 94; reason = `CẦU (3-3)`; }
+        else if (len >= 3 && last1 !== last2 && last2 === last3) { prediction = last1; confidence = 88; reason = `CẦU (2-1)`; }
+        else if (len >= 3 && last1 === last2 && last1 !== last3) { prediction = last3; confidence = 90; reason = `CẦU (1-2)`; }
+        else if (len >= 4 && last1 !== last2 && last2 === last3 && last3 === last4) { prediction = last1; confidence = 89; reason = `CẦU (3-1)`; }
+        else if (len >= 4 && last1 === last2 && last2 === last3 && last1 !== last4) { prediction = last4; confidence = 91; reason = `CẦU (1-3)`; }
+        else if (len >= 4 && last1 !== last2 && last2 !== last3 && last3 !== last4) { prediction = opponent(last1); confidence = 93; reason = `CẦU 1-1`; }
+        else { prediction = last1; confidence = 78; reason = "THEO XU HƯỚNG"; }
     } 
     
     if (!prediction) {
         if (len > 0) prediction = cleanHist[len - 1]; else prediction = 'B';
-        confidence = 75; reason = "INITIALIZING DATA...";
+        confidence = 75; reason = "KHỞI TẠO DỮ LIỆU...";
     }
 
-    setTimeout(() => { addLog(`>> ANALYZING NEXT ROUND...`); }, 500);
+    setTimeout(() => { addLog(`>> PHÂN TÍCH VÁN TIẾP THEO...`); }, 500);
     setTimeout(() => {
         ui.advice.innerText = reason;
         ui.pred.innerText = (prediction === 'P') ? "PLAYER" : "BANKER";
@@ -210,106 +209,106 @@ function runPredictionSystem(historyArr) {
         document.getElementById('confP').innerText = confP + "%"; document.getElementById('barP').style.width = confP + "%";
         document.getElementById('confB').innerText = confB + "%"; document.getElementById('barB').style.width = confB + "%";
         
-        addLog(`>> PREDICTION: [ ${prediction} ] (RATE: ${confidence}%)`);
+        addLog(`>> DỰ ĐOÁN: [ ${prediction} ] (TỶ LỆ: ${confidence}%)`);
         lastPrediction = { side: prediction };
         
         displayScorePredictions(prediction);
     }, 1500);
 }
 
+function generateScoreProbabilities(side, predictedWinner, scenario) {
+    let baseProbs = [7, 7, 8, 8, 9, 9, 10, 10, 9, 8]; 
 
-// =======================================================
-// --- LOGIC PHÂN TÍCH XÁC SUẤT ĐIỂM SỐ (V3) ---
-// =======================================================
-function generateScoreProbabilities(side, predictedWinner) {
-    let baseProbs = [6.5, 7.0, 8.5, 9.5, 11.5, 12.5, 12.0, 11.0, 10.5, 10.0];
-
-    if (side === predictedWinner) {
-        baseProbs[8] *= 2.0; baseProbs[9] *= 1.8; baseProbs[7] *= 1.5; // Giảm nhẹ độ thiên vị
-    } else {
-        baseProbs[0] *= 1.6; baseProbs[1] *= 1.4; baseProbs[2] *= 1.2;
-        baseProbs[8] *= 0.6; baseProbs[9] *= 0.5;
+    switch(scenario.type) {
+        case 'HIGH_VS_LOW': // Kịch bản: Áp đảo
+            if (side === predictedWinner) {
+                baseProbs[7] *= 1.6; baseProbs[8] *= 2.2; baseProbs[9] *= 2.0;
+            } else {
+                baseProbs[0] *= 1.8; baseProbs[1] *= 1.6; baseProbs[2] *= 1.4;
+                baseProbs[8] *= 0.5; baseProbs[9] *= 0.4;
+            }
+            break;
+        case 'CLOSE_GAME': // Kịch bản: Sít sao
+            baseProbs[4] *= 1.5; baseProbs[5] *= 1.8; baseProbs[6] *= 2.0; baseProbs[7] *= 1.8;
+            if (side === predictedWinner) {
+                baseProbs[6] *= 1.2; baseProbs[7] *= 1.2;
+            } else {
+                baseProbs[4] *= 1.1; baseProbs[5] *= 1.1;
+            }
+            break;
+        case 'LOW_WIN': // Kịch bản: Thắng sát nút (điểm thấp)
+            baseProbs[0] *= 1.5; baseProbs[1] *= 1.8; baseProbs[2] *= 2.0;
+            baseProbs[3] *= 1.8; baseProbs[4] *= 1.5;
+            if (side === predictedWinner) {
+                baseProbs[2] *= 1.1; baseProbs[3] *= 1.2; baseProbs[4] *= 1.3;
+            } else {
+                baseProbs[0] *= 1.3; baseProbs[1] *= 1.2;
+            }
+            baseProbs[8] *= 0.3; baseProbs[9] *= 0.2;
+            break;
     }
-
-    baseProbs = baseProbs.map(p => Math.max(0, p + (Math.random() - 0.5) * 2));
-    
+    baseProbs = baseProbs.map(p => Math.max(0, p + (Math.random() - 0.5) * 3));
     const total = baseProbs.reduce((a, b) => a + b, 0);
-    let probabilities = baseProbs.map(p => Math.round((p / total) * 100));
-    
-    // --- BƯỚC 1: TÌM XÁC SUẤT CAO NHẤT HIỆN TẠI ---
-    let highestProb = 0;
-    let highestIndex = -1;
-    probabilities.forEach((p, i) => {
-        if (p > highestProb) {
-            highestProb = p;
-            highestIndex = i;
+    if (total === 0) return Array(10).fill(10).map((prob, score) => ({ score, prob })); 
+    let probabilities = baseProbs.map(p => (p / total) * 100);
+    const MAX_PROB = 40;
+    let excess = 0;
+    probabilities = probabilities.map(p => {
+        if (p > MAX_PROB) {
+            excess += p - MAX_PROB;
+            return MAX_PROB;
         }
+        return p;
     });
-
-    // --- BƯỚC 2: KIỂM TRA VÀ ĐIỀU CHỈNH NẾU NẰM NGOÀI KHOẢNG 31-39% ---
-    const minTarget = 31;
-    const maxTarget = 39;
-
-    if (highestProb > maxTarget || highestProb < minTarget) {
-        const newHighestProb = Math.floor(Math.random() * (maxTarget - minTarget + 1)) + minTarget;
-        let diff = highestProb - newHighestProb;
-        probabilities[highestIndex] = newHighestProb;
-
-        // --- BƯỚC 3: PHÂN PHỐI LẠI PHẦN CHÊNH LỆCH ---
-        if (diff > 0) { // Nếu có dư, cộng ngẫu nhiên cho các số khác
-            for (let i = 0; i < diff; i++) {
-                let randomIndex;
-                do {
-                    randomIndex = Math.floor(Math.random() * 10);
-                } while (randomIndex === highestIndex);
-                probabilities[randomIndex]++;
-            }
-        } else if (diff < 0) { // Nếu thiếu, trừ ngẫu nhiên từ các số khác
-            for (let i = 0; i < Math.abs(diff); i++) {
-                let randomIndex;
-                do {
-                    randomIndex = Math.floor(Math.random() * 10);
-                } while (randomIndex === highestIndex || probabilities[randomIndex] <= 2); // Tránh trừ về 0 hoặc số quá nhỏ
-                probabilities[randomIndex]--;
-            }
+    if (excess > 0) {
+        const nonMaxIndices = probabilities.map((p, i) => p < MAX_PROB ? i : -1).filter(i => i !== -1);
+        if (nonMaxIndices.length > 0) {
+            const share = excess / nonMaxIndices.length;
+            nonMaxIndices.forEach(i => probabilities[i] += share);
         }
     }
-    
-    // --- BƯỚC 4: KIỂM TRA CUỐI CÙNG ĐỂ ĐẢM BẢO TỔNG LÀ 100% ---
-    let finalSum = probabilities.reduce((a, b) => a + b, 0);
-    let sumDiff = 100 - finalSum;
-    if (sumDiff !== 0) {
-        probabilities[highestIndex] += sumDiff;
+    let roundedProbs = probabilities.map(p => Math.round(p));
+    let sum = roundedProbs.reduce((a, b) => a + b, 0);
+    let diff = 100 - sum;
+    if (diff !== 0) {
+        let maxIdx = 0;
+        roundedProbs.forEach((p, i) => { if (p > roundedProbs[maxIdx]) maxIdx = i; });
+        roundedProbs[maxIdx] += diff;
     }
-
-    return probabilities.map((prob, score) => ({ score, prob }));
+    return roundedProbs.map((prob, score) => ({ score, prob }));
 }
 
 function displayScorePredictions(predictedWinner) {
+    const rand = Math.random();
+    let scenario;
+    if (rand < 0.60) { scenario = { type: 'HIGH_VS_LOW' }; } 
+    else if (rand < 0.85) { scenario = { type: 'CLOSE_GAME' }; } 
+    else { scenario = { type: 'LOW_WIN' }; }
+
+    const playerProbs = generateScoreProbabilities('P', predictedWinner, scenario);
+    const bankerProbs = generateScoreProbabilities('B', predictedWinner, scenario);
+    
     const playerContainer = document.querySelector('.p-side');
     const bankerContainer = document.querySelector('.b-side');
-
-    const playerProbs = generateScoreProbabilities('P', predictedWinner);
-    const bankerProbs = generateScoreProbabilities('B', predictedWinner);
     
     const highestPlayerProb = Math.max(...playerProbs.map(p => p.prob));
     const highestBankerProb = Math.max(...bankerProbs.map(p => p.prob));
     
-    let playerHtml = `<div class="score-analysis-title" style="color:#00f3ff;">PLAYER SCORE ANALYSIS</div><div class="score-probability-list">`;
+    let playerHtml = `<div class="score-analysis-title" style="color:#00f3ff;">PHÂN TÍCH ĐIỂM PLAYER</div><div class="score-probability-list">`;
     playerProbs.forEach(item => {
         const isHighest = item.prob === highestPlayerProb;
         playerHtml += `<div class="prob-item ${isHighest ? 'highest-p' : ''}">
-                <span>SCORE ${item.score}</span>
+                <span>ĐIỂM ${item.score}</span>
                 <span style="font-weight:bold;">${item.prob}%</span>
             </div>`;
     });
     playerHtml += `</div>`;
     
-    let bankerHtml = `<div class="score-analysis-title" style="color:#ff003c;">BANKER SCORE ANALYSIS</div><div class="score-probability-list">`;
+    let bankerHtml = `<div class="score-analysis-title" style="color:#ff003c;">PHÂN TÍCH ĐIỂM BANKER</div><div class="score-probability-list">`;
     bankerProbs.forEach(item => {
         const isHighest = item.prob === highestBankerProb;
         bankerHtml += `<div class="prob-item ${isHighest ? 'highest-b' : ''}">
-                <span>SCORE ${item.score}</span>
+                <span>ĐIỂM ${item.score}</span>
                 <span style="font-weight:bold;">${item.prob}%</span>
             </div>`;
     });
@@ -338,7 +337,7 @@ function addLog(msg) {
     const div = document.createElement('div');
     div.style.borderBottom = "1px solid #111"; div.style.padding = "3px 0"; div.style.fontFamily = "monospace"; div.style.fontSize = "0.75rem";
     let color = "#fff";
-    if(msg.includes("PLAYER")) color = "#00f3ff"; else if(msg.includes("BANKER")) color = "#ff003c"; else if(msg.includes("FEE")) color = "#ff9800"; else if(msg.includes("ALGORITHM")) color = "#00ff41";
+    if(msg.includes("PLAYER")) color = "#00f3ff"; else if(msg.includes("BANKER")) color = "#ff003c"; else if(msg.includes("FEE") || msg.includes("PHÍ")) color = "#ff9800";
     div.innerHTML = `<span style="color:#666">[${time}]</span> <span style="color:${color}">${msg}</span>`;
     box.appendChild(div); box.scrollTop = box.scrollHeight;
 }
@@ -366,7 +365,7 @@ function initCardRain() {
 function generateMatrixCode() {
     const el = document.getElementById('matrixCode');
     if(el) {
-        const lines = ["DECRYPTING PACKET...", "BYPASS_FIREWALL...", "CALCULATING_ODDS...", "PACKET_SNIFFING...", "inject_sql_v2... OK", "SCANNING TABLE DATA...", "AI PREDICTION: LOADING", "SERVER RESPONSE: 200 OK"];
+        const lines = ["GIẢI MÃ GÓI TIN...", "VƯỢT TƯỜNG LỬA...", "TÍNH TOÁN TỶ LỆ...", "THEO DÕI GÓI TIN...", "inject_sql_v2... OK", "QUÉT DỮ LIỆU BÀN...", "AI DỰ ĐOÁN: ĐANG TẢI", "MÁY CHỦ PHẢN HỒI: 200 OK"];
         const div = document.createElement('div');
         div.style.marginBottom = "2px";
         div.innerText = "> " + lines[Math.floor(Math.random()*lines.length)] + " [" + Math.random().toString(16).substring(2,6).toUpperCase() + "]";

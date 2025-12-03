@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HACKER AI - SYSTEM AI V1.0.26</title>
+    <title>HACKER AI - HỆ THỐNG AI V1.0.26</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="shortcut icon" href="favicon.png" type="image/x-icon">
     <!-- Font chữ -->
@@ -37,22 +37,22 @@
         <header class="sys-header">
             <div class="brand-box">
                 <span style="background:#ff003c; color:#fff; padding:3px 8px; font-weight:bold; border-radius:2px; font-size:0.8rem;">SEXY</span>
-                <span style="color:#fff; font-family:'Orbitron'; font-size:1.1rem; margin-left:5px;">// SYSTEM AI V1.0.26</span>
+                <span style="color:#fff; font-family:'Orbitron'; font-size:1.1rem; margin-left:5px;">// HỆ THỐNG AI V1.0.26</span>
             </div>
             
-            <h1 id="tableNameDisplay" class="glitch-text" style="font-size:1.4rem; margin:0;">CONNECTING...</h1>
+            <h1 id="tableNameDisplay" class="glitch-text" style="font-size:1.4rem; margin:0;">ĐANG KẾT NỐI...</h1>
             
             <div class="sys-status">
                 <span style="border:1px solid #00ff41; padding:5px 10px; color:#00ff41; font-size:0.8rem; border-radius:4px; background:rgba(0,50,0,0.5);">
-                    TOKEN: <span id="headerTokenDisplay" style="font-weight:bold; color:#fff;">LOADING...</span>
+                    TOKEN: <span id="headerTokenDisplay" style="font-weight:bold; color:#fff;">ĐANG TẢI...</span>
                 </span>
-                <button onclick="window.location.href='index.html'" style="background:#333; color:#fff; border:1px solid #555; padding:6px 15px; cursor:pointer; margin-left:10px; border-radius:4px; font-weight:bold; font-family:'Orbitron';">EXIT</button>
+                <button onclick="window.location.href='index.html'" style="background:#333; color:#fff; border:1px solid #555; padding:6px 15px; cursor:pointer; margin-left:10px; border-radius:4px; font-weight:bold; font-family:'Orbitron';">THOÁT</button>
             </div>
         </header>
 
         <!-- PANEL TRÁI: LOG HỆ THỐNG -->
         <aside class="panel-left">
-            <div style="color:#00ff41; border-bottom:1px solid #333; margin-bottom:5px; font-weight:bold; font-size:0.9rem;">>> SYSTEM LOG</div>
+            <div style="color:#00ff41; border-bottom:1px solid #333; margin-bottom:5px; font-weight:bold; font-size:0.9rem;">>> NHẬT KÝ HỆ THỐNG</div>
             <div class="log-window" id="systemLog" style="flex:1; overflow-y:auto; font-size:0.7rem; color:#cfc;"></div>
         </aside>
 
@@ -64,13 +64,7 @@
             <div class="battle-wrapper">
                 <!-- PLAYER SIDE -->
                 <div class="side-container p-side">
-                    <div style="color:#00f3ff; font-family:'Orbitron'; font-size:1.2rem; margin-bottom:10px;">PLAYER</div>
-                    <div class="cards-area">
-                        <div class="card-slot" id="p1"><div class="card-back"></div><div class="card-front"></div></div>
-                        <div class="card-slot" id="p2"><div class="card-back"></div><div class="card-front"></div></div>
-                        <div class="card-slot" id="p3"><div class="card-back"></div><div class="card-front"></div></div>
-                    </div>
-                    <div class="score-box" id="playerScore" style="color:#00f3ff;">0</div>
+                    <!-- NỘI DUNG SẼ ĐƯỢC JS TẠO RA -->
                 </div>
                 
                 <!-- Cụm VS mới với hiệu ứng tia sét -->
@@ -81,13 +75,7 @@
 
                 <!-- BANKER SIDE -->
                 <div class="side-container b-side">
-                    <div style="color:#ff003c; font-family:'Orbitron'; font-size:1.2rem; margin-bottom:10px;">BANKER</div>
-                    <div class="cards-area">
-                        <div class="card-slot" id="b1"><div class="card-back"></div><div class="card-front"></div></div>
-                        <div class="card-slot" id="b2"><div class="card-back"></div><div class="card-front"></div></div>
-                        <div class="card-slot" id="b3"><div class="card-back"></div><div class="card-front"></div></div>
-                    </div>
-                    <div class="score-box" id="bankerScore" style="color:#ff003c;">0</div>
+                    <!-- NỘI DUNG SẼ ĐƯỢC JS TẠO RA -->
                 </div>
             </div>
 
@@ -97,8 +85,8 @@
                     <img src="robot.png" class="ai-img" alt="AI" onerror="this.style.display='none'">
                 </div>
                 <div class="pred-info">
-                    <div class="pred-label" id="aiAdvice">SYSTEM ANALYZING...</div>
-                    <div class="pred-result blink-wait" id="aiPredText">WAITING</div>
+                    <div class="pred-label" id="aiAdvice">HỆ THỐNG ĐANG PHÂN TÍCH...</div>
+                    <div class="pred-result blink-wait" id="aiPredText">ĐANG CHỜ</div>
                 </div>
                 <div class="pred-gauge">
                     <div class="gauge-circle">
@@ -152,27 +140,27 @@
         <!-- FOOTER: CHIA 4 CỘT -->
         <footer class="sys-footer">
             
-            <!-- CỘT 1: BIỂU ĐỒ SÓNG (THÊM ID) -->
+            <!-- CỘT 1: BIỂU ĐỒ SÓNG -->
             <div id="waveTrendPanel" class="footer-panel chart-panel">
-                <div class="panel-label">WAVE TREND</div>
+                <div class="panel-label">XU HƯỚNG SÓNG</div>
                 <canvas id="trendChart"></canvas>
             </div>
 
-            <!-- CỘT 2: CẦU GIỌT NƯỚC (THÊM ID) -->
+            <!-- CỘT 2: CẦU GIỌT NƯỚC -->
             <div id="beadPlatePanel" class="footer-panel bead-panel">
-                <div class="panel-label">BEAD PLATE</div>
+                <div class="panel-label">BẢNG CẦU HẠT</div>
                 <div id="beadPlateGrid" class="bead-grid"></div>
             </div>
 
-            <!-- CỘT 3: CẦU LỚN (THÊM ID) -->
+            <!-- CỘT 3: CẦU LỚN -->
             <div id="bigRoadPanel" class="footer-panel road-panel">
-                <div class="panel-label">BIG ROAD</div>
+                <div class="panel-label">BẢNG CẦU LỚN</div>
                 <div class="road-container" id="bigRoadGrid"></div>
             </div>
 
-            <!-- CỘT 4: GIAO DỊCH (THÊM ID) -->
+            <!-- CỘT 4: GIAO DỊCH -->
             <div id="transLogPanel" class="footer-panel trans-panel">
-                <div class="panel-label">LIVE TRANS</div>
+                <div class="panel-label">GIAO DỊCH</div>
                 <div id="transLog" class="trans-log-content"></div>
             </div>
 
