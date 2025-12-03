@@ -1,4 +1,4 @@
-// --- START OF FULLY UPDATED script.js (v4.3 - Prediction Consistency Fix) ---
+// --- START OF FULLY UPDATED script.js (v4.4 - UI Bug Fix & Refactor) ---
 
 let currentTableId = null;
 let history = [];
@@ -288,7 +288,6 @@ function displayScorePredictions(predictedWinner) {
     let playerProbs = generateScoreProbabilities('P', predictedWinner, scenario);
     let bankerProbs = generateScoreProbabilities('B', predictedWinner, scenario);
     
-    // --- START: LOGIC SỬA LỖI MÂU THUẪN DỰ ĐOÁN ---
     const getHighestProbItem = (probs) => probs.reduce((max, item) => item.prob > max.prob ? item : max, probs[0]);
     
     let highestPlayerItem = getHighestProbItem(playerProbs);
@@ -296,10 +295,8 @@ function displayScorePredictions(predictedWinner) {
 
     if (highestPlayerItem.score === highestBankerItem.score) {
         let probsToAdjust = (predictedWinner === 'P') ? bankerProbs : playerProbs;
-        
         const sortedProbs = [...probsToAdjust].sort((a, b) => b.prob - a.prob);
-        const secondHighestItem = sortedProbs[1];
-        
+        const secondHighestItem = sortedProbs[1] || sortedProbs[0];
         const originalHighest = probsToAdjust.find(p => p.score === highestPlayerItem.score);
         const originalSecondHighest = probsToAdjust.find(p => p.score === secondHighestItem.score);
 
@@ -307,18 +304,16 @@ function displayScorePredictions(predictedWinner) {
             [originalHighest.prob, originalSecondHighest.prob] = [originalSecondHighest.prob, originalHighest.prob];
         }
     }
-    // --- END: LOGIC SỬA LỖI ---
     
     const playerContainer = document.querySelector('.p-side');
     const bankerContainer = document.querySelector('.b-side');
     
-    // Lấy lại giá trị cao nhất sau khi có thể đã điều chỉnh
     const finalHighestPlayerProb = Math.max(...playerProbs.map(p => p.prob));
     const finalHighestBankerProb = Math.max(...bankerProbs.map(p => p.prob));
     
-    let playerHtml = `<div class="side-container-inner">
-                        <div class="score-analysis-title" style="color:#00f3ff;">PHÂN TÍCH ĐIỂM PLAYER</div>
-                        <div class="score-probability-list">`;
+    // Bỏ thẻ div bọc không cần thiết
+    let playerHtml = `<div class="score-analysis-title" style="color:#00f3ff;">PHÂN TÍCH ĐIỂM PLAYER</div>
+                      <div class="score-probability-list">`;
     playerProbs.forEach(item => {
         const isHighest = item.prob === finalHighestPlayerProb;
         playerHtml += `<div class="prob-item ${isHighest ? 'highest-p' : ''}">
@@ -326,11 +321,10 @@ function displayScorePredictions(predictedWinner) {
                 <span style="font-weight:bold;">${item.prob}%</span>
             </div>`;
     });
-    playerHtml += `</div></div>`;
+    playerHtml += `</div>`;
     
-    let bankerHtml = `<div class="side-container-inner">
-                        <div class="score-analysis-title" style="color:#ff003c;">PHÂN TÍCH ĐIỂM BANKER</div>
-                        <div class="score-probability-list">`;
+    let bankerHtml = `<div class="score-analysis-title" style="color:#ff003c;">PHÂN TÍCH ĐIỂM BANKER</div>
+                      <div class="score-probability-list">`;
     bankerProbs.forEach(item => {
         const isHighest = item.prob === finalHighestBankerProb;
         bankerHtml += `<div class="prob-item ${isHighest ? 'highest-b' : ''}">
@@ -338,7 +332,7 @@ function displayScorePredictions(predictedWinner) {
                 <span style="font-weight:bold;">${item.prob}%</span>
             </div>`;
     });
-    bankerHtml += `</div></div>`;
+    bankerHtml += `</div>`;
     
     playerContainer.innerHTML = '';
     bankerContainer.innerHTML = '';

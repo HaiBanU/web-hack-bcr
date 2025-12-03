@@ -116,8 +116,9 @@
     background: transparent; 
     border: none; 
     box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-    display: flex;
-    flex-direction: column;
+    display: flex; 
+    flex-direction: column; 
+    overflow: hidden; /* DÒNG QUAN TRỌNG NHẤT ĐỂ SỬA LỖI */
 }
 
 .side-container::before {
@@ -140,17 +141,6 @@
 
 @keyframes rotateRGB { 100% { transform: rotate(360deg); } }
 
-/* --- SỬA LỖI TRÀN GÓC --- */
-.side-container-inner {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    border-radius: 10px; /* Phải khớp với border-radius của .side-container::after */
-    overflow: hidden; /* Đây là dòng quan trọng nhất để sửa lỗi */
-}
 
 /* --- HIỆU ỨNG KHI THẮNG (WINNER) --- */
 .side-container.winner-p {
@@ -175,24 +165,28 @@
 .score-analysis-title {
     font-family: 'Orbitron', sans-serif;
     font-size: 1.1rem;
-    padding-top: 10px; /* Dùng padding thay margin */
+    padding-top: 10px;
     padding-bottom: 15px;
     text-shadow: 0 0 5px currentColor;
     text-align: center;
-    flex-shrink: 0; /* Không cho co lại */
+    flex-shrink: 0;
+    position: relative; /* Thêm để z-index có hiệu lực */
+    z-index: 2;
 }
 
 .score-probability-list {
-    width: 100%; /* Sửa thành 100% để full width */
+    width: 100%;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: 4px; /* Tăng khoảng cách một chút */
+    gap: 4px;
     font-family: 'Share Tech Mono', monospace;
-    flex-grow: 1; /* Lấp đầy không gian còn lại */
+    flex-grow: 1;
     padding-bottom: 10px;
-    padding-left: 15px; /* Thêm padding để nội dung không sát lề */
+    padding-left: 15px;
     padding-right: 15px;
+    position: relative; /* Thêm để z-index có hiệu lực */
+    z-index: 2;
 }
 
 .prob-item {
