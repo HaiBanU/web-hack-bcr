@@ -89,26 +89,25 @@
     z-index: 10; /* Cao hơn canvas */
 }
 
-/* --- BATTLE AREA (BÀI) --- */
+/* --- BATTLE AREA (KHU VỰC PHÂN TÍCH) --- */
 .battle-wrapper { 
     position: relative; 
     z-index: 10; 
     width: 95%; 
     display: flex; 
     justify-content: space-between; 
-    align-items: center;
+    align-items: stretch; /* Đảm bảo 2 cột cao bằng nhau */
     margin-bottom: 15px; 
-    min-height: 250px; /* Đảm bảo đủ cao cho VS */
+    min-height: 280px; /* Tăng chiều cao tối thiểu */
 }
 
+
 /* =========================================
-   CẬP NHẬT GIAO DIỆN KHUNG BÀI (RGB LED)
+   CẬP NHẬT GIAO DIỆN KHUNG PHÂN TÍCH
    ========================================= */
 
-/* CONTAINER CHÍNH - ĐỊNH HÌNH KHUNG */
 .side-container {
     width: 45%;
-    text-align: center;
     position: relative;
     z-index: 1; 
     border-radius: 12px;
@@ -117,10 +116,11 @@
     transition: transform 0.3s, box-shadow 0.3s;
     background: transparent; 
     border: none; 
-    box-shadow: 0 10px 40px rgba(0,0,0,0.8); 
+    box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+    display: flex; /* Thêm flex để nội dung bên trong được căn chỉnh */
+    flex-direction: column; /* Sắp xếp theo chiều dọc */
 }
 
-/* LỚP 1: LED RGB 7 MÀU CHẠY */
 .side-container::before {
     content: '';
     position: absolute;
@@ -130,7 +130,6 @@
     z-index: -2;
 }
 
-/* LỚP 2: NỀN ĐEN ĐẬM Ở GIỮA */
 .side-container::after {
     content: '';
     position: absolute;
@@ -147,30 +146,73 @@
     animation: flashWinPlayer 0.4s ease-in-out infinite alternate;
     z-index: 100 !important; 
 }
-
 @keyframes flashWinPlayer {
-    0% { border: 2px solid #00f3ff; box-shadow: 0 0 20px #00f3ff, inset 0 0 10px #00f3ff; background: rgba(0, 20, 30, 0.8); transform: scale(1.02); }
-    100% { border: 2px solid #ffffff; box-shadow: 0 0 40px #00f3ff, 0 0 80px #00f3ff, 0 0 150px #ffffff, inset 0 0 50px #00f3ff; background: rgba(0, 243, 255, 0.3); transform: scale(1.05); }
+    0% { box-shadow: 0 0 20px #00f3ff; transform: scale(1.02); }
+    100% { box-shadow: 0 0 40px #00f3ff, 0 0 80px #00f3ff, 0 0 150px #ffffff; transform: scale(1.05); }
 }
 
 .side-container.winner-b {
     animation: flashWinBanker 0.4s ease-in-out infinite alternate;
     z-index: 100 !important;
 }
-
 @keyframes flashWinBanker {
-    0% { border: 2px solid #ff003c; box-shadow: 0 0 20px #ff003c, inset 0 0 10px #ff003c; background: rgba(30, 0, 10, 0.8); transform: scale(1.02); }
-    100% { border: 2px solid #ffffff; box-shadow: 0 0 40px #ff003c, 0 0 80px #ff003c, 0 0 150px #ffffff, inset 0 0 50px #ff003c; background: rgba(255, 0, 60, 0.3); transform: scale(1.05); }
+    0% { box-shadow: 0 0 20px #ff003c; transform: scale(1.02); }
+    100% { box-shadow: 0 0 40px #ff003c, 0 0 80px #ff003c, 0 0 150px #ffffff; transform: scale(1.05); }
 }
 
-/* CARDS */
-.cards-area { display: flex; gap: 10px; justify-content: center; margin-top: 15px; perspective: 1000px; }
-.card-slot { width: 70px; height: 100px; position: relative; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); }
-.card-back, .card-front { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: 'Orbitron'; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
-.card-back { background: linear-gradient(135deg, #003b0f, #001a00); border: 1px solid var(--neon-green); transform: rotateY(0deg); }
-.card-front { background: #fff; color: #000; font-size: 1.5rem; border: 2px solid #ddd; transform: rotateY(180deg); }
-.card-slot.flipped { transform: rotateY(180deg); }
-.score-box { font-size: 3rem; font-weight: 900; margin-top: 10px; font-family: 'Orbitron'; text-shadow: 0 0 10px currentColor; }
+/* --- CSS CHO BẢNG PHÂN TÍCH XÁC SUẤT --- */
+.score-analysis-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.1rem;
+    padding-top: 10px; /* Dùng padding thay margin */
+    padding-bottom: 15px;
+    text-shadow: 0 0 5px currentColor;
+    text-align: center;
+    flex-shrink: 0; /* Không cho co lại */
+}
+
+.score-probability-list {
+    width: 90%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px; /* Tăng khoảng cách một chút */
+    font-family: 'Share Tech Mono', monospace;
+    flex-grow: 1; /* Lấp đầy không gian còn lại */
+    padding-bottom: 10px;
+}
+
+.prob-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 3px 8px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 2px;
+    font-size: 0.9rem;
+    transition: all 0.3s;
+    border-left: 3px solid transparent;
+}
+
+/* Hiệu ứng khi một dòng được chọn là cao nhất */
+.prob-item.highest-p {
+    background: #00f3ff;
+    color: #000;
+    font-weight: bold;
+    transform: scale(1.05);
+    box-shadow: 0 0 15px #00f3ff;
+    border-left-color: #fff;
+}
+
+.prob-item.highest-b {
+    background: #ff003c;
+    color: #fff;
+    font-weight: bold;
+    transform: scale(1.05);
+    box-shadow: 0 0 15px #ff003c;
+    border-left-color: #fff;
+}
+
 
 /* =========================================================
    SUPER VS EFFECT - NEON GLITCH (Đã hợp nhất)
@@ -337,7 +379,6 @@
 }
 .bead-grid {
     display: grid;
-    /* THAY ĐỔI: Chuyển từ repeat(5, 1fr) thành repeat(6, 1fr) */
     grid-template-rows: repeat(6, 1fr);
     grid-template-columns: repeat(6, 1fr);
     grid-auto-flow: column; 
@@ -368,7 +409,7 @@
     align-items: center;
     font-family: Arial, sans-serif; 
     font-weight: bold;
-    font-size: clamp(4px, 1.2vh, 10px); /* <- Có thể giảm nhẹ cỡ chữ nếu cần */
+    font-size: clamp(4px, 1.2vh, 10px);
     color: #fff;
     box-shadow: none; 
 }
@@ -422,7 +463,6 @@
     box-shadow: 0 0 10px rgba(0,0,0,0.5);
 }
 
-/* Hiệu ứng viền LED chạy */
 .stat-box::before {
     content: '';
     position: absolute;
@@ -464,7 +504,6 @@
     margin-top: 5px;
 }
 
-/* Định nghĩa màu cho từng loại */
 .player-stat { --led-color: #00f3ff; color: #00f3ff; }
 .tie-stat    { --led-color: #00ff41; color: #00ff41; }
 .banker-stat { --led-color: #ff003c; color: #ff003c; }
@@ -478,7 +517,7 @@
    ========================================= */
 
 .custom-modal-overlay {
-    display: none; /* Ẩn mặc định, sẽ được bật bằng JS */
+    display: none; 
     position: fixed;
     top: 0;
     left: 0;
@@ -537,52 +576,4 @@
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
-}
-/* --- CSS CHO BẢNG PHÂN TÍCH XÁC SUẤT --- */
-.score-analysis-title {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 1.1rem;
-    margin-top: 10px;
-    margin-bottom: 15px;
-    text-shadow: 0 0 5px currentColor;
-}
-
-.score-probability-list {
-    width: 90%;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    font-family: 'Share Tech Mono', monospace;
-}
-
-.prob-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 3px 8px;
-    background: rgba(0, 0, 0, 0.4);
-    border-radius: 2px;
-    font-size: 0.9rem;
-    transition: all 0.3s;
-    border-left: 3px solid transparent;
-}
-
-/* Hiệu ứng khi một dòng được chọn là cao nhất */
-.prob-item.highest-p {
-    background: #00f3ff;
-    color: #000;
-    font-weight: bold;
-    transform: scale(1.05);
-    box-shadow: 0 0 15px #00f3ff;
-    border-left-color: #fff;
-}
-
-.prob-item.highest-b {
-    background: #ff003c;
-    color: #fff;
-    font-weight: bold;
-    transform: scale(1.05);
-    box-shadow: 0 0 15px #ff003c;
-    border-left-color: #fff;
 }

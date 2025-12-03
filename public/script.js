@@ -1,4 +1,4 @@
-// --- START OF UPDATED script.js ---
+// --- START OF FULLY UPDATED script.js (v3 - Probability Clamping) ---
 
 let currentTableId = null;
 let history = [];
@@ -10,63 +10,45 @@ let lastPrediction = null;
 let predictionOutcomes = []; 
 let chartHistory = []; 
 
-// === HÀM TẠO DỮ LIỆU GIẢ (ĐÃ NÂNG CẤP) ===
-// Hàm này giờ sẽ nhận vào tổng số ván cần tạo
 function generateInitialChartHistory(totalRounds) {
     if (totalRounds <= 0) return [];
-
-    // Tỷ lệ mong muốn: ~70% thắng, 25% thua, 5% hòa
     const winCount = Math.round(totalRounds * 0.70);
     const tieCount = Math.round(totalRounds * 0.05);
     const lossCount = totalRounds - winCount - tieCount;
-
     let initialData = [];
     for (let i = 0; i < winCount; i++) initialData.push({ type: 'win' });
     for (let i = 0; i < lossCount; i++) initialData.push({ type: 'loss' });
     for (let i = 0; i < tieCount; i++) initialData.push({ type: 'tie' });
-
-    // Xáo trộn mảng để kết quả trông ngẫu nhiên
     for (let i = initialData.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [initialData[i], initialData[j]] = [initialData[j], initialData[i]];
     }
-    
     return initialData;
 }
 
-
-// --- 1. INIT & SETUP (ĐÃ VIẾT LẠI HOÀN TOÀN) ---
 window.addEventListener('DOMContentLoaded', async () => {
-    // Lấy thông tin bàn từ URL trước
     const urlParams = new URLSearchParams(window.location.search);
     currentTableId = urlParams.get('tableId');
     let tName = decodeURIComponent(urlParams.get('tableName') || "UNKNOWN");
     if (!tName.includes("BACCARAT")) tName = tName.replace("BÀN", "BÀN BACCARAT");
     document.getElementById('tableNameDisplay').innerText = tName.toUpperCase();
 
-    // Hàm khởi tạo chính
     async function initializeTool() {
         try {
-            // Bước 1: Gọi API để lấy trạng thái hiện tại của tất cả các bàn
             const response = await fetch('/api/tables');
             const data = await response.json();
-
             if (data.status === 'success' && data.data) {
                 const currentTable = data.data.find(t => t.table_id == currentTableId);
-                
-                // Bước 2: Nếu tìm thấy bàn, lấy số ván đã chơi
                 if (currentTable && currentTable.result) {
                     const numRounds = currentTable.result.length;
-                    // Bước 3: Tạo lịch sử đồ thị giả mạo với đúng số ván
                     chartHistory = generateInitialChartHistory(numRounds);
                 }
             }
         } catch (error) {
             console.error("Lỗi khi lấy dữ liệu ban đầu, sẽ dùng mảng rỗng:", error);
-            chartHistory = []; // Nếu lỗi, bắt đầu với đồ thị trống
+            chartHistory = [];
         }
 
-        // Bước 4: Khởi tạo tất cả các thành phần giao diện khác
         initCardRain();
         updateTokenUI(localStorage.getItem('tokens') || 0);
         addLog(`SYSTEM CONNECTED: ${tName}`);
@@ -74,14 +56,12 @@ window.addEventListener('DOMContentLoaded', async () => {
         deductToken('entry');
         startPeriodicDeduction();
         setInterval(generateMatrixCode, 100); 
-        startWaveChartLoop(); // Bây giờ, hàm này sẽ vẽ đồ thị với dữ liệu giả đã được tạo
+        startWaveChartLoop();
         startFakeTransactions();
     }
 
-    // Chạy hàm khởi tạo
     await initializeTool();
     
-    // Thêm trình xử lý cho nút quay lại sảnh
     const returnBtn = document.getElementById('returnToLobbyBtn');
     if (returnBtn) {
         returnBtn.onclick = () => {
@@ -90,8 +70,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-
-// --- 2. TOKEN LOGIC ---
 async function deductToken(type) {
     const token = localStorage.getItem('token');
     if (!token) window.location.href = 'login.html';
@@ -126,35 +104,24 @@ function updateTokenUI(amount) {
     document.getElementById('headerTokenDisplay').innerText = displayAmt;
 }
 
-// --- 3. SOCKET LISTENER ---
 socket.on('server_update', (allTables) => {
     if (isProcessing || !currentTableId) return;
     const tableData = allTables.find(t => t.table_id == currentTableId);
     
     if (tableData) {
         const serverRes = (tableData.result || "").split('');
-        
-        // --- LOGIC MỚI: PHÁT HIỆN BÀN ĐÃ RESET ---
         const newLength = serverRes.length;
         const oldLength = history.length;
 
-        // Điều kiện reset: Bàn đã có nhiều hơn 10 ván và đột ngột số ván mới nhỏ hơn 5
         if (oldLength > 10 && newLength < 5) {
             console.warn(`PHÁT HIỆN RESET BÀN! Ván cũ: ${oldLength}, Ván mới: ${newLength}`);
             const modal = document.getElementById('resetModalOverlay');
-            if (modal) {
-                modal.style.display = 'flex';
-            }
-            // Dừng trừ token khi popup hiện ra
-            if (tokenInterval) {
-                clearInterval(tokenInterval);
-            }
-            return; // Dừng xử lý cập nhật bàn
+            if (modal) modal.style.display = 'flex';
+            if (tokenInterval) clearInterval(tokenInterval);
+            return;
         }
-        // --- KẾT THÚC LOGIC MỚI ---
 
         if (newLength > oldLength || oldLength === 0) {
-            
             if (lastPrediction && history.length > 0) {
                 const newResult = serverRes[serverRes.length - 1];
                 if (newResult === 'T') {
@@ -182,9 +149,6 @@ socket.on('server_update', (allTables) => {
     }
 });
 
-// =======================================================
-// --- 4. ADVANCED PREDICTION LOGIC ---
-// =======================================================
 function runPredictionSystem(historyArr) {
     isProcessing = true;
     
@@ -206,74 +170,26 @@ function runPredictionSystem(historyArr) {
     let prediction = null, confidence = 70, reason = "ANALYZING...";
 
     if (len > 3) {
-        const last1 = cleanHist[len - 1];
-        const last2 = cleanHist[len - 2];
-        const last3 = cleanHist[len - 3];
-        const last4 = cleanHist[len - 4];
+        const last1 = cleanHist[len - 1], last2 = cleanHist[len - 2], last3 = cleanHist[len - 3], last4 = cleanHist[len - 4];
         const opponent = (side) => (side === 'P' ? 'B' : 'P');
         let streak = 0;
-        for (let i = len - 1; i >= 0; i--) {
-            if (cleanHist[i] === last1) streak++;
-            else break;
-        }
+        for (let i = len - 1; i >= 0; i--) { if (cleanHist[i] === last1) streak++; else break; }
 
-        if (streak === 7) {
-            prediction = opponent(last1);
-            confidence = 96;
-            reason = `BREAKING DRAGON (7)`;
-        }
-        else if (streak >= 3 && streak < 7) {
-            prediction = last1;
-            confidence = 85 + (streak * 2);
-            reason = `DRAGON PATTERN (${last1} x${streak})`;
-        }
-        else if (len >= 4 && last1 === last2 && last3 === last4 && last1 !== last3) {
-            prediction = last1;
-            confidence = 92;
-            reason = `PATTERN (2-2)`;
-        }
-        else if (len >= 6 && last1===last2 && last2==last3 && last4===cleanHist[len-5] && cleanHist[len-5]==cleanHist[len-6] && last1 !== last4) {
-            prediction = last1;
-            confidence = 94;
-            reason = `PATTERN (3-3)`;
-        }
-        else if (len >= 3 && last1 !== last2 && last2 === last3) {
-            prediction = last1;
-            confidence = 88;
-            reason = `PATTERN (2-1)`;
-        }
-        else if (len >= 3 && last1 === last2 && last1 !== last3) {
-            prediction = last3;
-            confidence = 90;
-            reason = `PATTERN (1-2)`;
-        }
-        else if (len >= 4 && last1 !== last2 && last2 === last3 && last3 === last4) {
-            prediction = last1;
-            confidence = 89;
-            reason = `PATTERN (3-1)`;
-        }
-        else if (len >= 4 && last1 === last2 && last2 === last3 && last1 !== last4) {
-            prediction = last4;
-            confidence = 91;
-            reason = `PATTERN (1-3)`;
-        }
-        else if (len >= 4 && last1 !== last2 && last2 !== last3 && last3 !== last4) {
-            prediction = opponent(last1);
-            confidence = 93;
-            reason = `PING-PONG PATTERN`;
-        }
-        else {
-            prediction = last1;
-            confidence = 78;
-            reason = "FOLLOWING RECENT TREND";
-        }
+        if (streak === 7) { prediction = opponent(last1); confidence = 96; reason = `BREAKING DRAGON (7)`; }
+        else if (streak >= 3 && streak < 7) { prediction = last1; confidence = 85 + (streak * 2); reason = `DRAGON PATTERN (${last1} x${streak})`; }
+        else if (len >= 4 && last1 === last2 && last3 === last4 && last1 !== last3) { prediction = last1; confidence = 92; reason = `PATTERN (2-2)`; }
+        else if (len >= 6 && last1===last2 && last2==last3 && last4===cleanHist[len-5] && cleanHist[len-5]==cleanHist[len-6] && last1 !== last4) { prediction = last1; confidence = 94; reason = `PATTERN (3-3)`; }
+        else if (len >= 3 && last1 !== last2 && last2 === last3) { prediction = last1; confidence = 88; reason = `PATTERN (2-1)`; }
+        else if (len >= 3 && last1 === last2 && last1 !== last3) { prediction = last3; confidence = 90; reason = `PATTERN (1-2)`; }
+        else if (len >= 4 && last1 !== last2 && last2 === last3 && last3 === last4) { prediction = last1; confidence = 89; reason = `PATTERN (3-1)`; }
+        else if (len >= 4 && last1 === last2 && last2 === last3 && last1 !== last4) { prediction = last4; confidence = 91; reason = `PATTERN (1-3)`; }
+        else if (len >= 4 && last1 !== last2 && last2 !== last3 && last3 !== last4) { prediction = opponent(last1); confidence = 93; reason = `PING-PONG PATTERN`; }
+        else { prediction = last1; confidence = 78; reason = "FOLLOWING RECENT TREND"; }
     } 
     
     if (!prediction) {
-        if (len > 0) prediction = cleanHist[len - 1];
-        else prediction = 'B';
-        confidence = 75;
-        reason = "INITIALIZING DATA...";
+        if (len > 0) prediction = cleanHist[len - 1]; else prediction = 'B';
+        confidence = 75; reason = "INITIALIZING DATA...";
     }
 
     setTimeout(() => { addLog(`>> ANALYZING NEXT ROUND...`); }, 500);
@@ -295,7 +211,6 @@ function runPredictionSystem(historyArr) {
         document.getElementById('confB').innerText = confB + "%"; document.getElementById('barB').style.width = confB + "%";
         
         addLog(`>> PREDICTION: [ ${prediction} ] (RATE: ${confidence}%)`);
-        
         lastPrediction = { side: prediction };
         
         displayScorePredictions(prediction);
@@ -303,40 +218,68 @@ function runPredictionSystem(historyArr) {
 }
 
 
-// --- 5. SCORE PREDICTION SIMULATION (NEW) ---
+// =======================================================
+// --- LOGIC PHÂN TÍCH XÁC SUẤT ĐIỂM SỐ (V3) ---
+// =======================================================
 function generateScoreProbabilities(side, predictedWinner) {
-    // side: 'P' hoặc 'B' - là bên đang được tính.
-    // predictedWinner: là kết quả dự đoán chung của ván.
-    let baseProbs = [6.5, 7.0, 8.5, 9.5, 11.5, 12.5, 12.0, 11.0, 10.5, 10.0]; // Phân bổ xác suất cơ bản
+    let baseProbs = [6.5, 7.0, 8.5, 9.5, 11.5, 12.5, 12.0, 11.0, 10.5, 10.0];
 
-    // Điều chỉnh xác suất dựa trên dự đoán
     if (side === predictedWinner) {
-        // Nếu bên này được dự đoán thắng, tăng mạnh tỷ lệ ra điểm 8, 9
-        baseProbs[8] *= 3.0;
-        baseProbs[9] *= 2.8;
-        baseProbs[7] *= 1.5;
+        baseProbs[8] *= 2.0; baseProbs[9] *= 1.8; baseProbs[7] *= 1.5; // Giảm nhẹ độ thiên vị
     } else {
-        // Nếu được dự đoán thua, tăng tỷ lệ ra điểm thấp và giảm điểm cao
-        baseProbs[0] *= 2.0;
-        baseProbs[1] *= 1.8;
-        baseProbs[2] *= 1.6;
-        baseProbs[8] *= 0.4;
-        baseProbs[9] *= 0.3;
+        baseProbs[0] *= 1.6; baseProbs[1] *= 1.4; baseProbs[2] *= 1.2;
+        baseProbs[8] *= 0.6; baseProbs[9] *= 0.5;
     }
 
-    // Thêm một chút nhiễu ngẫu nhiên để các con số không bị lặp lại
     baseProbs = baseProbs.map(p => Math.max(0, p + (Math.random() - 0.5) * 2));
     
-    // Chuẩn hóa tổng xác suất về 100%
     const total = baseProbs.reduce((a, b) => a + b, 0);
     let probabilities = baseProbs.map(p => Math.round((p / total) * 100));
     
-    // Đảm bảo tổng chính xác là 100 bằng cách điều chỉnh phần tử lớn nhất
-    let currentSum = probabilities.reduce((a, b) => a + b, 0);
-    if (currentSum !== 100) {
-        let diff = 100 - currentSum;
-        let maxIndex = probabilities.indexOf(Math.max(...probabilities));
-        probabilities[maxIndex] += diff;
+    // --- BƯỚC 1: TÌM XÁC SUẤT CAO NHẤT HIỆN TẠI ---
+    let highestProb = 0;
+    let highestIndex = -1;
+    probabilities.forEach((p, i) => {
+        if (p > highestProb) {
+            highestProb = p;
+            highestIndex = i;
+        }
+    });
+
+    // --- BƯỚC 2: KIỂM TRA VÀ ĐIỀU CHỈNH NẾU NẰM NGOÀI KHOẢNG 31-39% ---
+    const minTarget = 31;
+    const maxTarget = 39;
+
+    if (highestProb > maxTarget || highestProb < minTarget) {
+        const newHighestProb = Math.floor(Math.random() * (maxTarget - minTarget + 1)) + minTarget;
+        let diff = highestProb - newHighestProb;
+        probabilities[highestIndex] = newHighestProb;
+
+        // --- BƯỚC 3: PHÂN PHỐI LẠI PHẦN CHÊNH LỆCH ---
+        if (diff > 0) { // Nếu có dư, cộng ngẫu nhiên cho các số khác
+            for (let i = 0; i < diff; i++) {
+                let randomIndex;
+                do {
+                    randomIndex = Math.floor(Math.random() * 10);
+                } while (randomIndex === highestIndex);
+                probabilities[randomIndex]++;
+            }
+        } else if (diff < 0) { // Nếu thiếu, trừ ngẫu nhiên từ các số khác
+            for (let i = 0; i < Math.abs(diff); i++) {
+                let randomIndex;
+                do {
+                    randomIndex = Math.floor(Math.random() * 10);
+                } while (randomIndex === highestIndex || probabilities[randomIndex] <= 2); // Tránh trừ về 0 hoặc số quá nhỏ
+                probabilities[randomIndex]--;
+            }
+        }
+    }
+    
+    // --- BƯỚC 4: KIỂM TRA CUỐI CÙNG ĐỂ ĐẢM BẢO TỔNG LÀ 100% ---
+    let finalSum = probabilities.reduce((a, b) => a + b, 0);
+    let sumDiff = 100 - finalSum;
+    if (sumDiff !== 0) {
+        probabilities[highestIndex] += sumDiff;
     }
 
     return probabilities.map((prob, score) => ({ score, prob }));
@@ -346,15 +289,12 @@ function displayScorePredictions(predictedWinner) {
     const playerContainer = document.querySelector('.p-side');
     const bankerContainer = document.querySelector('.b-side');
 
-    // Tạo dữ liệu xác suất "thiên vị" theo dự đoán
     const playerProbs = generateScoreProbabilities('P', predictedWinner);
     const bankerProbs = generateScoreProbabilities('B', predictedWinner);
     
-    // Tìm ra điểm có % cao nhất của mỗi bên
     const highestPlayerProb = Math.max(...playerProbs.map(p => p.prob));
     const highestBankerProb = Math.max(...bankerProbs.map(p => p.prob));
     
-    // Xây dựng chuỗi HTML cho bảng phân tích của PLAYER
     let playerHtml = `<div class="score-analysis-title" style="color:#00f3ff;">PLAYER SCORE ANALYSIS</div><div class="score-probability-list">`;
     playerProbs.forEach(item => {
         const isHighest = item.prob === highestPlayerProb;
@@ -365,7 +305,6 @@ function displayScorePredictions(predictedWinner) {
     });
     playerHtml += `</div>`;
     
-    // Xây dựng chuỗi HTML cho bảng phân tích của BANKER
     let bankerHtml = `<div class="score-analysis-title" style="color:#ff003c;">BANKER SCORE ANALYSIS</div><div class="score-probability-list">`;
     bankerProbs.forEach(item => {
         const isHighest = item.prob === highestBankerProb;
@@ -376,7 +315,6 @@ function displayScorePredictions(predictedWinner) {
     });
     bankerHtml += `</div>`;
     
-    // Xóa nội dung cũ và hiển thị nội dung mới với hiệu ứng
     playerContainer.innerHTML = '';
     bankerContainer.innerHTML = '';
     playerContainer.classList.remove('winner-p', 'winner-b');
@@ -384,19 +322,16 @@ function displayScorePredictions(predictedWinner) {
 
     setTimeout(() => {
         playerContainer.innerHTML = playerHtml;
-        // Thêm hiệu ứng winner nếu bên này được dự đoán thắng
         if (predictedWinner === 'P') playerContainer.classList.add('winner-p');
     }, 500);
     
     setTimeout(() => {
         bankerContainer.innerHTML = bankerHtml;
         if (predictedWinner === 'B') bankerContainer.classList.add('winner-b');
-        isProcessing = false; // Mở khóa xử lý cho vòng tiếp theo
+        isProcessing = false;
     }, 1000);
 }
 
-
-// --- 6. VISUAL HELPERS ---
 function addLog(msg) {
     const box = document.getElementById('systemLog');
     const time = new Date().toLocaleTimeString('vi-VN', { hour12: false });
@@ -407,6 +342,7 @@ function addLog(msg) {
     div.innerHTML = `<span style="color:#666">[${time}]</span> <span style="color:${color}">${msg}</span>`;
     box.appendChild(div); box.scrollTop = box.scrollHeight;
 }
+
 function initCardRain() {
     const c = document.getElementById('cardRain'); 
     if(!c) return;
@@ -426,6 +362,7 @@ function initCardRain() {
         }
     }, 40);
 }
+
 function generateMatrixCode() {
     const el = document.getElementById('matrixCode');
     if(el) {
@@ -437,6 +374,7 @@ function generateMatrixCode() {
         if(el.children.length > 25) el.lastChild.remove();
     }
 }
+
 function startFakeTransactions() {
     const box = document.getElementById('transLog'); if(!box) return;
     const names = ["User99", "HackerVN", "ProPlayer", "Bot_AI", "Winner88", "Master_B", "Dragon_X"];
@@ -451,7 +389,6 @@ function startFakeTransactions() {
     }, 1500);
 }
 
-// --- 7. BIG ROAD & BEAD PLATE LOGIC ---
 function renderBigRoadGrid(rawHistory) {
     const grid = document.getElementById('bigRoadGrid'); 
     if(!grid) return;
@@ -492,21 +429,17 @@ function renderBigRoadGrid(rawHistory) {
     });
     grid.innerHTML = html;
 }
+
 function renderBeadPlate(res) {
     const grid = document.getElementById('beadPlateGrid');
     if(!grid) return;
-    const totalCells = 36; // Cập nhật thành 6x6 = 36
-    let displayData = [];
-    if (res.length > totalCells) {
-        displayData = res.slice(res.length - totalCells, res.length);
-    } else {
-        displayData = res;
-    }
+    const totalCells = 36;
+    let displayData = (res.length > totalCells) ? res.slice(res.length - totalCells) : res;
     let html = '';
     for(let i = 0; i < totalCells; i++) {
         const item = displayData[i];
         if (item) {
-            let cls = ''; let txt = '';
+            let cls = '', txt = '';
             if (item === 'P') { cls = 'bead-p'; txt = 'P'; }
             else if (item === 'B') { cls = 'bead-b'; txt = 'B'; }
             else if (item === 'T') { cls = 'bead-t'; txt = 'T'; }
@@ -519,17 +452,9 @@ function renderBeadPlate(res) {
 }
 window.addEventListener('resize', () => { if(history.length > 0) renderBeadPlate(history); });
 
-
-// =======================================================
-// --- 8. WAVE CHART & CANDLES ---
-// =======================================================
 let waveCanvas, waveCtx;
 let waveW, waveH;
-
-let waveConfig = {
-    pAmp: 20, targetP: 20, bAmp: 20, targetB: 20,
-    speed: 0.08, pColor: "rgba(0, 243, 255, 0.6)", bColor: "rgba(255, 0, 60, 0.6)"
-};
+let waveConfig = { pAmp: 20, targetP: 20, bAmp: 20, targetB: 20, speed: 0.08, pColor: "rgba(0, 243, 255, 0.6)", bColor: "rgba(255, 0, 60, 0.6)" };
 
 function startWaveChartLoop() {
     waveCanvas = document.getElementById('trendChart');
@@ -550,12 +475,9 @@ function startWaveChartLoop() {
 function animateWave() {
     if (!waveCtx) return;
     waveCtx.clearRect(0, 0, waveW, waveH);
-    
     waveConfig.pAmp += (waveConfig.targetP - waveConfig.pAmp) * 0.05;
     waveConfig.bAmp += (waveConfig.targetB - waveConfig.bAmp) * 0.05;
-
     drawHistoryCandles();
-
     waveCtx.globalCompositeOperation = 'screen';
     if(waveConfig.bAmp > waveConfig.pAmp) { waveCtx.shadowBlur = 20; waveCtx.shadowColor = "#ff003c"; } else { waveCtx.shadowBlur = 0; }
     drawSineWave(waveConfig.bAmp, 0.02, 1.5, waveConfig.bColor);
@@ -563,7 +485,6 @@ function animateWave() {
     drawSineWave(waveConfig.pAmp, 0.025, 0, waveConfig.pColor);
     waveCtx.shadowBlur = 0;
     waveCtx.globalCompositeOperation = 'source-over';
-
     requestAnimationFrame(animateWave);
 }
 
@@ -593,96 +514,52 @@ function updateChartData(hist) {
 }
 
 function drawHistoryCandles() {
-    const spacing = 16;
-    const candleWidth = 14;
-    const minHeight = 15;
-    const maxHeight = 45;
-    const heightStep = 5;
-
-    let processedData = [];
-    let streakCounter = 0;
-    let lastResultType = null;
-
+    const spacing = 16, candleWidth = 14, minHeight = 15, maxHeight = 45, heightStep = 5;
+    let processedData = []; let streakCounter = 0; let lastResultType = null;
     for (const result of chartHistory) {
-        if (result.type === 'tie') {
-            processedData.push({ type: 'tie', streak: 0 });
-            continue;
-        }
-        if (result.type === lastResultType) {
-            streakCounter++;
-        } else {
-            streakCounter = 1;
-        }
+        if (result.type === 'tie') { processedData.push({ type: 'tie', streak: 0 }); continue; }
+        if (result.type === lastResultType) streakCounter++; else streakCounter = 1;
         processedData.push({ type: result.type, streak: streakCounter });
         lastResultType = result.type;
     }
-
     const centerY = waveH / 2;
     waveCtx.beginPath();
-    waveCtx.moveTo(0, centerY);
-    waveCtx.lineTo(waveW, centerY);
-    waveCtx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-    waveCtx.lineWidth = 1;
-    waveCtx.shadowBlur = 0;
-    waveCtx.stroke();
-
+    waveCtx.moveTo(0, centerY); waveCtx.lineTo(waveW, centerY);
+    waveCtx.strokeStyle = 'rgba(255, 255, 255, 0.2)'; waveCtx.lineWidth = 1; waveCtx.shadowBlur = 0; waveCtx.stroke();
     const maxCandles = Math.floor(waveW / spacing);
     const dataToDraw = processedData.slice(-maxCandles);
-
     dataToDraw.forEach((item, i) => {
         const x = waveW - (dataToDraw.length - i) * spacing + (spacing / 2);
-
         if (item.type === 'tie') {
-            waveCtx.beginPath();
-            waveCtx.arc(x, centerY, 4, 0, Math.PI * 2);
-            waveCtx.fillStyle = '#00ff41';
-            waveCtx.shadowColor = '#00ff41';
-            waveCtx.shadowBlur = 8;
-            waveCtx.fill();
+            waveCtx.beginPath(); waveCtx.arc(x, centerY, 4, 0, Math.PI * 2);
+            waveCtx.fillStyle = '#00ff41'; waveCtx.shadowColor = '#00ff41'; waveCtx.shadowBlur = 8; waveCtx.fill();
             return;
         }
         const candleHeight = Math.min(maxHeight, minHeight + (item.streak - 1) * heightStep);
-        waveCtx.beginPath();
-        waveCtx.lineWidth = candleWidth;
-        waveCtx.shadowBlur = 8;
-        
+        waveCtx.beginPath(); waveCtx.lineWidth = candleWidth; waveCtx.shadowBlur = 8;
         if (item.type === 'win') {
-            waveCtx.strokeStyle = '#00ff41';
-            waveCtx.shadowColor = '#00ff41';
-            waveCtx.moveTo(x, centerY);
-            waveCtx.lineTo(x, centerY - candleHeight);
+            waveCtx.strokeStyle = '#00ff41'; waveCtx.shadowColor = '#00ff41';
+            waveCtx.moveTo(x, centerY); waveCtx.lineTo(x, centerY - candleHeight);
         } else {
-            waveCtx.strokeStyle = '#ff003c';
-            waveCtx.shadowColor = '#ff003c';
-            waveCtx.moveTo(x, centerY);
-            waveCtx.lineTo(x, centerY + candleHeight);
+            waveCtx.strokeStyle = '#ff003c'; waveCtx.shadowColor = '#ff003c';
+            waveCtx.moveTo(x, centerY); waveCtx.lineTo(x, centerY + candleHeight);
         }
         waveCtx.stroke();
     });
     waveCtx.shadowBlur = 0;
 }
 
-
-// =======================================================
-// --- 9. GAME STATS COUNTER ---
-// =======================================================
 function updateGameStats(historyArr) {
     const playerWinsEl = document.getElementById('playerWins');
     const bankerWinsEl = document.getElementById('bankerWins');
     const tieWinsEl = document.getElementById('tieWins');
-
     if (!playerWinsEl || !bankerWinsEl || !tieWinsEl) return;
-
-    let pCount = 0;
-    let bCount = 0;
-    let tCount = 0;
-
+    let pCount = 0, bCount = 0, tCount = 0;
     historyArr.forEach(result => {
         if (result === 'P') pCount++;
         else if (result === 'B') bCount++;
         else if (result === 'T') tCount++;
     });
-
     playerWinsEl.innerText = pCount;
     bankerWinsEl.innerText = bCount;
     tieWinsEl.innerText = tCount;
