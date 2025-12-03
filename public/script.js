@@ -1,4 +1,4 @@
-// --- START OF FULLY UPDATED script.js (v4.4 - UI Bug Fix & Refactor) ---
+// --- START OF FULLY UPDATED script.js (v4.5 - Final UI Fix) ---
 
 let currentTableId = null;
 let history = [];
@@ -311,9 +311,10 @@ function displayScorePredictions(predictedWinner) {
     const finalHighestPlayerProb = Math.max(...playerProbs.map(p => p.prob));
     const finalHighestBankerProb = Math.max(...bankerProbs.map(p => p.prob));
     
-    // Bỏ thẻ div bọc không cần thiết
-    let playerHtml = `<div class="score-analysis-title" style="color:#00f3ff;">PHÂN TÍCH ĐIỂM PLAYER</div>
-                      <div class="score-probability-list">`;
+    // START: SỬA LỖI GIAO DIỆN
+    let playerHtml = `<div class="side-content-wrapper">
+                        <div class="score-analysis-title" style="color:#00f3ff;">PHÂN TÍCH ĐIỂM PLAYER</div>
+                        <div class="score-probability-list">`;
     playerProbs.forEach(item => {
         const isHighest = item.prob === finalHighestPlayerProb;
         playerHtml += `<div class="prob-item ${isHighest ? 'highest-p' : ''}">
@@ -321,10 +322,11 @@ function displayScorePredictions(predictedWinner) {
                 <span style="font-weight:bold;">${item.prob}%</span>
             </div>`;
     });
-    playerHtml += `</div>`;
+    playerHtml += `</div></div>`; // Đóng .score-probability-list và .side-content-wrapper
     
-    let bankerHtml = `<div class="score-analysis-title" style="color:#ff003c;">PHÂN TÍCH ĐIỂM BANKER</div>
-                      <div class="score-probability-list">`;
+    let bankerHtml = `<div class="side-content-wrapper">
+                        <div class="score-analysis-title" style="color:#ff003c;">PHÂN TÍCH ĐIỂM BANKER</div>
+                        <div class="score-probability-list">`;
     bankerProbs.forEach(item => {
         const isHighest = item.prob === finalHighestBankerProb;
         bankerHtml += `<div class="prob-item ${isHighest ? 'highest-b' : ''}">
@@ -332,7 +334,8 @@ function displayScorePredictions(predictedWinner) {
                 <span style="font-weight:bold;">${item.prob}%</span>
             </div>`;
     });
-    bankerHtml += `</div>`;
+    bankerHtml += `</div></div>`; // Đóng .score-probability-list và .side-content-wrapper
+    // END: SỬA LỖI GIAO DIỆN
     
     playerContainer.innerHTML = '';
     bankerContainer.innerHTML = '';
@@ -396,7 +399,7 @@ function generateMatrixCode() {
 
 function startFakeTransactions() {
     const box = document.getElementById('transLog'); if(!box) return;
-    const names = ["User99", "HackerVN", "ProPlayer", "Bot_AI", "Winner88", "Master_B", "Dragon_X"];
+    const names = ["User99", "HackerVN","daica88","ongnoimay","hhhooo","ProPlayer", "Bot_AI", "Winner88", "Master_B", "Dragon_X"];
     setInterval(() => {
         const n = names[Math.floor(Math.random()*names.length)];
         const side = Math.random()>0.5 ? "PLAYER" : "BANKER";
