@@ -1,5 +1,3 @@
-/* --- START OF FILE script.js (VERSION 4.0 - DYNAMIC FAKE HISTORY) --- */
-
 let currentTableId = null;
 let history = [];
 let isProcessing = false;
@@ -81,6 +79,14 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     // Chạy hàm khởi tạo
     await initializeTool();
+    
+    // Thêm trình xử lý cho nút quay lại sảnh
+    const returnBtn = document.getElementById('returnToLobbyBtn');
+    if (returnBtn) {
+        returnBtn.onclick = () => {
+            window.location.href = 'index.html';
+        };
+    }
 });
 
 
@@ -126,7 +132,27 @@ socket.on('server_update', (allTables) => {
     
     if (tableData) {
         const serverRes = (tableData.result || "").split('');
-        if (serverRes.length > history.length || history.length === 0) {
+        
+        // --- LOGIC MỚI: PHÁT HIỆN BÀN ĐÃ RESET ---
+        const newLength = serverRes.length;
+        const oldLength = history.length;
+
+        // Điều kiện reset: Bàn đã có nhiều hơn 10 ván và đột ngột số ván mới nhỏ hơn 5
+        if (oldLength > 10 && newLength < 5) {
+            console.warn(`PHÁT HIỆN RESET BÀN! Ván cũ: ${oldLength}, Ván mới: ${newLength}`);
+            const modal = document.getElementById('resetModalOverlay');
+            if (modal) {
+                modal.style.display = 'flex';
+            }
+            // Dừng trừ token khi popup hiện ra
+            if (tokenInterval) {
+                clearInterval(tokenInterval);
+            }
+            return; // Dừng xử lý cập nhật bàn
+        }
+        // --- KẾT THÚC LOGIC MỚI ---
+
+        if (newLength > oldLength || oldLength === 0) {
             
             if (lastPrediction && history.length > 0) {
                 const newResult = serverRes[serverRes.length - 1];
@@ -450,8 +476,7 @@ function renderBigRoadGrid(rawHistory) {
 function renderBeadPlate(res) {
     const grid = document.getElementById('beadPlateGrid');
     if(!grid) return;
-    // THAY ĐỔI: Chuyển tổng số ô từ 25 thành 36
-    const totalCells = 36;
+    const totalCells = 36; // Cập nhật thành 6x6 = 36
     let displayData = [];
     if (res.length > totalCells) {
         displayData = res.slice(res.length - totalCells, res.length);
