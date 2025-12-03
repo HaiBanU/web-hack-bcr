@@ -1,4 +1,4 @@
-// --- START OF FULLY UPDATED script.js (v4.1 - Vietnamese Translation) ---
+// --- START OF FULLY UPDATED script.js (v4.3 - Prediction Consistency Fix) ---
 
 let currentTableId = null;
 let history = [];
@@ -220,7 +220,7 @@ function generateScoreProbabilities(side, predictedWinner, scenario) {
     let baseProbs = [7, 7, 8, 8, 9, 9, 10, 10, 9, 8]; 
 
     switch(scenario.type) {
-        case 'HIGH_VS_LOW': // Kịch bản: Áp đảo
+        case 'HIGH_VS_LOW': 
             if (side === predictedWinner) {
                 baseProbs[7] *= 1.6; baseProbs[8] *= 2.2; baseProbs[9] *= 2.0;
             } else {
@@ -228,7 +228,7 @@ function generateScoreProbabilities(side, predictedWinner, scenario) {
                 baseProbs[8] *= 0.5; baseProbs[9] *= 0.4;
             }
             break;
-        case 'CLOSE_GAME': // Kịch bản: Sít sao
+        case 'CLOSE_GAME': 
             baseProbs[4] *= 1.5; baseProbs[5] *= 1.8; baseProbs[6] *= 2.0; baseProbs[7] *= 1.8;
             if (side === predictedWinner) {
                 baseProbs[6] *= 1.2; baseProbs[7] *= 1.2;
@@ -236,7 +236,7 @@ function generateScoreProbabilities(side, predictedWinner, scenario) {
                 baseProbs[4] *= 1.1; baseProbs[5] *= 1.1;
             }
             break;
-        case 'LOW_WIN': // Kịch bản: Thắng sát nút (điểm thấp)
+        case 'LOW_WIN': 
             baseProbs[0] *= 1.5; baseProbs[1] *= 1.8; baseProbs[2] *= 2.0;
             baseProbs[3] *= 1.8; baseProbs[4] *= 1.5;
             if (side === predictedWinner) {
@@ -285,34 +285,60 @@ function displayScorePredictions(predictedWinner) {
     else if (rand < 0.85) { scenario = { type: 'CLOSE_GAME' }; } 
     else { scenario = { type: 'LOW_WIN' }; }
 
-    const playerProbs = generateScoreProbabilities('P', predictedWinner, scenario);
-    const bankerProbs = generateScoreProbabilities('B', predictedWinner, scenario);
+    let playerProbs = generateScoreProbabilities('P', predictedWinner, scenario);
+    let bankerProbs = generateScoreProbabilities('B', predictedWinner, scenario);
+    
+    // --- START: LOGIC SỬA LỖI MÂU THUẪN DỰ ĐOÁN ---
+    const getHighestProbItem = (probs) => probs.reduce((max, item) => item.prob > max.prob ? item : max, probs[0]);
+    
+    let highestPlayerItem = getHighestProbItem(playerProbs);
+    let highestBankerItem = getHighestProbItem(bankerProbs);
+
+    if (highestPlayerItem.score === highestBankerItem.score) {
+        let probsToAdjust = (predictedWinner === 'P') ? bankerProbs : playerProbs;
+        
+        const sortedProbs = [...probsToAdjust].sort((a, b) => b.prob - a.prob);
+        const secondHighestItem = sortedProbs[1];
+        
+        const originalHighest = probsToAdjust.find(p => p.score === highestPlayerItem.score);
+        const originalSecondHighest = probsToAdjust.find(p => p.score === secondHighestItem.score);
+
+        if (originalHighest && originalSecondHighest) {
+            [originalHighest.prob, originalSecondHighest.prob] = [originalSecondHighest.prob, originalHighest.prob];
+        }
+    }
+    // --- END: LOGIC SỬA LỖI ---
     
     const playerContainer = document.querySelector('.p-side');
     const bankerContainer = document.querySelector('.b-side');
     
-    const highestPlayerProb = Math.max(...playerProbs.map(p => p.prob));
-    const highestBankerProb = Math.max(...bankerProbs.map(p => p.prob));
+    // Lấy lại giá trị cao nhất sau khi có thể đã điều chỉnh
+    const finalHighestPlayerProb = Math.max(...playerProbs.map(p => p.prob));
+    const finalHighestBankerProb = Math.max(...bankerProbs.map(p => p.prob));
     
-    let playerHtml = `<div class="score-analysis-title" style="color:#00f3ff;">PHÂN TÍCH ĐIỂM PLAYER</div><div class="score-probability-list">`;
+    let playerHtml = `<div class="side-container-inner">
+                        <div class="score-analysis-title" style="color:#00f3ff;">PHÂN TÍCH ĐIỂM PLAYER</div>
+                        <div class="score-probability-list">`;
     playerProbs.forEach(item => {
-        const isHighest = item.prob === highestPlayerProb;
+        const isHighest = item.prob === finalHighestPlayerProb;
         playerHtml += `<div class="prob-item ${isHighest ? 'highest-p' : ''}">
                 <span>ĐIỂM ${item.score}</span>
                 <span style="font-weight:bold;">${item.prob}%</span>
             </div>`;
     });
-    playerHtml += `</div>`;
+    playerHtml += `</div></div>`;
     
-    let bankerHtml = `<div class="score-analysis-title" style="color:#ff003c;">PHÂN TÍCH ĐIỂM BANKER</div><div class="score-probability-list">`;
+    let bankerHtml = `<div class="side-container-inner">
+                        <div class="score-analysis-title" style="color:#ff003c;">PHÂN TÍCH ĐIỂM BANKER</div>
+                        <div class="score-probability-list">`;
     bankerProbs.forEach(item => {
-        const isHighest = item.prob === highestBankerProb;
+        const isHighest = item.prob === finalHighestBankerProb;
         bankerHtml += `<div class="prob-item ${isHighest ? 'highest-b' : ''}">
                 <span>ĐIỂM ${item.score}</span>
                 <span style="font-weight:bold;">${item.prob}%</span>
             </div>`;
     });
-    bankerHtml += `</div>`;
+    bankerHtml += `</div></div>`;
     
     playerContainer.innerHTML = '';
     bankerContainer.innerHTML = '';

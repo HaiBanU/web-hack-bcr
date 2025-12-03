@@ -111,14 +111,13 @@
     position: relative;
     z-index: 1; 
     border-radius: 12px;
-    overflow: hidden; 
     padding: 3px; 
     transition: transform 0.3s, box-shadow 0.3s;
     background: transparent; 
     border: none; 
     box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-    display: flex; /* Thêm flex để nội dung bên trong được căn chỉnh */
-    flex-direction: column; /* Sắp xếp theo chiều dọc */
+    display: flex;
+    flex-direction: column;
 }
 
 .side-container::before {
@@ -140,6 +139,18 @@
 }
 
 @keyframes rotateRGB { 100% { transform: rotate(360deg); } }
+
+/* --- SỬA LỖI TRÀN GÓC --- */
+.side-container-inner {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    border-radius: 10px; /* Phải khớp với border-radius của .side-container::after */
+    overflow: hidden; /* Đây là dòng quan trọng nhất để sửa lỗi */
+}
 
 /* --- HIỆU ỨNG KHI THẮNG (WINNER) --- */
 .side-container.winner-p {
@@ -172,7 +183,7 @@
 }
 
 .score-probability-list {
-    width: 90%;
+    width: 100%; /* Sửa thành 100% để full width */
     margin: 0 auto;
     display: flex;
     flex-direction: column;
@@ -180,6 +191,8 @@
     font-family: 'Share Tech Mono', monospace;
     flex-grow: 1; /* Lấp đầy không gian còn lại */
     padding-bottom: 10px;
+    padding-left: 15px; /* Thêm padding để nội dung không sát lề */
+    padding-right: 15px;
 }
 
 .prob-item {
