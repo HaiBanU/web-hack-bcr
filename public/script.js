@@ -450,7 +450,8 @@ function renderBigRoadGrid(rawHistory) {
 function renderBeadPlate(res) {
     const grid = document.getElementById('beadPlateGrid');
     if(!grid) return;
-    const totalCells = 25;
+    // THAY ĐỔI: Chuyển tổng số ô từ 25 thành 36
+    const totalCells = 36;
     let displayData = [];
     if (res.length > totalCells) {
         displayData = res.slice(res.length - totalCells, res.length);

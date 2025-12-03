@@ -100,13 +100,13 @@
     .pred-label { font-size: 0.6rem !important; }
     .gauge-text { font-size: 0.9rem !important; }
 
-    /* Matrix & Footer Items */
-    #matrixCode { height: 100px !important; flex: none !important; }
+     #matrixCode { height: 100px !important; flex: none !important; }
     .footer-panel { border: 1px solid #333; background: #050505; }
     
     .bead-grid {
-        grid-template-rows: repeat(5, 1fr) !important;
-        grid-template-columns: repeat(5, 1fr) !important;
+        /* THAY ĐỔI: Chuyển từ repeat(5, 1fr) thành repeat(6, 1fr) */
+        grid-template-rows: repeat(6, 1fr) !important;
+        grid-template-columns: repeat(6, 1fr) !important;
         grid-auto-flow: column !important;
     }
     

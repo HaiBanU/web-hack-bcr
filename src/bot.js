@@ -1,58 +1,53 @@
+// --- START OF FILE bot.js (V6 - XỬ LÝ RESET BÀN CƯỢC) ---
+
 const puppeteer = require('puppeteer');
 const axios = require('axios');
 
 // =========================================================
 // CẤU HÌNH HỆ THỐNG
 // =========================================================
-
-// 1. Cổng Debug của Chrome trên máy tính/VPS (Giữ nguyên)
 const CHROME_DEBUG_URL = 'http://127.0.0.1:9222';
-
-// 2. Đường dẫn Server trên Render (Đã cập nhật theo ảnh bạn gửi)
 const REMOTE_SERVER_API = 'https://hack-bcr-vip.onrender.com/api/update';
+//const REMOTE_SERVER_API = 'http://localhost:3000/api/update'; // Dùng khi test localhost
+// BỘ NHỚ LƯU TRỮ TRẠNG THÁI CỦA CÁC BÀN
+const lastKnownState = new Map();
 
 // =========================================================
-// LOGIC BOT (KHÔNG CẦN SỬA GÌ DƯỚI NÀY)
+// HÀM TIỆN ÍCH
 // =========================================================
+function generatePlausibleHistory(p, b, t) {
+    const historyArray = [];
+    for (let i = 0; i < p; i++) historyArray.push('P');
+    for (let i = 0; i < b; i++) historyArray.push('B');
+    for (let i = 0; i < t; i++) historyArray.push('T');
 
+    for (let i = historyArray.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [historyArray[i], historyArray[j]] = [historyArray[j], historyArray[i]];
+    }
+    return historyArray.join('');
+}
+
+// =========================================================
+// LOGIC BOT CHÍNH
+// =========================================================
 (async () => {
     try {
         console.clear();
         console.log('╔═══════════════════════════════════════════════╗');
-        console.log('║        BOT SNIFFER - SYSTEM V3 (HYBRID)       ║');
+        console.log('║ BOT SNIFFER V6 - NEW SHOE DETECTION ENGINE    ║');
         console.log('╚═══════════════════════════════════════════════╝');
         console.log('1. Đang kết nối vào Chrome Debug...');
         
-        // Kết nối vào Chrome đang mở
-        const browser = await puppeteer.connect({
-            browserURL: CHROME_DEBUG_URL,
-            defaultViewport: null
-        });
-
+        const browser = await puppeteer.connect({ browserURL: CHROME_DEBUG_URL, defaultViewport: null });
         console.log('>>> KẾT NỐI CHROME THÀNH CÔNG! <<<');
 
-        // Lấy danh sách tất cả các tab đang mở
         const pages = await browser.pages();
-        console.log(`DEBUG: Tìm thấy ${pages.length} tab đang mở.`);
+        if (pages.length === 0) throw new Error('Không tìm thấy Tab nào!');
 
-        if (pages.length === 0) {
-            console.error('❌ LỖI: Không tìm thấy Tab nào!');
-            console.error('👉 Nguyên nhân: Chrome bị treo hoặc bạn chưa mở trang web.');
-            return; 
-        }
-
-        // Tìm tab Game theo từ khóa (hack, sexy, lobby, casino...)
-        // Ưu tiên tìm tab có chữ "sexy" hoặc "casino"
-        let page = pages.find(p => 
-            p.url().toLowerCase().includes('sexy') || 
-            p.url().toLowerCase().includes('casino') || 
-            p.url().toLowerCase().includes('lobby') ||
-            p.url().toLowerCase().includes('baccarat')
-        );
-
-        // Nếu không tìm thấy tab đúng tên, lấy tạm tab đầu tiên
+        let page = pages.find(p => p.url().toLowerCase().includes('hackbcr99'));
         if (!page) {
-            console.log('⚠️ Không tìm thấy tab Game chuẩn, lấy tạm Tab đầu tiên đang mở...');
+            console.log('⚠️ Không tìm thấy tab hackbcr99, lấy tạm Tab đầu tiên...');
             page = pages[0];
         }
 
@@ -60,61 +55,92 @@ const REMOTE_SERVER_API = 'https://hack-bcr-vip.onrender.com/api/update';
         console.log(`📡 Đích đến Server: ${REMOTE_SERVER_API}`);
         console.log('--- ĐANG CHỜ GÓI TIN TỪ NHÀ CÁI ---');
 
-        // --- PHẦN LẮNG NGHE MẠNG (NETWORK SNIFFING) ---
-        await page.setRequestInterception(false); // Đảm bảo không chặn request
+        await page.setRequestInterception(false);
 
         page.on('response', async (response) => {
-            const url = response.url();
-            const method = response.request().method();
-            
-            // Chỉ bắt các gói tin GET/POST chứa từ khóa quan trọng
-            // (Thường là getnewresult, update, hoặc các api trả về JSON của nhà cái)
-            if ((url.includes('getnewresult') || url.includes('GetTableList')) && method !== 'OPTIONS') {
+            if (response.url().includes('tables?web=a') && response.headers()['content-type']?.includes('application/json')) {
                 try {
-                    const contentType = response.headers()['content-type'];
-                    
-                    // Chỉ xử lý nếu là JSON
-                    if (contentType && contentType.includes('application/json')) {
-                        const json = await response.json();
+                    const jsonResponse = await response.json();
+                    const tablesFromAPI = jsonResponse.data;
 
-                        // Kiểm tra cấu trúc data (tùy nhà cái mà json.data hoặc json.message)
-                        if (json) {
-                            const time = new Date().toLocaleTimeString();
-                            
-                            // Gửi dữ liệu lên Render
-                            console.log(`[${time}] ⚡ Bắt được dữ liệu! Đang bắn lên Render...`);
-                            
-                            // Gửi request POST lên Server Render
-                            await axios.post(REMOTE_SERVER_API, { data: json.data || json })
-                                .then(() => {
-                                    console.log(`   ---> ✅ Gửi thành công!`);
-                                })
-                                .catch((err) => {
-                                    console.error(`   ---> ❌ Lỗi gửi Render: ${err.message}`);
-                                    if(err.response) console.error(`       Status: ${err.response.status}`);
-                                });
+                    if (Array.isArray(tablesFromAPI) && tablesFromAPI.length > 0) {
+                        const transformedData = [];
+
+                        for (const currentTable of tablesFromAPI) {
+                            const tableId = currentTable.id;
+                            const previousState = lastKnownState.get(tableId);
+                            let newHistory = '';
+
+                            if (previousState) {
+                                // Bàn đã tồn tại trong bộ nhớ, tiến hành so sánh
+                                const previousTotal = previousState.player + previousState.banker + previousState.tie;
+                                const currentTotal = currentTable.player + currentTable.banker + currentTable.tie;
+
+                                // *** LOGIC PHÁT HIỆN RESET BÀN MỚI ***
+                                // Điều kiện: Tổng số ván hiện tại nhỏ hơn tổng số ván cũ VÀ nhỏ hơn 10 (để chắc chắn là ván mới)
+                                if (currentTotal < previousTotal && currentTotal < 10) {
+                                    // -- KỊCH BẢN 1: BÀN ĐÃ RESET --
+                                    console.log(`[RESET] Bàn ${tableId} đã bắt đầu ván mới! Đang reset lịch sử...`);
+                                    newHistory = generatePlausibleHistory(
+                                        currentTable.player,
+                                        currentTable.banker,
+                                        currentTable.tie
+                                    );
+                                } else {
+                                    // -- KỊCH BẢN 2: BÀN CẬP NHẬT KẾT QUẢ MỚI (BÌNH THƯỜNG) --
+                                    let lastResult = '';
+                                    if (currentTable.player > previousState.player) lastResult = 'P';
+                                    else if (currentTable.banker > previousState.banker) lastResult = 'B';
+                                    else if (currentTable.tie > previousState.tie) lastResult = 'T';
+                                    newHistory = previousState.history + lastResult;
+                                }
+
+                            } else {
+                                // -- KỊCH BẢN 3: PHÁT HIỆN BÀN LẦN ĐẦU TIÊN --
+                                console.log(`[INIT] Phát hiện bàn mới ${tableId}. Đang tạo lịch sử giả lập...`);
+                                newHistory = generatePlausibleHistory(
+                                    currentTable.player,
+                                    currentTable.banker,
+                                    currentTable.tie
+                                );
+                            }
+
+                            // Cập nhật lại bộ nhớ với trạng thái mới nhất
+                            lastKnownState.set(tableId, {
+                                player: currentTable.player,
+                                banker: currentTable.banker,
+                                tie: currentTable.tie,
+                                history: newHistory
+                            });
+
+                            // Chuyển đổi cấu trúc để gửi đi
+                            transformedData.push({
+                                table_id: tableId,
+                                table_name: `BÀN ${tableId}`,
+                                result: newHistory,
+                                status: 1
+                            });
                         }
+
+                        const time = new Date().toLocaleTimeString();
+                        console.log(`[${time}] ⚡ Xử lý thành công ${transformedData.length} bàn. Đang gửi lên server...`);
+                        
+                        await axios.post(REMOTE_SERVER_API, { data: transformedData })
+                            .then(() => console.log(`   ---> ✅ Gửi thành công!`))
+                            .catch((err) => console.error(`   ---> ❌ Lỗi khi gửi: ${err.message}`));
                     }
-                } catch (e) {
-                    // Bỏ qua lỗi parse JSON không quan trọng
-                }
+                } catch (e) { /* Bỏ qua lỗi */ }
             }
         });
 
-        // Giữ kết nối khi Chrome bị tắt đột ngột
         browser.on('disconnected', () => {
-            console.log('❌ Mất kết nối với Chrome! Vui lòng chạy lại bot.');
+            console.log('❌ Mất kết nối với Chrome!');
             process.exit();
         });
 
     } catch (err) {
         console.error('❌ LỖI KẾT NỐI:', err.message);
         console.log('------------------------------------------------');
-        console.log('HƯỚNG DẪN CHẠY LẠI:');
-        console.log('1. Tắt hết Chrome.');
-        console.log('2. Chạy lệnh mở Chrome Debug:');
-        console.log('   "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" --remote-debugging-port=9222 --user-data-dir="C:\\ChromeProfile"');
-        console.log('3. Vào web game.');
-        console.log('4. Chạy lại: node src/bot.js');
+        console.log('HƯỚNG DẪN: Chạy lại Chrome và khởi động lại bot.');
     }
 })();
