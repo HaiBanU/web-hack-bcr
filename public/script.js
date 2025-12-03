@@ -1,3 +1,5 @@
+// --- START OF UPDATED script.js ---
+
 let currentTableId = null;
 let history = [];
 let isProcessing = false;
@@ -72,7 +74,6 @@ window.addEventListener('DOMContentLoaded', async () => {
         deductToken('entry');
         startPeriodicDeduction();
         setInterval(generateMatrixCode, 100); 
-        resetCardsUI();      
         startWaveChartLoop(); // Bây giờ, hàm này sẽ vẽ đồ thị với dữ liệu giả đã được tạo
         startFakeTransactions();
     }
@@ -186,7 +187,6 @@ socket.on('server_update', (allTables) => {
 // =======================================================
 function runPredictionSystem(historyArr) {
     isProcessing = true;
-    resetCardsUI();
     
     const ui = {
         advice: document.getElementById('aiAdvice'),
@@ -298,84 +298,103 @@ function runPredictionSystem(historyArr) {
         
         lastPrediction = { side: prediction };
         
-        simulateHandReveal(prediction);
+        displayScorePredictions(prediction);
     }, 1500);
 }
 
 
-// --- 5. CARD SIMULATION ---
-function getCardValue(card) { if (card.raw >= 10) return 0; return card.raw; }
-function calculateHandScore(hand) { return hand.reduce((sum, card) => sum + getCardValue(card), 0) % 10; }
-function generateFakeHand(targetWinner) {
-    let attempts = 0;
-    while(attempts < 5000) {
-        attempts++;
-        let pHand = [getCard(), getCard()];
-        let bHand = [getCard(), getCard()];
-        let pScore = calculateHandScore(pHand);
-        let bScore = calculateHandScore(bHand);
-        let isNatural = (pScore >= 8 || bScore >= 8);
-        if (!isNatural) {
-            let p3 = null;
-            if (pScore <= 5) { p3 = getCard(); pHand.push(p3); pScore = calculateHandScore(pHand); }
-            let bDraws = false;
-            if (pHand.length === 2) { if (bScore <= 5) bDraws = true; } 
-            else {
-                let p3Val = getCardValue(p3);
-                if (bScore <= 2) bDraws = true;
-                else if (bScore === 3 && p3Val !== 8) bDraws = true;
-                else if (bScore === 4 && [2,3,4,5,6,7].includes(p3Val)) bDraws = true;
-                else if (bScore === 5 && [4,5,6,7].includes(p3Val)) bDraws = true;
-                else if (bScore === 6 && [6,7].includes(p3Val)) bDraws = true;
-            }
-            if (bDraws) { bHand.push(getCard()); bScore = calculateHandScore(bHand); }
-        }
-        let actualResult = 'T';
-        if (pScore > bScore) actualResult = 'P'; else if (bScore > pScore) actualResult = 'B';
-        if (actualResult === targetWinner || targetWinner === 'T') return { p: pHand, b: bHand, pScore, bScore };
+// --- 5. SCORE PREDICTION SIMULATION (NEW) ---
+function generateScoreProbabilities(side, predictedWinner) {
+    // side: 'P' hoặc 'B' - là bên đang được tính.
+    // predictedWinner: là kết quả dự đoán chung của ván.
+    let baseProbs = [6.5, 7.0, 8.5, 9.5, 11.5, 12.5, 12.0, 11.0, 10.5, 10.0]; // Phân bổ xác suất cơ bản
+
+    // Điều chỉnh xác suất dựa trên dự đoán
+    if (side === predictedWinner) {
+        // Nếu bên này được dự đoán thắng, tăng mạnh tỷ lệ ra điểm 8, 9
+        baseProbs[8] *= 3.0;
+        baseProbs[9] *= 2.8;
+        baseProbs[7] *= 1.5;
+    } else {
+        // Nếu được dự đoán thua, tăng tỷ lệ ra điểm thấp và giảm điểm cao
+        baseProbs[0] *= 2.0;
+        baseProbs[1] *= 1.8;
+        baseProbs[2] *= 1.6;
+        baseProbs[8] *= 0.4;
+        baseProbs[9] *= 0.3;
     }
-    return { p:[getCard(), getCard()], b:[getCard(), getCard()], pScore:0, bScore:0 };
+
+    // Thêm một chút nhiễu ngẫu nhiên để các con số không bị lặp lại
+    baseProbs = baseProbs.map(p => Math.max(0, p + (Math.random() - 0.5) * 2));
+    
+    // Chuẩn hóa tổng xác suất về 100%
+    const total = baseProbs.reduce((a, b) => a + b, 0);
+    let probabilities = baseProbs.map(p => Math.round((p / total) * 100));
+    
+    // Đảm bảo tổng chính xác là 100 bằng cách điều chỉnh phần tử lớn nhất
+    let currentSum = probabilities.reduce((a, b) => a + b, 0);
+    if (currentSum !== 100) {
+        let diff = 100 - currentSum;
+        let maxIndex = probabilities.indexOf(Math.max(...probabilities));
+        probabilities[maxIndex] += diff;
+    }
+
+    return probabilities.map((prob, score) => ({ score, prob }));
 }
-function simulateHandReveal(target) {
-    const hand = generateFakeHand(target);
-    document.querySelector('.p-side').classList.remove('winner-p','winner-b');
-    document.querySelector('.b-side').classList.remove('winner-p','winner-b');
-    setTimeout(() => revealCard('p1', hand.p[0]), 500);
-    setTimeout(() => revealCard('b1', hand.b[0]), 1000);
-    setTimeout(() => revealCard('p2', hand.p[1]), 1500);
-    setTimeout(() => revealCard('b2', hand.b[1]), 2000);
-    setTimeout(() => {
-        if(hand.p[2]) revealCard('p3', hand.p[2]); else document.getElementById('p3').style.opacity = '0.3';
-        if(hand.b[2]) revealCard('b3', hand.b[2]); else document.getElementById('b3').style.opacity = '0.3';
-        document.getElementById('playerScore').innerText = hand.pScore;
-        document.getElementById('bankerScore').innerText = hand.bScore;
-        if(hand.pScore > hand.bScore) document.querySelector('.p-side').classList.add('winner-p');
-        else if(hand.bScore > hand.pScore) document.querySelector('.b-side').classList.add('winner-b');
-        isProcessing = false;
-    }, 3000);
-}
-function revealCard(id, card) {
-    const slot = document.getElementById(id); slot.style.opacity = '1';
-    const front = slot.querySelector('.card-front');
-    let val = card.raw; if(val===1) val='A'; else if(val===11) val='J'; else if(val===12) val='Q'; else if(val===13) val='K';
-    let suit = (card.suit==='hearts'?'♥':(card.suit==='diamonds'?'♦':(card.suit==='clubs'?'♣':'♠')));
-    let color = (card.suit==='hearts' || card.suit==='diamonds') ? '#ff003c' : '#000';
-    front.innerHTML = `<div style="color:${color}">${val}</div><div style="font-size:1.5rem; color:${color}">${suit}</div>`;
-    slot.classList.add('flipped');
-}
-function resetCardsUI() {
-    document.getElementById('playerScore').innerText = "?"; document.getElementById('bankerScore').innerText = "?";
-    document.querySelector('.p-side').classList.remove('winner-p','winner-b');
-    document.querySelector('.b-side').classList.remove('winner-p','winner-b');
-    ['p1','p2','p3','b1','b2','b3'].forEach(id => {
-        const el = document.getElementById(id); el.className = "card-slot"; el.style.opacity = '1';
-        el.innerHTML = `<div class="card-back"></div><div class="card-front"></div>`;
+
+function displayScorePredictions(predictedWinner) {
+    const playerContainer = document.querySelector('.p-side');
+    const bankerContainer = document.querySelector('.b-side');
+
+    // Tạo dữ liệu xác suất "thiên vị" theo dự đoán
+    const playerProbs = generateScoreProbabilities('P', predictedWinner);
+    const bankerProbs = generateScoreProbabilities('B', predictedWinner);
+    
+    // Tìm ra điểm có % cao nhất của mỗi bên
+    const highestPlayerProb = Math.max(...playerProbs.map(p => p.prob));
+    const highestBankerProb = Math.max(...bankerProbs.map(p => p.prob));
+    
+    // Xây dựng chuỗi HTML cho bảng phân tích của PLAYER
+    let playerHtml = `<div class="score-analysis-title" style="color:#00f3ff;">PLAYER SCORE ANALYSIS</div><div class="score-probability-list">`;
+    playerProbs.forEach(item => {
+        const isHighest = item.prob === highestPlayerProb;
+        playerHtml += `<div class="prob-item ${isHighest ? 'highest-p' : ''}">
+                <span>SCORE ${item.score}</span>
+                <span style="font-weight:bold;">${item.prob}%</span>
+            </div>`;
     });
+    playerHtml += `</div>`;
+    
+    // Xây dựng chuỗi HTML cho bảng phân tích của BANKER
+    let bankerHtml = `<div class="score-analysis-title" style="color:#ff003c;">BANKER SCORE ANALYSIS</div><div class="score-probability-list">`;
+    bankerProbs.forEach(item => {
+        const isHighest = item.prob === highestBankerProb;
+        bankerHtml += `<div class="prob-item ${isHighest ? 'highest-b' : ''}">
+                <span>SCORE ${item.score}</span>
+                <span style="font-weight:bold;">${item.prob}%</span>
+            </div>`;
+    });
+    bankerHtml += `</div>`;
+    
+    // Xóa nội dung cũ và hiển thị nội dung mới với hiệu ứng
+    playerContainer.innerHTML = '';
+    bankerContainer.innerHTML = '';
+    playerContainer.classList.remove('winner-p', 'winner-b');
+    bankerContainer.classList.remove('winner-p', 'winner-b');
+
+    setTimeout(() => {
+        playerContainer.innerHTML = playerHtml;
+        // Thêm hiệu ứng winner nếu bên này được dự đoán thắng
+        if (predictedWinner === 'P') playerContainer.classList.add('winner-p');
+    }, 500);
+    
+    setTimeout(() => {
+        bankerContainer.innerHTML = bankerHtml;
+        if (predictedWinner === 'B') bankerContainer.classList.add('winner-b');
+        isProcessing = false; // Mở khóa xử lý cho vòng tiếp theo
+    }, 1000);
 }
-function getCard() {
-    const raw = Math.floor(Math.random()*13)+1;
-    return { raw, value: raw>=10?0:raw, suit: ['spades','hearts','clubs','diamonds'][Math.floor(Math.random()*4)] };
-}
+
 
 // --- 6. VISUAL HELPERS ---
 function addLog(msg) {
