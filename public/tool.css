@@ -109,37 +109,37 @@
 .side-container {
     width: 45%;
     position: relative;
+    z-index: 1; 
     border-radius: 12px;
-    padding: 3px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+    overflow: hidden; 
+    padding: 3px; 
     transition: transform 0.3s, box-shadow 0.3s;
-    overflow: hidden; /* QUAN TRỌNG: Giữ lại để cắt góc */
+    background: transparent; 
+    border: none; 
+    box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+    display: flex; /* Thêm flex để nội dung bên trong được căn chỉnh */
+    flex-direction: column; /* Sắp xếp theo chiều dọc */
 }
 
 .side-container::before {
     content: '';
     position: absolute;
-    top: -50%; left: -50%;
-    width: 200%; height: 200%;
+    top: -50%; left: -50%; width: 200%; height: 200%;
     background: conic-gradient(#ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3, #ff0000);
-    animation: rotateRGB 3s linear infinite;
-    z-index: 0;
+    animation: rotateRGB 3s linear infinite; 
+    z-index: -2;
 }
 
-.side-content-wrapper {
-    background: #0a0a0a;
+.side-container::after {
+    content: '';
     position: absolute;
-    inset: 3px; /* Tạo khoảng cách 3px cho viền */
-    z-index: 1;
-    width: calc(100% - 6px); /* Chiều rộng trừ đi 2 lần inset */
-    height: calc(100% - 6px); /* Chiều cao trừ đi 2 lần inset */
-    display: flex;
-    flex-direction: column;
-    border-radius: 10px;
+    inset: 3px; 
+    background: #0a0a0a; 
+    border-radius: 10px; 
+    z-index: -1;
 }
 
 @keyframes rotateRGB { 100% { transform: rotate(360deg); } }
-
 
 /* --- HIỆU ỨNG KHI THẮNG (WINNER) --- */
 .side-container.winner-p {
@@ -163,35 +163,33 @@
 /* --- CSS CHO BẢNG PHÂN TÍCH XÁC SUẤT --- */
 .score-analysis-title {
     font-family: 'Orbitron', sans-serif;
-    font-size: 1.0rem; 
-    padding-top: 10px;
+    font-size: 1.1rem;
+    padding-top: 10px; /* Dùng padding thay margin */
     padding-bottom: 15px;
     text-shadow: 0 0 5px currentColor;
     text-align: center;
-    flex-shrink: 0;
+    flex-shrink: 0; /* Không cho co lại */
 }
 
 .score-probability-list {
-    width: 100%;
+    width: 90%;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: 2px; 
+    gap: 4px; /* Tăng khoảng cách một chút */
     font-family: 'Share Tech Mono', monospace;
-    flex-grow: 1;
+    flex-grow: 1; /* Lấp đầy không gian còn lại */
     padding-bottom: 10px;
-    padding-left: 15px;
-    padding-right: 15px;
 }
 
 .prob-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 2px 8px; 
+    padding: 3px 8px;
     background: rgba(0, 0, 0, 0.4);
     border-radius: 2px;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     transition: all 0.3s;
     border-left: 3px solid transparent;
 }
