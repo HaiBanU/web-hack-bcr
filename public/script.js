@@ -1,4 +1,4 @@
-// --- START OF FULLY UPDATED script.js (v4.1 - Vietnamese Translation) ---
+// --- START OF FULLY UPDATED script.js (v4.2 - With Android Floating View Support) ---
 
 let currentTableId = null;
 let history = [];
@@ -212,6 +212,17 @@ function runPredictionSystem(historyArr) {
         addLog(`>> DỰ ĐOÁN: [ ${prediction} ] (TỶ LỆ: ${confidence}%)`);
         lastPrediction = { side: prediction };
         
+        // ================================================================
+        // [NEW CODE] GỬI DỮ LIỆU SANG APP ANDROID (FLOATING VIEW)
+        // ================================================================
+        if (window.AppInventor) {
+            var tenBan = document.getElementById('tableNameDisplay').innerText;
+            // Chuỗi gửi đi: "BÀN C01|P|97%"
+            var dataGuiDi = tenBan + "|" + prediction + "|" + confidence + "%";
+            window.AppInventor.setWebViewString(dataGuiDi);
+        }
+        // ================================================================
+
         displayScorePredictions(prediction);
     }, 1500);
 }
