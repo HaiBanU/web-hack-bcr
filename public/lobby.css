@@ -1,7 +1,9 @@
 /* =========================================
-   LOBBY.CSS - CYBERPUNK VIP STYLE (FULL)
+   LOBBY.CSS - FULL VERSION (V2.0)
+   Gold/Green/Red Tiers + VIP Effects
    ========================================= */
 
+/* --- LAYOUT CHUNG --- */
 .lobby-content { 
     position: relative; 
     z-index: 10; 
@@ -24,7 +26,7 @@
 #authSection { 
     width: 100%; 
     display: flex; 
-    justify-content: flex-end; /* Căn phải nút user */
+    justify-content: flex-end; 
     padding-right: 20px; 
     margin-bottom: 10px;
 }
@@ -119,15 +121,15 @@
 }
 @media screen and (max-width: 600px) { .tables-grid { grid-template-columns: 1fr; } }
 
-/* --- CARD BÀN VIP (CYBER STYLE) --- */
+/* --- CARD BÀN THƯỜNG (BASE) --- */
 .casino-card { 
-    background: #050505; /* Nền đen sâu */
+    background: #050505; 
     border: 1px solid #333; 
     position: relative; 
     height: 230px; 
     cursor: pointer;
     transition: all 0.3s ease;
-    /* Cắt góc kiểu công nghệ (Vát góc) */
+    /* Cắt góc kiểu công nghệ */
     clip-path: polygon(
         15px 0, 100% 0, 
         100% calc(100% - 15px), calc(100% - 15px) 100%, 
@@ -136,26 +138,68 @@
     box-shadow: 0 5px 15px rgba(0,0,0,0.5);
 }
 
-/* Hiệu ứng Hover: Sáng viền xanh */
 .casino-card:hover { 
     transform: translateY(-5px); 
-    border-color: var(--neon-green);
-    box-shadow: 0 0 20px rgba(0, 255, 65, 0.3); 
+    border-color: #666;
 }
 
-/* Trang trí góc thẻ bằng pseudo-elements */
-.casino-card::before {
-    content: ''; position: absolute; top: 0; left: 0; width: 20px; height: 20px;
-    border-top: 3px solid var(--neon-green); border-left: 3px solid var(--neon-green);
-}
-.casino-card::after {
-    content: ''; position: absolute; bottom: 0; right: 0; width: 20px; height: 20px;
-    border-bottom: 3px solid var(--neon-green); border-right: 3px solid var(--neon-green);
+/* --- CARD VIP (GOLD) - VIỀN LED CHẠY --- */
+.casino-card.card-vip {
+    /* Xóa border cũ để dùng border led */
+    border: none;
+    padding: 3px; 
+    background: transparent;
+    overflow: hidden;
+    position: relative;
+    /* Bỏ clip-path để viền chạy mượt hơn */
+    clip-path: none; 
+    border-radius: 6px;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.2); /* Glow vàng nhẹ */
 }
 
-/* HEADER CỦA CARD */
+/* Lớp LED chạy bên dưới */
+.casino-card.card-vip::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    /* Gradient vàng + trắng tạo hiệu ứng VIP */
+    background: conic-gradient(
+        transparent, 
+        transparent, 
+        transparent, 
+        #ffd700,
+        #fff
+    );
+    animation: rotateCardBorder 3s linear infinite;
+    z-index: 0;
+}
+
+/* Lớp nền che ở giữa để lộ viền */
+.casino-card.card-vip::after {
+    content: '';
+    position: absolute;
+    inset: 3px; /* Khớp với padding */
+    background: #050505;
+    border-radius: 4px;
+    z-index: 0;
+}
+
+/* Đảm bảo nội dung nổi lên trên nền giả */
+.casino-card.card-vip .cc-header,
+.casino-card.card-vip .cc-body {
+    position: relative;
+    z-index: 1;
+}
+
+@keyframes rotateCardBorder {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* --- NỘI DUNG CARD --- */
 .cc-header { 
-    background: linear-gradient(90deg, #0a200a, #000); 
+    background: linear-gradient(90deg, #111, #000); 
     border-bottom: 1px solid #222;
     padding: 0 20px; 
     display: flex; 
@@ -169,10 +213,9 @@
     color: #fff; 
     font-size: 1.1rem; 
     letter-spacing: 1px; 
-    text-shadow: 0 0 5px rgba(255,255,255,0.5);
+    text-shadow: 0 0 5px rgba(255,255,255,0.3);
 }
 
-/* BODY CỦA CARD */
 .cc-body { 
     display: flex; 
     height: calc(100% - 50px); 
@@ -182,14 +225,14 @@
 /* BẢNG CẦU (GRID AREA) */
 .cc-grid-area { 
     flex: 1; 
-    background: #fff; /* Nền trắng cho hạt cầu nổi */
+    background: #fff; 
     display: flex; 
     border-right: 2px solid #222;
     overflow: hidden; 
 } 
 .road-grid-wrapper { display: flex; height: 100%; width: 100%; }
 .road-col { 
-    width: 16.66%; /* Chia đều 6 cột */
+    width: 16.66%; 
     border-right: 1px solid #ccc; 
     display: flex; flex-direction: column; 
 }
@@ -201,21 +244,21 @@
 
 /* HẠT CẦU */
 .bead { 
-    width: 16px; height: 16px; 
+    width: 14px; height: 14px; 
     border-radius: 50%; 
     border: 3px solid; 
     position: relative; 
 }
-.bead.p { border-color: #007bff; } /* Player xanh dương */
-.bead.b { border-color: #dc3545; } /* Banker đỏ */
+.bead.p { border-color: #007bff; } 
+.bead.b { border-color: #dc3545; } 
 .bead.has-tie::after {
-    content: ''; position: absolute; width: 3px; height: 20px; background: #28a745; 
+    content: ''; position: absolute; width: 3px; height: 18px; background: #28a745; 
     top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg);
 }
 
 /* KHUNG DỰ ĐOÁN (BÊN PHẢI) */
 .cc-predict-area { 
-    width: 120px; 
+    width: 130px; 
     background: #000; 
     display: flex; 
     flex-direction: column; 
@@ -225,31 +268,50 @@
     position: relative;
     padding: 10px;
 }
-/* Hiệu ứng nền lưới mờ */
 .cc-predict-area::before {
     content: ''; position: absolute; top:0; left:0; width:100%; height:100%;
     background-image: linear-gradient(#111 1px, transparent 1px), linear-gradient(90deg, #111 1px, transparent 1px);
     background-size: 10px 10px; opacity: 0.5; z-index: 0;
 }
 
+/* --- TỶ LỆ THẮNG (WIN RATE STYLES) --- */
 .cc-rate { 
     position: relative; z-index: 1;
     font-family: var(--font-display); 
     font-weight: 900; 
-    color: #000; 
-    background: var(--neon-green); 
+    color: #fff; 
+    background: #333; /* Mặc định */
     padding: 12px 0; 
     width: 100%; 
     font-size: 1.4rem; 
     margin-top: 5px; 
-    /* Cắt góc nút WIN */
     clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
-    box-shadow: 0 0 15px var(--neon-green);
-    animation: glowRate 2s infinite alternate;
 }
-@keyframes glowRate { 
-    from { box-shadow: 0 0 10px var(--neon-green); opacity: 0.9; } 
-    to { box-shadow: 0 0 25px var(--neon-green); opacity: 1; } 
+
+/* 1. RATE GOLD (> 85%) */
+.cc-rate.rate-gold {
+    background: #ffd700 !important;
+    color: #000 !important;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.6), 0 0 30px rgba(255, 215, 0, 0.4);
+    animation: pulseGold 1.5s infinite alternate;
+}
+@keyframes pulseGold {
+    0% { transform: scale(1); box-shadow: 0 0 15px rgba(255, 215, 0, 0.6); }
+    100% { transform: scale(1.05); box-shadow: 0 0 25px rgba(255, 215, 0, 0.9); }
+}
+
+/* 2. RATE GREEN (70% - 85%) */
+.cc-rate.rate-green {
+    background: #00ff41 !important;
+    color: #000 !important;
+    box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+}
+
+/* 3. RATE RED (< 70%) */
+.cc-rate.rate-red {
+    background: #ff003c !important;
+    color: #fff !important;
+    box-shadow: 0 0 10px rgba(255, 0, 60, 0.5);
 }
 
 /* --- MODAL (POPUP XÁC NHẬN) --- */
@@ -291,82 +353,3 @@
 .btn-cancel:hover { background: #555; }
 .btn-confirm { background: var(--neon-green); color: #000; box-shadow: 0 0 15px var(--neon-green); }
 .btn-confirm:hover { transform: translateY(-2px); box-shadow: 0 0 25px var(--neon-green); }
-/* --- CẬP NHẬT LOBBY CSS (RATE COLORS & VIP EFFECT) --- */
-
-/* 1. MÀU SẮC TỶ LỆ THẮNG */
-
-/* Mặc định (70% - 90%): Xanh Neon (Giữ nguyên class .cc-rate cũ) */
-
-/* Tỷ lệ thấp (< 70%): MÀU ĐỎ */
-.cc-rate.rate-low {
-    background: #ff003c !important;
-    color: #fff !important;
-    box-shadow: 0 0 10px #ff003c !important;
-}
-
-/* Tỷ lệ cao (> 90%): MÀU VÀNG GOLD + NHẤP NHÁY */
-.cc-rate.rate-high {
-    background: #ffd700 !important;
-    color: #000 !important;
-    box-shadow: 0 0 15px #ffd700, 0 0 30px #ffd700 !important;
-    animation: pulseGold 1s infinite alternate;
-}
-@keyframes pulseGold {
-    0% { transform: scale(1); box-shadow: 0 0 15px #ffd700; }
-    100% { transform: scale(1.05); box-shadow: 0 0 30px #ffd700; }
-}
-
-/* 2. HIỆU ỨNG CARD VIP (CHO BÀN > 90%) - LED CHẠY VIỀN */
-.casino-card.card-vip {
-    /* Xóa border cũ để dùng border led */
-    border: none;
-    /* Padding tạo khoảng cách cho viền LED */
-    padding: 3px; 
-    background: transparent;
-    overflow: hidden;
-    position: relative;
-    box-shadow: 0 0 30px rgba(255, 215, 0, 0.2); /* Glow vàng nhẹ */
-    /* Bỏ clip-path cũ nếu muốn viền chạy vuông vức đẹp hơn, hoặc giữ lại tùy ý */
-    clip-path: none; 
-    border-radius: 6px;
-}
-
-/* Lớp LED chạy bên dưới */
-.casino-card.card-vip::before {
-    content: '';
-    position: absolute;
-    top: -50%; left: -50%;
-    width: 200%; height: 200%;
-    /* Gradient vàng + xanh tạo hiệu ứng VIP */
-    background: conic-gradient(
-        transparent, 
-        transparent, 
-        transparent, 
-        #ffd700,
-        #00ff41
-    );
-    animation: rotateCardBorder 3s linear infinite;
-    z-index: 0;
-}
-
-/* Lớp nền che ở giữa để lộ viền */
-.casino-card.card-vip::after {
-    content: '';
-    position: absolute;
-    inset: 3px; /* Khớp với padding */
-    background: #050505;
-    border-radius: 4px;
-    z-index: 0;
-}
-
-/* Đảm bảo nội dung nổi lên trên nền giả */
-.casino-card.card-vip .cc-header,
-.casino-card.card-vip .cc-body {
-    position: relative;
-    z-index: 1;
-}
-
-@keyframes rotateCardBorder {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}

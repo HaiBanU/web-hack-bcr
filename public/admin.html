@@ -6,48 +6,34 @@
     <meta charset="UTF-8">
     <title>AGENCY ADMIN</title>
     <link rel="icon" type="image/png" href="favicon.png">
-<link rel="shortcut icon" href="favicon.png" type="image/x-icon">
+    <link rel="shortcut icon" href="favicon.png" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@500;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <style>
         body { background: #000500; padding: 20px; font-family: 'Share Tech Mono'; }
         .admin-box { max-width: 1000px; margin: 0 auto; }
-        
         .header { display: flex; justify-content: space-between; border-bottom: 2px solid #00ff41; padding-bottom: 10px; margin-bottom: 20px; }
         .title { color: #00ff41; font-family: 'Orbitron'; font-size: 1.5rem; text-shadow: 0 0 10px #00ff41; }
-        
-        /* VÍ ĐẠI LÝ */
-        .my-wallet {
-            background: rgba(0, 255, 65, 0.05); border: 1px solid #00ff41;
-            padding: 20px; margin-bottom: 20px; text-align: center;
-            box-shadow: 0 0 15px rgba(0, 255, 65, 0.1);
-        }
+        .my-wallet { background: rgba(0, 255, 65, 0.05); border: 1px solid #00ff41; padding: 20px; margin-bottom: 20px; text-align: center; box-shadow: 0 0 15px rgba(0, 255, 65, 0.1); }
         .wallet-amount { font-family: 'Orbitron'; font-size: 2.5rem; color: #fff; text-shadow: 0 0 15px #00ff41; margin: 10px 0; }
         .wallet-label { color: #00ff41; font-size: 0.9rem; letter-spacing: 2px; }
-
         .panel { background: #051005; border: 1px solid #00ff41; padding: 20px; margin-bottom: 20px; }
-        
-        /* INPUT STYLES */
-        input { 
-            background: #000; border: 1px solid #444; color: #fff; 
-            padding: 10px; outline: none; transition: 0.3s;
-        }
+        input { background: #000; border: 1px solid #444; color: #fff; padding: 10px; outline: none; transition: 0.3s; }
         input:focus { border-color: #00ff41; box-shadow: 0 0 5px #00ff41; }
-
-        /* SEARCH BAR */
         .search-bar { margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
         .search-input { width: 100%; border: 1px solid #333; padding: 12px; font-family: 'Share Tech Mono'; color: #00ff41; }
-        
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 15px; }
         .card { background: #111; border: 1px solid #333; padding: 15px; position: relative; transition: 0.3s; }
         .card:hover { border-color: #00ff41; transform: translateY(-2px); }
         .tk-box { color: #00ff41; font-size: 1.2rem; margin: 10px 0; font-family: 'Orbitron'; }
-
         button { cursor: pointer; font-family: 'Orbitron'; font-weight: bold; padding: 5px 10px; border: none; margin-left:2px; }
         .btn-add-main { background: #00ff41; color: #000; padding: 10px 20px; }
         .btn-nap { background:#00ff41; color:#000; }
         .btn-rut { background:#ff9800; color:#000; }
         .btn-xoa { background:#333; color:#f00; border:1px solid #555; }
+        /* Cập nhật style nút Excel */
+        .btn-excel { background:#003b0f; color:#fff; border:1px solid #00ff41; padding:10px; white-space:nowrap; }
+        .btn-excel:hover { background:#00ff41; color:#000; }
     </style>
 </head>
 <body>
@@ -57,19 +43,15 @@
             <button onclick="logout()" style="background:#333; color:#fff; padding:10px;">ĐĂNG XUẤT</button>
         </div>
 
-        <!-- HIỂN THỊ VÍ CỦA BẠN -->
         <div class="my-wallet">
             <div class="wallet-label">KHO TOKEN CỦA BẠN</div>
-            <!-- ID myBalance sẽ được JS cập nhật -->
             <div id="myBalance" class="wallet-amount">Loading...</div>
             <div style="font-size: 0.8rem; color: #888;">(Liên hệ Super Admin để nhập thêm hàng)</div>
         </div>
 
-        <!-- PANEL THÊM KHÁCH -->
         <div class="panel">
             <h3 style="color:#fff; margin-top:0;">➕ THÊM KHÁCH VÀO QUẢN LÝ</h3>
             <div style="display:flex; gap:10px;">
-                <!-- Đã thêm maxlength="20" -->
                 <input type="text" id="targetUser" placeholder="Tên User..." style="width:250px;" maxlength="20">
                 <button onclick="importUser()" class="btn-add-main">KÍCH HOẠT</button>
             </div>
@@ -78,14 +60,17 @@
 
         <h3 style="color:#fff; margin-bottom: 10px;">DANH SÁCH KHÁCH HÀNG</h3>
         
-        <!-- THANH TÌM KIẾM -->
         <div class="search-bar">
             <span style="color:#00ff41;">🔍</span>
-            <!-- Đã thêm maxlength="20" -->
             <input type="text" id="searchInput" class="search-input" 
                    placeholder="Tìm kiếm khách hàng (nhập tên)..." 
                    maxlength="20"
                    onkeyup="filterUsers()">
+            
+            <!-- CẬP NHẬT: NÚT XUẤT EXCEL -->
+            <button onclick="exportExcel()" class="btn-excel">
+                📥 XUẤT EXCEL
+            </button>
         </div>
 
         <div id="grid" class="grid">Loading...</div>
@@ -96,22 +81,18 @@
         const role = localStorage.getItem('role');
         if (!token || role !== 'admin') window.location.href = 'login.html';
 
-        // Lấy số dư của chính mình
         async function loadMyBalance() {
             try {
                 const res = await fetch('/api/me', { headers: { 'Authorization': token } });
                 const me = await res.json();
                 if (me.username) {
-                    // SỬA: Math.floor để lấy số nguyên, toLocaleString('vi-VN') để có dấu chấm
                     document.getElementById('myBalance').innerText = Math.floor(me.tokens).toLocaleString('vi-VN');
                 }
             } catch(e) { console.error(e); }
         }
 
-        // Tải danh sách User
         async function loadData() {
             loadMyBalance();
-
             const res = await fetch('/api/users', { headers: { 'Authorization': token } });
             const list = await res.json();
             const grid = document.getElementById('grid');
@@ -123,8 +104,9 @@
             }
 
             list.forEach(u => {
-                // SỬA: Math.floor và format cho token khách
                 const displayToken = Math.floor(u.tokens).toLocaleString('vi-VN');
+                // CẬP NHẬT: Hiển thị phone
+                const phoneDisplay = u.phone ? u.phone : 'Chưa cập nhật';
 
                 grid.innerHTML += `
                     <div class="card user-item">
@@ -132,6 +114,12 @@
                             <span class="username-text">${u.username}</span>
                             <span style="border:1px solid #00ff41; color:#00ff41; padding:2px 5px; font-size:0.7rem;">MEMBER</span>
                         </div>
+                        
+                        <!-- CẬP NHẬT: DÒNG HIỂN THỊ SĐT -->
+                        <div style="color:#aaa; font-size:0.9rem; margin-top:8px; padding-bottom:5px; border-bottom:1px dashed #333;">
+                            📞 SĐT: <span style="color:#fff; font-weight:bold;">${phoneDisplay}</span>
+                        </div>
+
                         <div class="tk-box">KHÁCH CÒN: ${displayToken}</div>
                         
                         <div style="display:flex; gap:5px; margin-top:10px;">
@@ -150,7 +138,6 @@
             filterUsers();
         }
 
-        // --- CHỨC NĂNG TÌM KIẾM ---
         function filterUsers() {
             const input = document.getElementById('searchInput');
             const filter = input.value.toLowerCase();
@@ -164,6 +151,37 @@
                 } else {
                     cards[i].style.display = "none";
                 }
+            }
+        }
+
+        // CẬP NHẬT: HÀM XUẤT EXCEL
+        async function exportExcel() {
+            try {
+                const res = await fetch('/api/users', { headers: { 'Authorization': token } });
+                const list = await res.json();
+                if(list.length === 0) return alert("Không có dữ liệu để xuất!");
+
+                // BOM để hỗ trợ Tiếng Việt trong Excel
+                let csvContent = "\uFEFFTÊN TÀI KHOẢN,SỐ ĐIỆN THOẠI,SỐ TOKEN HIỆN TẠI,NGÀY TẠO\n";
+
+                list.forEach(u => {
+                    const phone = u.phone || "N/A";
+                    const created = new Date(u.createdAt).toLocaleDateString('vi-VN');
+                    // Thêm ký tự ' trước số điện thoại để Excel hiểu là chuỗi (giữ số 0 đầu)
+                    csvContent += `${u.username},'${phone},${u.tokens},${created}\n`;
+                });
+
+                const encodedUri = encodeURI("data:text/csv;charset=utf-8," + csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", "data:text/csv;charset=utf-8," + encodeURIComponent(csvContent));
+                link.setAttribute("download", "DANH_SACH_KHACH_HANG.csv");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+            } catch(e) {
+                console.error(e);
+                alert("Lỗi khi xuất file!");
             }
         }
 
@@ -183,7 +201,6 @@
             const amt = document.getElementById(`amt-${uid}`).value;
             if(!amt || amt <= 0) return alert("Số lượng không hợp lệ!");
 
-            // Lấy số dư hiện tại từ giao diện (bỏ dấu chấm để tính toán)
             const myBalText = document.getElementById('myBalance').innerText.replace(/\./g,'').replace(/,/g,'');
             const myBal = parseInt(myBalText) || 0;
             

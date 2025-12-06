@@ -412,15 +412,18 @@
 /* === START: GAUGE NÂNG CẤP (V2 - KÍCH THƯỚC LỚN HƠN) === */
 /* ======================================================= */
 .pred-gauge {
-    width: 160px;
-    height: 160px;
-    background: transparent; /* THÊM DÒNG NÀY */
+    width: 150px;
+    height: 150px;
+    /* Xóa màu nền cũ, dùng Gradient tròn mờ để tạo cảm giác 3D nổi */
+    background: radial-gradient(circle, rgba(0, 20, 0, 0.8) 0%, rgba(0, 0, 0, 0) 70%);
     position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
     flex-shrink: 0;
-    margin-left: -15px;
+    margin-left: -10px;
+    border-radius: 50%; /* Đảm bảo bo tròn tuyệt đối */
+    box-shadow: 0 0 30px rgba(0,0,0,0.5); /* Bóng đổ mềm phía sau */
 }
 
 .gauge-svg {
@@ -428,98 +431,103 @@
     top: 0; left: 0;
     width: 100%;
     height: 100%;
-    transform-origin: center;
-    animation: gauge-flicker 5s infinite;
+    transform: rotate(-90deg); /* Xoay để bắt đầu từ đỉnh 12h */
+    overflow: visible; /* Để hiệu ứng glow không bị cắt */
 }
 
-@keyframes gauge-flicker {
-    0%, 2%, 4%, 100% { opacity: 1; }
-    1%, 3% { opacity: 0.6; }
+/* 1. Vòng nền tĩnh */
+.gauge-bg {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.05);
+    stroke-width: 8;
 }
 
-.gauge-svg circle {
-    fill: transparent;
-    transform-origin: center;
-}
-
-.gauge-dial {
-    stroke: rgba(0, 255, 65, 0.15);
-    stroke-width: 1;
-    stroke-dasharray: 2, 4;
-}
-
+/* 2. Vòng quét xoay tròn (Scanner) */
 .gauge-scanner {
-    stroke-width: 4;
-    stroke-linecap: round;
-    stroke-dasharray: 60, 260;
-    animation: gauge-rotate 4s linear infinite;
+    fill: none;
+    stroke: var(--scanner-color, #444);
+    stroke-width: 2;
+    stroke-dasharray: 10, 20; /* Tạo nét đứt */
+    stroke-opacity: 0.5;
+    transform-origin: center;
+    animation: rotateScanner 4s linear infinite; /* Xoay liên tục */
 }
 
-.pred-gauge.gauge-player { --scanner-color: var(--neon-blue); }
-.pred-gauge.gauge-banker { --scanner-color: var(--neon-red); }
-.gauge-scanner {
-    stroke: var(--scanner-color, #fff);
-    filter: drop-shadow(0 0 8px var(--scanner-color, #fff));
-}
-
-@keyframes gauge-rotate {
+@keyframes rotateScanner {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
 }
 
-.gauge-bg {
-    stroke: rgba(0,0,0,0.5);
-    stroke-width: 14;
-}
-
+/* 3. Vòng % chính (Fill) */
 .gauge-fill {
-    stroke-width: 12;
-    stroke-linecap: round;
-    stroke-dasharray: 283;
-    stroke-dashoffset: 283;
+    fill: none;
+    stroke-width: 8;
+    stroke-linecap: round; /* Bo tròn đầu mút */
+    stroke-dasharray: 339.29; /* Chu vi hình tròn r=54 (2 * pi * 54) */
+    stroke-dashoffset: 339.29; /* Mặc định ẩn hết */
     transition: stroke-dashoffset 1s cubic-bezier(0.25, 1, 0.5, 1);
 }
+
+/* MÀU SẮC THEO PHE (PLAYER / BANKER) */
 .pred-gauge.gauge-player .gauge-fill {
     stroke: var(--neon-blue);
-    filter: drop-shadow(0 0 5px var(--neon-blue)) drop-shadow(0 0 10px var(--neon-blue));
+    filter: drop-shadow(0 0 8px var(--neon-blue)); /* Glow mạnh */
 }
+.pred-gauge.gauge-player { --scanner-color: var(--neon-blue); }
+
 .pred-gauge.gauge-banker .gauge-fill {
     stroke: var(--neon-red);
-    filter: drop-shadow(0 0 5px var(--neon-red)) drop-shadow(0 0 10px var(--neon-red));
+    filter: drop-shadow(0 0 8px var(--neon-red)); /* Glow mạnh */
+}
+.pred-gauge.gauge-banker { --scanner-color: var(--neon-red); }
+
+/* TEXT HIỂN THỊ */
+.gauge-text-wrapper {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
-/* Chữ số % */
 .gauge-text {
-    position: relative;
     font-family: 'Orbitron', sans-serif;
     font-weight: 900;
-    font-size: 3.2rem;
-    z-index: 3;
-    animation: gauge-text-pulse 2s infinite alternate;
-    color: #fff; 
-    text-shadow: 0 0 10px var(--scanner-color, #fff), 0 0 20px var(--scanner-color, #fff);
+    font-size: 2.8rem;
+    color: #fff;
+    line-height: 1;
+    /* Hiệu ứng bóng chữ Neon */
+    text-shadow: 0 0 10px var(--scanner-color), 0 0 20px var(--scanner-color);
+    animation: textPulse 1.5s infinite alternate;
 }
 
 .percent-sign {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     vertical-align: super;
     margin-left: 2px;
-    color: #ccc; 
-    font-weight: normal;
-    -webkit-text-stroke: 1px rgba(0,0,0,0.5);
-    text-stroke: 1px rgba(0,0,0,0.5);
+    opacity: 0.8;
+    color: #ccc;
 }
 
-@keyframes gauge-text-pulse {
-    from { 
-        transform: scale(1); 
-        filter: brightness(1.1); 
-    }
-    to { 
-        transform: scale(1.05); 
-        filter: brightness(1.3); 
-    }
+.gauge-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.6rem;
+    color: #888;
+    letter-spacing: 2px;
+    margin-top: 5px;
+    text-shadow: none;
 }
+
+/* Hiệu ứng nhịp thở cho số */
+@keyframes textPulse {
+    from { transform: scale(1); filter: brightness(1); }
+    to { transform: scale(1.05); filter: brightness(1.3); }
+}
+
+/* ======================================================= */
+/* === END: GAUGE NÂNG CẤP V3                          === */
 /* ======================================================= */
 /* === END: GAUGE NÂNG CẤP                             === */
 /* ======================================================= */

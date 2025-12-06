@@ -100,18 +100,23 @@
                 <!-- === START: GAUGE NÂNG CẤP (V2)            === -->
                 <!-- ============================================= -->
                 <div class="pred-gauge" id="predGauge">
-                    <svg class="gauge-svg" viewBox="0 0 120 120">
-                        <!-- Vòng tĩnh bên ngoài -->
-                        <circle class="gauge-dial" cx="60" cy="60" r="54"></circle>
-                        <!-- Vòng quét xoay -->
-                        <circle class="gauge-scanner" cx="60" cy="60" r="50"></circle>
-                        <!-- Vòng nền của thanh % -->
-                        <circle class="gauge-bg" cx="60" cy="60" r="45"></circle>
-                        <!-- Vòng thanh % chính -->
-                        <circle class="gauge-fill" id="gaugeFill" cx="60" cy="60" r="45"></circle>
-                    </svg>
-                    <div class="gauge-text" id="gaugeValue">0<span class="percent-sign">%</span></div>
-                </div>
+    <svg class="gauge-svg" viewBox="0 0 120 120">
+        <!-- Vòng nền mờ -->
+        <circle class="gauge-bg" cx="60" cy="60" r="54"></circle>
+        
+        <!-- Vòng quét xoay tròn (Scanner Effect) -->
+        <circle class="gauge-scanner" cx="60" cy="60" r="54"></circle>
+        
+        <!-- Vòng hiển thị % thực tế -->
+        <circle class="gauge-fill" id="gaugeFill" cx="60" cy="60" r="54"></circle>
+    </svg>
+    
+    <!-- Số % có hiệu ứng -->
+    <div class="gauge-text-wrapper">
+        <div class="gauge-text" id="gaugeValue">0<span class="percent-sign">%</span></div>
+        <div class="gauge-label">CONFIDENCE</div>
+    </div>
+</div>
                 <!-- ============================================= -->
                 <!-- === END: GAUGE NÂNG CẤP (V2)              === -->
                 <!-- ============================================= -->

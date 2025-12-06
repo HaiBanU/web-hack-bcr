@@ -5,258 +5,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LOGIN - HACKER SYSTEM</title>
+    <title>HỆ THỐNG ĐĂNG NHẬP V1.0.26</title>
     <link rel="icon" type="image/png" href="favicon.png">
-<link rel="shortcut icon" href="favicon.png" type="image/x-icon">
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@500;900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+
     <style>
-        /* --- RESET & BASIC --- */
+        :root { --neon-green: #00ff41; --dark-green: #003b0f; --bg-black: #000000; --card-bg: #050505; }
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
-        body { 
-            background: #000; 
-            font-family: 'Share Tech Mono', monospace; 
-            height: 100vh; 
-            overflow: hidden; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center;
-            color: #00ff41;
-        }
-
-        /* --- BACKGROUND EFFECTS --- */
-        #matrixCanvas { position: fixed; top: 0; left: 0; z-index: 0; opacity: 0.3; }
-        .overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;
-            background: radial-gradient(circle, rgba(0,20,0,0) 0%, #000 90%);
-        }
-        .scan-line {
-            position: fixed; top: 0; left: 0; width: 100%; height: 5px;
-            background: rgba(0, 255, 65, 0.3);
-            opacity: 0.5; z-index: 2;
-            animation: scan 4s linear infinite;
-            box-shadow: 0 0 10px #00ff41;
-        }
-        @keyframes scan { 0% { top: -10%; } 100% { top: 110%; } }
-
-        /* --- LOGIN CONTAINER --- */
-        .login-wrapper {
-            position: relative; z-index: 10;
-            display: flex;
-            flex-direction: column;
-            width: 90%; max-width: 450px;
-            background: rgba(0, 15, 0, 0.85);
-            border: 1px solid #00ff41;
-            box-shadow: 0 0 30px rgba(0, 255, 65, 0.15), inset 0 0 20px rgba(0, 20, 0, 0.8);
-            backdrop-filter: blur(5px);
-            padding: 2px;
-            animation: fadeIn 1s ease-out;
-        }
-
-        /* Decor góc */
-        .corner {
-            position: absolute; width: 10px; height: 10px;
-            border: 2px solid #00ff41; pointer-events: none;
-        }
-        .tl { top: -2px; left: -2px; border-right: none; border-bottom: none; }
-        .tr { top: -2px; right: -2px; border-left: none; border-bottom: none; }
-        .bl { bottom: -2px; left: -2px; border-right: none; border-top: none; }
-        .br { bottom: -2px; right: -2px; border-left: none; border-top: none; }
-
-        .header-section {
-            background: rgba(0, 255, 65, 0.1);
-            padding: 20px;
-            text-align: center;
-            border-bottom: 1px solid #00ff41;
-        }
-
-        .glitch-title {
-            font-family: 'Orbitron'; font-size: 2rem; font-weight: 900;
-            color: #fff; text-shadow: 2px 2px 0px #00ff41;
-            letter-spacing: 2px; margin-bottom: 5px;
-        }
-        .sub-title {
-            font-size: 0.8rem; color: #00ff41; letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-        .info-txt {
-            font-size: 0.75rem; color: #88a; margin-top: 10px; line-height: 1.4;
-        }
-
-        .form-section { padding: 30px; }
-
-        /* --- INPUT STYLES --- */
-        .input-group { position: relative; margin-bottom: 20px; }
-        input {
-            width: 100%; padding: 12px 15px;
-            background: rgba(0, 0, 0, 0.5);
-            border: 1px solid #333; border-left: 3px solid #333;
-            color: #fff; font-family: 'Share Tech Mono'; font-size: 1rem;
-            outline: none; transition: 0.3s;
-        }
-        input:focus {
-            border-color: #00ff41; border-left-color: #00ff41;
-            box-shadow: 0 0 10px rgba(0, 255, 65, 0.1);
-        }
-        input::placeholder { color: #444; }
-
-        /* --- BUTTON STYLE --- */
-        button {
-            width: 100%; padding: 14px;
-            background: #00ff41; color: #000;
-            border: none; font-family: 'Orbitron'; font-weight: bold; font-size: 1.1rem;
-            cursor: pointer; text-transform: uppercase; letter-spacing: 2px;
-            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
-            transition: 0.3s; margin-top: 10px;
-        }
-        button:hover {
-            background: #fff; box-shadow: 0 0 20px #00ff41; transform: translateY(-2px);
-        }
-        button:active { transform: scale(0.98); }
-
-        .switch-link {
-            text-align: center; margin-top: 20px; font-size: 0.85rem;
-            color: #666; cursor: pointer; text-decoration: underline; transition:0.3s;
-        }
-        .switch-link:hover { color: #00ff41; }
-
-        /* --- TOAST --- */
+        body { background: var(--bg-black); font-family: 'Roboto', sans-serif; height: 100vh; overflow: hidden; display: flex; justify-content: center; align-items: center; color: var(--neon-green); }
+        #matrixCanvas { position: fixed; top: 0; left: 0; z-index: 0; opacity: 0.8; }
+        .login-card-wrapper { position: relative; z-index: 10; width: 100%; max-width: 520px; padding: 4px; border-radius: 8px; overflow: hidden; box-shadow: 0 0 50px rgba(0, 255, 65, 0.15); }
+        .login-card-wrapper::before, .login-card-wrapper::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(transparent, transparent, transparent, var(--neon-green)); animation: rotateBorder 4s linear infinite; }
+        .login-card-wrapper::after { animation-delay: -2s; }
+        @keyframes rotateBorder { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .login-card-inner { position: relative; background: var(--card-bg); padding: 50px 40px; border-radius: 6px; z-index: 20; display: flex; flex-direction: column; gap: 20px; }
+        .card-header { text-align: center; margin-bottom: 20px; }
+        .sys-logo { font-family: 'Roboto', sans-serif; font-size: 3rem; font-weight: 900; color: #fff; text-shadow: 0 0 15px var(--neon-green); letter-spacing: 1px; line-height: 1; text-transform: uppercase; }
+        .sys-sub { font-family: 'Roboto', sans-serif; font-size: 0.85rem; color: var(--neon-green); letter-spacing: 3px; font-weight: 700; text-transform: uppercase; margin-top: 10px; opacity: 0.9; }
+        .input-group { position: relative; margin-bottom: 15px; }
+        .input-label { font-family: 'Roboto', sans-serif; font-weight: 500; font-size: 0.8rem; margin-bottom: 8px; display: block; color: #888; letter-spacing: 1px; transition: 0.3s; text-transform: uppercase; }
+        .cyber-input { width: 100%; padding: 16px; background: #0f0f0f; border: 1px solid #333; color: #fff; font-family: 'Roboto', sans-serif; font-size: 1rem; transition: all 0.3s ease; outline: none; border-radius: 4px; }
+        .cyber-input:focus { border-color: var(--neon-green); box-shadow: 0 0 15px rgba(0, 255, 65, 0.3); background: #000; }
+        .cyber-input:focus + .input-label { color: var(--neon-green); }
+        .btn-cyber { width: 100%; padding: 18px; background: var(--neon-green); color: #000; border: none; font-family: 'Roboto', sans-serif; font-weight: 900; font-size: 1.2rem; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; margin-top: 20px; transition: 0.3s; border-radius: 4px; position: relative; overflow: hidden; box-shadow: 0 0 20px rgba(0, 255, 65, 0.5); }
+        .btn-cyber:hover { background: #fff; box-shadow: 0 0 40px var(--neon-green); transform: scale(1.02); }
+        .switch-link { text-align: center; margin-top: 20px; font-size: 0.9rem; color: #666; cursor: pointer; font-family: 'Roboto', sans-serif; transition: 0.3s; }
+        .switch-link:hover { color: var(--neon-green); text-decoration: underline; }
+        .sys-footer { position: fixed; bottom: 15px; width: 100%; text-align: center; font-size: 0.75rem; color: #555; z-index: 10; font-family: 'Roboto', sans-serif; letter-spacing: 1px; }
         #toast-container { position: fixed; top: 20px; right: 20px; z-index: 99999; }
-        .toast {
-            background: rgba(0,0,0,0.95); color: #fff; border-left: 4px solid;
-            padding: 15px 25px; margin-bottom: 10px; min-width: 280px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.8); border: 1px solid #333;
-            font-family: 'Share Tech Mono'; display: flex; align-items: center;
-            animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .toast.success { border-left-color: #00ff41; color: #00ff41; }
+        .toast { background: #111; color: #fff; border-left: 4px solid; padding: 15px 25px; margin-bottom: 10px; min-width: 300px; box-shadow: 0 5px 20px rgba(0,0,0,0.8); font-family: 'Roboto', sans-serif; display: flex; align-items: center; border: 1px solid #333; animation: slideIn 0.4s; }
+        .toast.success { border-left-color: var(--neon-green); color: var(--neon-green); }
         .toast.error { border-left-color: #ff003c; color: #ff003c; }
         @keyframes slideIn { from { transform: translateX(100%); opacity:0; } to { transform: translateX(0); opacity:1; } }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Footer info */
-        .sys-footer {
-            position: fixed; bottom: 10px; width: 100%; text-align: center;
-            font-size: 0.7rem; color: #444; z-index: 10;
-        }
     </style>
 </head>
 <body>
 
-    <!-- HIỆU ỨNG NỀN -->
     <canvas id="matrixCanvas"></canvas>
-    <div class="overlay"></div>
-    <div class="scan-line"></div>
     <div id="toast-container"></div>
 
-    <div class="login-wrapper">
-        <div class="corner tl"></div><div class="corner tr"></div>
-        <div class="corner bl"></div><div class="corner br"></div>
-
-        <div class="header-section">
-            <div class="glitch-title">SYSTEM V3.0</div>
-            <div class="sub-title">// GIẢI MÃ SEXY BACCARAT AI //</div>
-            <div class="info-txt">
-                Hệ thống phân tích dữ liệu thời gian thực.<br>
-                Tự động bắt cầu bệt - Bẻ cầu 1-1 chính xác 96%.
-            </div>
-        </div>
-
-        <div class="form-section">
-            <h3 id="formTitle" style="color:#fff; margin-bottom:20px; font-family:'Orbitron'; text-align:center;">ĐĂNG NHẬP</h3>
+    <div class="login-card-wrapper">
+        <div class="login-card-inner">
             
-            <div class="input-group">
-                <!-- SỬA: Thêm maxlength="20" -->
-                <input type="text" id="user" placeholder="TÊN TÀI KHOẢN..." maxlength="20">
-            </div>
-            
-            <div class="input-group">
-                <!-- SỬA: Thêm maxlength="20" -->
-                <input type="password" id="pass" placeholder="MẬT KHẨU..." maxlength="20">
+            <div class="card-header">
+                <div class="sys-logo" id="mainTitle">SYSTEM V1.0.26</div>
+                <div class="sys-sub">CỔNG KẾT NỐI BẢO MẬT</div>
             </div>
 
-            <!-- Ô nhập lại mật khẩu (Mặc định ẩn) -->
-            <div class="input-group" id="confirmBox" style="display:none;">
-                <!-- SỬA: Thêm maxlength="20" -->
-                <input type="password" id="confirmPass" placeholder="XÁC NHẬN MẬT KHẨU..." maxlength="20">
-            </div>
+            <div class="form-section">
+                <!-- 1. TÊN TÀI KHOẢN -->
+                <div class="input-group">
+                    <label class="input-label">TÊN TÀI KHOẢN</label>
+                    <input type="text" id="user" class="cyber-input" placeholder="Nhập tài khoản..." maxlength="20" autocomplete="off">
+                </div>
+                
+                <!-- 2. MẬT KHẨU -->
+                <div class="input-group">
+                    <label class="input-label">MẬT KHẨU</label>
+                    <input type="password" id="pass" class="cyber-input" placeholder="Nhập mật khẩu..." maxlength="20">
+                </div>
 
-            <button onclick="handleAuth()" id="btnAction">KẾT NỐI SERVER</button>
+                <!-- 3. XÁC NHẬN MẬT KHẨU (Hiện khi đăng ký) -->
+                <div class="input-group" id="confirmBox" style="display:none;">
+                    <label class="input-label">XÁC NHẬN MẬT KHẨU</label>
+                    <input type="password" id="confirmPass" class="cyber-input" placeholder="Nhập lại mật khẩu..." maxlength="20">
+                </div>
 
-            <div class="switch-link" onclick="toggleMode()" id="switchText">
-                Chưa có mã truy cập? Đăng ký ngay
+                <!-- 4. SỐ ĐIỆN THOẠI (ĐÃ CHUYỂN XUỐNG DƯỚI CÙNG) -->
+                <div class="input-group" id="phoneBox" style="display:none;">
+                    <label class="input-label">SỐ ĐIỆN THOẠI (ZALO)</label>
+                    <input type="text" id="phoneInput" class="cyber-input" placeholder="Nhập SĐT của bạn..." maxlength="15">
+                </div>
+
+                <!-- NÚT HÀNH ĐỘNG -->
+                <button onclick="handleAuth()" id="btnAction" class="btn-cyber">
+                    KẾT NỐI NGAY
+                </button>
+
+                <div class="switch-link" onclick="toggleMode()" id="switchText">
+                    Chưa có tài khoản? Đăng ký thành viên mới
+                </div>
             </div>
         </div>
     </div>
 
     <div class="sys-footer">
-        SECURE CONNECTION ESTABLISHED | ENCRYPTED BY AES-256
+        HỆ THỐNG ĐƯỢC MÃ HÓA END-TO-END | PHIÊN BẢN 5.0.2 STABLE
     </div>
 
     <script>
-        // --- MATRIX RAIN EFFECT ---
+        // MATRIX EFFECT
         const canvas = document.getElementById('matrixCanvas');
         const ctx = canvas.getContext('2d');
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*";
-        const fontSize = 14;
-        const columns = canvas.width / fontSize;
-        const drops = Array(Math.floor(columns)).fill(1);
-
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resize); resize();
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"; 
+        const fs = 15; const cols = canvas.width / fs; const drops = Array(Math.floor(cols)).fill(1);
         function draw() {
-            ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "#00ff41";
-            ctx.font = fontSize + "px monospace";
-
-            for (let i = 0; i < drops.length; i++) {
-                const text = chars[Math.floor(Math.random() * chars.length)];
-                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-                    drops[i] = 0;
-                }
+            ctx.fillStyle = "rgba(0, 0, 0, 0.05)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#00ff41"; ctx.font = "bold " + fs + "px monospace";
+            for(let i=0; i<drops.length; i++){
+                const t = chars[Math.floor(Math.random()*chars.length)];
+                ctx.fillText(t, i*fs, drops[i]*fs);
+                if(drops[i]*fs > canvas.height && Math.random()>0.975) drops[i]=0;
                 drops[i]++;
             }
         }
         setInterval(draw, 35);
 
-        // --- LOGIC ĐĂNG NHẬP / ĐĂNG KÝ ---
         let isLogin = true;
 
         function showToast(msg, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
-            const icon = type === 'success' ? '✅' : '⛔';
-            toast.innerHTML = `<span style="margin-right:10px; font-size:1.2rem;">${icon}</span> <span>${msg}</span>`;
+            const icon = type === 'success' ? '✔' : '✖';
+            toast.innerHTML = `<span style="margin-right:15px; font-size:1.2rem;">${icon}</span> <span>${msg}</span>`;
             container.appendChild(toast);
             setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 3000);
         }
 
         function toggleMode() {
             isLogin = !isLogin;
-            const title = document.getElementById('formTitle');
+            const title = document.getElementById('mainTitle');
             const btn = document.getElementById('btnAction');
             const switchText = document.getElementById('switchText');
             const confirmBox = document.getElementById('confirmBox');
+            const phoneBox = document.getElementById('phoneBox'); 
 
             if (isLogin) {
-                title.innerText = "ĐĂNG NHẬP";
-                btn.innerText = "KẾT NỐI SERVER";
-                switchText.innerText = "Chưa có mã truy cập? Đăng ký ngay";
+                title.innerText = "SYSTEM V1.0.26";
+                btn.innerText = "KẾT NỐI NGAY";
+                switchText.innerText = "Chưa có tài khoản? Đăng ký thành viên mới";
                 confirmBox.style.display = "none";
+                phoneBox.style.display = "none"; // Ẩn khi đăng nhập
             } else {
-                title.innerText = "KHỞI TẠO USER";
+                title.innerText = "KHỞI TẠO ID";
                 btn.innerText = "ĐĂNG KÝ";
-                switchText.innerText = "Đã có tài khoản? Đăng nhập";
+                switchText.innerText = "Đã có tài khoản? Đăng nhập ngay";
                 confirmBox.style.display = "block";
-                confirmBox.style.animation = "fadeIn 0.5s";
+                phoneBox.style.display = "block"; // Hiện khi đăng ký
             }
         }
 
@@ -264,25 +154,28 @@
             const username = document.getElementById('user').value.trim();
             const password = document.getElementById('pass').value.trim();
             const confirmPass = document.getElementById('confirmPass').value.trim();
+            const phone = document.getElementById('phoneInput').value.trim();
+
             const endpoint = isLogin ? '/api/login' : '/api/register';
 
-            if (!username || !password) return showToast("Dữ liệu đầu vào trống!", "error");
+            if (!username || !password) return showToast("Vui lòng nhập đầy đủ thông tin!", "error");
 
-            if (!isLogin && password !== confirmPass) {
-                return showToast("Mật khẩu xác nhận không khớp!", "error");
+            if (!isLogin) {
+                if (password !== confirmPass) return showToast("Mật khẩu xác nhận không khớp!", "error");
+                if (!phone) return showToast("Vui lòng nhập Số điện thoại!", "error");
             }
 
             const btn = document.getElementById('btnAction');
             const originalText = btn.innerText;
             btn.innerText = "ĐANG XỬ LÝ...";
-            btn.disabled = true;
             btn.style.opacity = "0.7";
+            btn.disabled = true;
 
             try {
                 const res = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
+                    body: JSON.stringify({ username, password, phone })
                 });
                 const data = await res.json();
 
@@ -293,28 +186,27 @@
                         localStorage.setItem('username', data.username);
                         localStorage.setItem('tokens', data.tokens);
                         
-                        showToast("Xác thực thành công! Đang chuyển hướng...", "success");
+                        showToast("Đăng nhập thành công!", "success");
                         setTimeout(() => {
                             if (data.role === 'superadmin') window.location.href = 'superadmin.html';
                             else if (data.role === 'admin') window.location.href = 'admin.html';
                             else window.location.href = 'index.html';
                         }, 1500);
                     } else {
-                        showToast("Khởi tạo thành công! Hãy đăng nhập.", "success");
+                        showToast("Đăng ký thành công! Hãy đăng nhập.", "success");
                         toggleMode();
                         btn.innerText = originalText;
                         btn.disabled = false;
                         btn.style.opacity = "1";
                     }
                 } else {
-                    showToast(data.message || "Lỗi xác thực!", "error");
+                    showToast(data.message || "Truy cập bị từ chối", "error");
                     btn.innerText = originalText;
                     btn.disabled = false;
                     btn.style.opacity = "1";
                 }
             } catch (e) {
-                showToast("Mất kết nối đến Server!", "error");
-                console.error(e);
+                showToast("Lỗi kết nối máy chủ", "error");
                 btn.innerText = originalText;
                 btn.disabled = false;
                 btn.style.opacity = "1";

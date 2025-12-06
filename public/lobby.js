@@ -1,81 +1,95 @@
 /* --- START OF FILE lobby.js --- */
 
-// Quản lý tỷ lệ thắng giả lập (giữ nguyên tỷ lệ trong 2 phút để không bị nhảy số liên tục)
+// Quản lý tỷ lệ thắng giả lập
 let rateManager = {
     lastUpdate: 0,
-    rates: {}, 
-    goldTables: [] 
+    rates: {}, // Lưu { table_id: rate }
+    tiers: {}  // Lưu { table_id: 'gold' | 'green' | 'red' }
 };
 
-// Biến lưu URL bàn sắp vào (để xử lý khi bấm xác nhận ở Modal)
+// Biến lưu URL bàn sắp vào
 let pendingTableUrl = "";
 
-// Cập nhật tỷ lệ thắng giả lập
+// Hàm trộn mảng ngẫu nhiên (Fisher-Yates Shuffle)
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+// Cập nhật tỷ lệ thắng theo phân bổ 50% - 40% - 10%
 function updateWinRates(tables) {
     const now = Date.now();
-    // Cập nhật lại mỗi 120 giây hoặc khi chưa có dữ liệu
+    // Chỉ cập nhật lại sau 120s hoặc khi chưa có dữ liệu
     if (Object.keys(rateManager.rates).length === 0 || now - rateManager.lastUpdate > 120000) {
-        rateManager.rates = {};
-        rateManager.goldTables = [];
-        let allIds = tables.map(t => t.table_id);
         
-        // Chọn ngẫu nhiên 2 bàn làm "Bàn Vàng" (VIP)
-        if (allIds.length >= 2) {
-            while (rateManager.goldTables.length < 2) {
-                let r = allIds[Math.floor(Math.random() * allIds.length)];
-                if (!rateManager.goldTables.includes(r)) rateManager.goldTables.push(r);
+        rateManager.rates = {};
+        rateManager.tiers = {};
+        
+        // 1. Lọc ra các bàn ĐANG HOẠT ĐỘNG
+        let activeIds = [];
+        tables.forEach(t => {
+            const resultStr = t.result || "";
+            // Điều kiện hoạt động: Có kết quả, dài hơn 5 ván, status = 1
+            if (resultStr && resultStr.length >= 5 && t.status !== 0) {
+                activeIds.push(t.table_id);
             }
-        } else { 
-            rateManager.goldTables = allIds; 
-        }
-
-        allIds.forEach(id => {
-            let rate;
-            if (rateManager.goldTables.includes(id)) {
-                // Bàn VIP: Tỷ lệ từ 91% -> 99%
-                rate = Math.floor(Math.random() * (99 - 91 + 1)) + 91;
-            } else {
-                // Bàn thường: Tỷ lệ từ 40% -> 88%
-                rate = Math.floor(Math.random() * (88 - 40 + 1)) + 40;
-            }
-            rateManager.rates[id] = rate;
         });
+
+        // 2. Trộn ngẫu nhiên danh sách ID
+        activeIds = shuffleArray(activeIds);
+        const totalActive = activeIds.length;
+
+        // 3. Tính số lượng cho từng nhóm
+        const goldCount = Math.ceil(totalActive * 0.50); // 50%
+        const greenCount = Math.floor(totalActive * 0.40); // 40%
+        // Số còn lại là Red (khoảng 10%)
+
+        // 4. Gán tỷ lệ và phân loại
+        activeIds.forEach((id, index) => {
+            let rate, tier;
+
+            if (index < goldCount) {
+                // NHÓM GOLD (> 85%): Random 86 - 99
+                rate = Math.floor(Math.random() * (99 - 86 + 1)) + 86;
+                tier = 'gold';
+            } else if (index < goldCount + greenCount) {
+                // NHÓM GREEN (70% - 85%): Random 70 - 85
+                rate = Math.floor(Math.random() * (85 - 70 + 1)) + 70;
+                tier = 'green';
+            } else {
+                // NHÓM RED (50% - 69%): Random 50 - 69
+                rate = Math.floor(Math.random() * (69 - 50 + 1)) + 50;
+                tier = 'red';
+            }
+
+            rateManager.rates[id] = rate;
+            rateManager.tiers[id] = tier;
+        });
+
         rateManager.lastUpdate = now;
     }
 }
 
-// Logic vẽ bảng cầu (Big Road)
+// Logic vẽ bảng cầu (Big Road) - Giữ nguyên
 function generateGridHTML(resultStr) {
     let rawData = resultStr.split('');
     let processedData = []; 
-    
     rawData.forEach(char => {
         if (char === 'T') { 
-            if (processedData.length > 0) {
-                processedData[processedData.length - 1].hasTie = true; 
-            }
-        } else { 
-            processedData.push({ type: char, hasTie: false }); 
-        }
+            if (processedData.length > 0) processedData[processedData.length - 1].hasTie = true; 
+        } else { processedData.push({ type: char, hasTie: false }); }
     });
 
-    let maxCols = 12; 
-    let columns = []; 
-    let currentCol = []; 
-    let lastType = null;
-    
+    let maxCols = 12; let columns = []; let currentCol = []; let lastType = null;
     processedData.forEach(item => {
-        if (lastType !== null && item.type !== lastType) {
-            columns.push(currentCol); currentCol = []; 
-        }
-        if (currentCol.length >= 6) {
-            columns.push(currentCol); currentCol = []; 
-        }
-        currentCol.push(item); 
-        lastType = item.type;
+        if (lastType !== null && item.type !== lastType) { columns.push(currentCol); currentCol = []; }
+        if (currentCol.length >= 6) { columns.push(currentCol); currentCol = []; }
+        currentCol.push(item); lastType = item.type;
     });
     if (currentCol.length > 0) columns.push(currentCol);
-
     if (columns.length > maxCols) columns = columns.slice(-maxCols);
     while(columns.length < maxCols) columns.push([]);
 
@@ -88,9 +102,7 @@ function generateGridHTML(resultStr) {
                 let colorClass = (node.type === 'P') ? 'p' : 'b';
                 let tieClass = (node.hasTie) ? 'has-tie' : '';
                 html += `<div class="road-cell"><div class="bead ${colorClass} ${tieClass}"></div></div>`;
-            } else {
-                html += `<div class="road-cell"></div>`;
-            }
+            } else html += `<div class="road-cell"></div>`;
         }
         html += '</div>';
     });
@@ -98,74 +110,91 @@ function generateGridHTML(resultStr) {
     return html;
 }
 
-// Kết nối Socket
+// Socket connection
 const grid = document.getElementById('tablesGrid');
 let socket;
 try { socket = io(); } catch(e) {}
-
 if (socket) {
     socket.on('server_update', (data) => {
         if (data && data.length > 0) renderTables(data);
     });
 }
 
-// --- HÀM RENDER CHÍNH (ĐÃ CẬP NHẬT LOGIC MÀU SẮC & VIP) ---
+// --- HÀM RENDER CHÍNH ---
 function renderTables(data) {
     if(!grid) return;
+    
+    // Tính toán lại tỷ lệ dựa trên data mới
     updateWinRates(data);
 
     grid.innerHTML = ''; 
+    
+    // Xử lý dữ liệu để sắp xếp
     let processedData = data.map(item => {
         const resultStr = item.result || "";
+        // Xác định bàn lỗi/không hoạt động
         let isInterrupted = (!resultStr || resultStr.length < 5 || item.status === 0);
         
-        let winRate = rateManager.rates[item.table_id] || 50;
-        
-        // Logic sắp xếp: VIP (>90%) ưu tiên lên đầu
-        let sortScore = winRate;
-        if (winRate > 90) sortScore += 1000;
-        if (isInterrupted) sortScore = -1;
+        let winRate = rateManager.rates[item.table_id] || 0;
+        let tier = rateManager.tiers[item.table_id] || 'none';
 
-        // Xử lý tên bàn cho gọn
-        let rawName = item.table_name.toUpperCase();
-        rawName = rawName.replace("BACCARAT", "").replace("BÀN", "").trim();
+        if (isInterrupted) {
+            winRate = 0;
+            tier = 'off';
+        }
+
+        // Điểm sắp xếp: Gold > Green > Red > Off
+        let sortScore = 0;
+        if (tier === 'gold') sortScore = 3000 + winRate;
+        else if (tier === 'green') sortScore = 2000 + winRate;
+        else if (tier === 'red') sortScore = 1000 + winRate;
+        else sortScore = -1;
+
+        let rawName = item.table_name.toUpperCase().replace("BACCARAT", "").replace("BÀN", "").trim();
         let displayName = "BÀN BACCARAT " + rawName;
 
-        return { ...item, resultStr, isInterrupted, winRate, sortScore, displayName };
+        return { ...item, resultStr, isInterrupted, winRate, tier, sortScore, displayName };
     });
 
-    // Sắp xếp dữ liệu
+    // Sắp xếp: Bàn xịn lên đầu
     processedData.sort((a, b) => b.sortScore - a.sortScore);
 
     processedData.forEach(item => {
-        const { table_id, resultStr, isInterrupted, winRate, displayName } = item;
+        const { table_id, resultStr, isInterrupted, winRate, tier, displayName } = item;
         
-        // 1. XỬ LÝ CLASS CHO THẺ BÀI (VIP LED EFFECT)
+        // Cấu hình hiển thị theo Tier
         let cardClass = 'casino-card';
-        if (!isInterrupted && winRate > 90) {
-            cardClass += ' card-vip'; // Thêm class kích hoạt LED chạy
-        }
-
-        // 2. XỬ LÝ MÀU SẮC TỶ LỆ (ĐỎ / VÀNG / XANH)
         let rateClass = '';
-        let aiLabel = 'AI GỢI Ý';
-        
+        let aiLabel = '';
+        let rateDisplay = `WIN ${winRate}%`;
+
         if (isInterrupted) {
-            // Không làm gì
-        } else if (winRate > 90) {
-            rateClass = 'rate-high'; // Vàng Gold
-            aiLabel = '<span style="color:#ffd700; font-weight:bold;">★ SUPER VIP ★</span>';
-        } else if (winRate < 70) {
-            rateClass = 'rate-low';  // Đỏ
-            aiLabel = '<span style="color:#ff003c; font-weight:bold;">RỦI RO CAO</span>';
+            rateDisplay = 'BẢO TRÌ';
+            aiLabel = '<span style="color:#666;">OFFLINE</span>';
+            // Không set rateClass => để mặc định đen/trắng
         } else {
-            // Mặc định (Xanh Neon)
+            if (tier === 'gold') {
+                // MÀU VÀNG (>85%)
+                cardClass += ' card-vip'; // Thêm hiệu ứng viền chạy
+                rateClass = 'rate-gold'; 
+                aiLabel = '<span style="color:#ffd700; font-weight:bold;">★ SUPER VIP ★</span>';
+            } else if (tier === 'green') {
+                // MÀU XANH (70-85%)
+                rateClass = 'rate-green';
+                aiLabel = '<span style="color:#00ff41;">AI GỢI Ý</span>';
+            } else {
+                // MÀU ĐỎ (<70%)
+                rateClass = 'rate-red';
+                aiLabel = '<span style="color:#ff003c;">RỦI RO CAO</span>';
+            }
         }
 
+        const liveStatus = isInterrupted ? 'OFF ●' : 'LIVE ●';
+        const liveColor = isInterrupted ? '#555' : '#0f0';
+
+        // Tạo phần tử HTML
         const card = document.createElement('div');
         card.className = cardClass;
-        
-        // Sự kiện Click
         card.onclick = () => {
             if (isInterrupted) return;
             pendingTableUrl = `tool.html?tableId=${table_id}&tableName=${encodeURIComponent(displayName)}`;
@@ -173,11 +202,6 @@ function renderTables(data) {
             if(modal) modal.style.display = 'flex';
         };
 
-        const rateDisplay = isInterrupted ? 'N/A' : `WIN ${winRate}%`;
-        const liveStatus = isInterrupted ? 'OFF' : 'LIVE ●';
-        const liveColor = isInterrupted ? '#666' : '#0f0';
-        
-        // Render HTML
         card.innerHTML = `
             <div class="cc-header">
                 <div><span class="cc-name">${displayName}</span></div>
@@ -186,9 +210,8 @@ function renderTables(data) {
             <div class="cc-body">
                 <div class="cc-grid-area">${generateGridHTML(resultStr)}</div>
                 <div class="cc-predict-area">
-                    <span style="font-size:0.6rem; color:#888; margin-bottom:5px;">${aiLabel}</span>
-                    <span style="font-size:0.6rem; margin-bottom:5px; color:#fff;">TỈ LỆ THẮNG</span>
-                    <!-- Thêm class rateClass (rate-low hoặc rate-high) vào đây -->
+                    <span style="font-size:0.6rem; margin-bottom:5px;">${aiLabel}</span>
+                    <span style="font-size:0.6rem; margin-bottom:5px; color:#aaa;">TỈ LỆ THẮNG</span>
                     <div class="cc-rate ${rateClass}">${rateDisplay}</div>
                 </div>
             </div>
@@ -197,14 +220,11 @@ function renderTables(data) {
     });
 }
 
-// Xử lý sự kiện Modal Xác nhận
+// Event Listeners cho Modal
 document.addEventListener('DOMContentLoaded', () => {
     const btnCancel = document.querySelector('.btn-cancel');
-    if(btnCancel) {
-        btnCancel.onclick = () => {
-            document.getElementById('confirmModal').style.display = 'none';
-        };
-    }
+    if(btnCancel) btnCancel.onclick = () => document.getElementById('confirmModal').style.display = 'none';
+    
     const btnConfirm = document.getElementById('btnConfirmAction');
     if(btnConfirm) {
         btnConfirm.onclick = async () => {
@@ -212,24 +232,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if(token) {
                 try {
                     const res = await fetch('/api/enter-table', {
-                        method: 'POST',
-                        headers: { 'Authorization': token, 'Content-Type': 'application/json' }
+                        method: 'POST', headers: { 'Authorization': token, 'Content-Type': 'application/json' }
                     });
                     const data = await res.json();
-                    
-                    if(data.status === 'success') {
-                        window.location.href = pendingTableUrl;
-                    } else {
-                        alert("❌ " + (data.message || "Lỗi: Không đủ Token!"));
-                        document.getElementById('confirmModal').style.display = 'none';
-                    }
-                } catch(e) {
-                    // Nếu lỗi mạng vẫn cho vào (demo)
-                    window.location.href = pendingTableUrl;
-                }
-            } else {
-                window.location.href = 'login.html';
-            }
+                    if(data.status === 'success') window.location.href = pendingTableUrl;
+                    else { alert("❌ " + (data.message || "Lỗi Token!")); document.getElementById('confirmModal').style.display = 'none'; }
+                } catch(e) { window.location.href = pendingTableUrl; }
+            } else window.location.href = 'login.html';
         };
     }
 });

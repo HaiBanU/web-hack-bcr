@@ -1,3 +1,5 @@
+// --- START OF FILE models/User.js ---
+
 const mongoose = require('mongoose');
 
 const UserSchema = new mongoose.Schema({
@@ -5,9 +7,15 @@ const UserSchema = new mongoose.Schema({
         type: String, 
         required: true, 
         unique: true, 
-        minlength: 3, // <--- SỬA THÀNH 3 CHO DỄ TEST
+        minlength: 3, 
         maxlength: 20 
     },
+    // --- CẬP NHẬT: THÊM TRƯỜNG PHONE ---
+    phone: {
+        type: String,
+        default: 'Chưa cập nhật'
+    },
+    // -----------------------------------
     password: { 
         type: String, 
         required: true 

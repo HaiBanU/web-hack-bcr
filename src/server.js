@@ -1,3 +1,5 @@
+// --- START OF FILE server.js ---
+
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -8,7 +10,7 @@ const { Server } = require("socket.io");
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const User = require('./models/User');
+const User = require('./models/User'); // Đảm bảo đường dẫn đúng
 
 const app = express();
 app.use(cors());
@@ -37,12 +39,23 @@ const authenticate = (req, res, next) => {
 
 // --- AUTH API ---
 app.post('/api/register', async (req, res) => {
-    const { username, password } = req.body;
+    // CẬP NHẬT: Nhận thêm phone
+    const { username, password, phone } = req.body;
     try {
         const exists = await User.findOne({ username });
         if(exists) return res.status(400).json({ message: 'Tên đã tồn tại' });
+        
         const hashedPassword = await bcrypt.hash(password, 10);
-        await User.create({ username, password: hashedPassword, role: 'user', tokens: 0 });
+        
+        // CẬP NHẬT: Lưu phone vào DB
+        await User.create({ 
+            username, 
+            password: hashedPassword, 
+            phone: phone || 'Không có SĐT',
+            role: 'user', 
+            tokens: 0 
+        });
+        
         res.json({ status: 'success' });
     } catch (err) { res.status(500).json({ message: 'Lỗi server' }); }
 });
@@ -72,6 +85,7 @@ app.get('/api/users', authenticate, async (req, res) => {
     else if (req.user.role === 'admin') query = { role: 'user', createdBy: req.user.userId };
     else return res.status(403).json({ message: 'Cấm' });
     
+    // Lấy thêm trường phone
     const list = await User.find(query).select('-password').sort({ createdAt: -1 });
     res.json(list);
 });
@@ -83,7 +97,7 @@ app.post('/api/create-admin', authenticate, async (req, res) => {
         const exists = await User.findOne({ username });
         if(exists) return res.status(400).json({ message: 'Tên tồn tại' });
         const hashedPassword = await bcrypt.hash(password, 10);
-        await User.create({ username, password: hashedPassword, role: 'admin', createdBy: req.user.userId, tokens: 0 });
+        await User.create({ username, password: hashedPassword, role: 'admin', createdBy: req.user.userId, tokens: 0, phone: 'ADMIN' });
         res.json({ status: 'success', message: 'Tạo đại lý thành công' });
     } catch(e) { res.status(500).json({ message: 'Lỗi' }); }
 });
@@ -150,12 +164,11 @@ app.post('/api/delete-user', authenticate, async (req, res) => {
     res.json({ status: 'success' });
 });
 
-// --- GAME LOGIC (UPDATED FEE = 5) ---
+// --- GAME LOGIC (FEE = 5) ---
 app.post('/api/enter-table', authenticate, async (req, res) => {
     const user = await User.findById(req.user.userId);
     if (user.role === 'superadmin') return res.json({ status: 'success', remaining: 'VIP' });
     
-    // CẬP NHẬT: Trừ 5 Token
     if (user.tokens < 5) return res.json({ status: 'fail', message: 'HẾT TOKEN (Cần 5)' });
     user.tokens -= 5; await user.save();
     
@@ -166,7 +179,6 @@ app.post('/api/deduct-periodic', authenticate, async (req, res) => {
     const user = await User.findById(req.user.userId);
     if (!user || user.role === 'superadmin') return res.json({ status: 'success', remaining: 'VIP' });
     
-    // CẬP NHẬT: Trừ 5 Token
     if (user.tokens < 5) return res.status(400).json({ status: 'fail' });
     user.tokens -= 5; await user.save();
     

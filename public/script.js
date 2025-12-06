@@ -215,7 +215,7 @@ function runPredictionSystem(historyArr) {
         gaugeFill: document.getElementById('gaugeFill')
     };
     
-    const circumference = 2 * Math.PI * 45; // 282.7
+    const circumference = 2 * Math.PI * 54;
 
     ui.advice.innerText = "PHÂN TÍCH MA TRẬN...";
     ui.pred.innerText = "ĐANG CHỜ";
@@ -378,7 +378,7 @@ function displayScorePredictions(predictedWinner) {
     const highestPlayerProb = Math.max(...playerProbs.map(p => p.prob));
     const highestBankerProb = Math.max(...bankerProbs.map(p => p.prob));
     
-    let playerHtml = `<div class="score-analysis-title" style="color:#00f3ff;">PHÂN TÍCH ĐIỂM PLAYER</div><div class="score-probability-list">`;
+    let playerHtml = `<div class="score-analysis-title" style="color:#00f3ff;">AI DỰ ĐOÁN ĐIỂM PLAYER</div><div class="score-probability-list">`;
     playerProbs.forEach(item => {
         const isHighest = item.prob === highestPlayerProb;
         playerHtml += `<div class="prob-item ${isHighest ? 'highest-p' : ''}">
@@ -388,7 +388,7 @@ function displayScorePredictions(predictedWinner) {
     });
     playerHtml += `</div>`;
     
-    let bankerHtml = `<div class="score-analysis-title" style="color:#ff003c;">PHÂN TÍCH ĐIỂM BANKER</div><div class="score-probability-list">`;
+    let bankerHtml = `<div class="score-analysis-title" style="color:#ff003c;">AI DỰ ĐOÁN ĐIỂM BANKER</div><div class="score-probability-list">`;
     bankerProbs.forEach(item => {
         const isHighest = item.prob === highestBankerProb;
         bankerHtml += `<div class="prob-item ${isHighest ? 'highest-b' : ''}">
