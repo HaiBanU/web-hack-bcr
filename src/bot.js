@@ -7,8 +7,8 @@ const axios = require('axios');
 // CẤU HÌNH HỆ THỐNG
 // =========================================================
 const CHROME_DEBUG_URL = 'http://127.0.0.1:9222';
-const REMOTE_SERVER_API = 'https://hack-bcr-vip.onrender.com/api/update';
-//const REMOTE_SERVER_API = 'http://localhost:3000/api/update'; // Dùng khi test localhost
+//const REMOTE_SERVER_API = 'https://hack-bcr-vip.onrender.com/api/update';
+const REMOTE_SERVER_API = 'http://localhost:3000/api/update'; // Dùng khi test localhost
 // BỘ NHỚ LƯU TRỮ TRẠNG THÁI CỦA CÁC BÀN
 const lastKnownState = new Map();
 

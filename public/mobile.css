@@ -1,5 +1,5 @@
 /* =========================================
-   MOBILE.CSS - V4 (TỐI ƯU GAUGE)
+   MOBILE.CSS - V5 (FIXED GAUGE ALIGNMENT)
    ========================================= */
 
 @media screen and (max-width: 1024px) {
@@ -119,12 +119,13 @@
     .pred-label { font-size: 0.6rem !important; }
     
     /* ================================================= */
-    /* === START: TỐI ƯU GAUGE % CHO DI ĐỘNG         === */
+    /* === START: TỐI ƯU GAUGE % CHO DI ĐỘNG (LỚN HƠN) === */
     /* ================================================= */
     .pred-gauge { 
-        width: 80px !important;
-        height: 80px !important;
-        margin-top: 10px;
+        width: 110px !important;
+        height: 110px !important;
+        background: transparent !important; /* THÊM DÒNG NÀY */
+        margin: 10px auto 0;
     }
     /* Làm mỏng các vòng tròn bên trong */
     .gauge-svg .gauge-dial {
@@ -134,17 +135,17 @@
         stroke-width: 2 !important;
     }
     .gauge-svg .gauge-bg {
-        stroke-width: 8 !important;
+        stroke-width: 10 !important;
     }
     .gauge-svg .gauge-fill {
-        stroke-width: 6 !important;
+        stroke-width: 8 !important;
     }
     /* Điều chỉnh lại cỡ chữ */
     .gauge-text { 
-        font-size: 1.6rem !important; 
+        font-size: 2.2rem !important;
     }
     .percent-sign {
-        font-size: 0.8rem !important;
+        font-size: 1rem !important;
     }
     /* ================================================= */
     /* === END: TỐI ƯU GAUGE % CHO DI ĐỘNG           === */

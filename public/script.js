@@ -1,4 +1,4 @@
-// --- START OF FULLY UPDATED script.js (V6 - FINAL TIMESTAMP LOGIC FIX) ---
+// --- START OF FULLY UPDATED script.js (V9 - DYNAMIC ROW BORDERS) ---
 
 let currentTableId = null;
 let history = [];
@@ -15,20 +15,37 @@ let isInitialHistoryGenerated = false;
 
 
 // ==================================================================
-// === START CẬP NHẬT: LOGIC TẠO LỊCH SỬ FAKE VỚI TỶ LỆ 80/20 ===
+// === START CẬP NHẬT: LOGIC TẠO MÃ PHIÊN MỚI (DDMM + BÀN + VÁN) ===
+// ==================================================================
+/**
+ * Tạo mã phiên theo định dạng: #DDMM + MãBàn (2 chữ số) + SốVán
+ * @param {number} roundNumber - Số thứ tự của ván cược.
+ * @returns {string} Mã phiên đã được định dạng.
+ */
+function generateSessionId(roundNumber) {
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    // currentTableId là biến toàn cục, lấy từ URL
+    const paddedTableId = String(currentTableId).padStart(2, '0');
+    
+    // Thêm dấu '#' ở đầu chuỗi.
+    return `#${day}${month}${paddedTableId}${roundNumber}`;
+}
+
+// ==================================================================
+// === LOGIC TẠO LỊCH SỬ FAKE VỚI TỶ LỆ 80/20                  ===
 // ==================================================================
 function generateAndRenderInitialHistory(realHistory) {
     predictionHistoryLog = []; // Xóa log cũ
     const historyToProcess = realHistory.slice(-30);
     const opponent = (side) => (side === 'P' ? 'B' : 'P');
     
-    // ==================================================================
-    // === FIX V5: VIẾT LẠI HOÀN TOÀN THUẬT TOÁN TẠO THỜI GIAN      ===
-    // ==================================================================
     let tempLog = [];
+    const startingRound = realHistory.length - historyToProcess.length + 1;
 
     // 1. Tạo dữ liệu dự đoán giả lập trước, lặp từ CŨ -> MỚI
-    historyToProcess.forEach(result => {
+    historyToProcess.forEach((result, index) => {
         let fakePrediction;
         let outcome;
         if (result === 'T') {
@@ -43,31 +60,31 @@ function generateAndRenderInitialHistory(realHistory) {
                 fakePrediction = opponent(result);
             }
         }
-        tempLog.push({ prediction: fakePrediction, result: result, outcome: outcome });
+        
+        const roundNumber = startingRound + index;
+        tempLog.push({ 
+            prediction: fakePrediction, 
+            result: result, 
+            outcome: outcome,
+            session: generateSessionId(roundNumber) // <-- SỬ DỤNG LOGIC MỚI
+        });
     });
 
     // 2. Gán thời gian, lặp NGƯỢC từ MỚI -> CŨ
     let currentTime = new Date(); // Bắt đầu từ thời gian thực tế
     for (let i = tempLog.length - 1; i >= 0; i--) {
         let entry = tempLog[i];
-        
-        // Gán thời gian hiện tại cho phiên này
         entry.time = new Date(currentTime.getTime()); 
-        entry.session = '#' + (Math.floor(currentTime.getTime() / 1000) - 1700000000 + Math.floor(Math.random() * 100));
-
-        // Lùi thời gian về quá khứ để chuẩn bị cho phiên cũ hơn (ở vòng lặp tiếp theo)
+        
+        // Lùi thời gian về quá khứ để chuẩn bị cho phiên cũ hơn
         currentTime.setSeconds(currentTime.getSeconds() - (Math.floor(Math.random() * 46) + 45));
     }
     
-    // 3. Đảo ngược lại mảng để có thứ tự hiển thị đúng [MỚI NHẤT, ..., CŨ NHẤT]
+    // 3. Đảo ngược lại mảng để có thứ tự hiển thị đúng
     predictionHistoryLog = tempLog.reverse();
 
     renderPredictionHistory();
 }
-// ==================================================================
-// === END CẬP NHẬT: LOGIC TẠO LỊCH SỬ FAKE                       ===
-// ==================================================================
-
 
 window.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -404,8 +421,11 @@ function updatePredictionHistory(prediction, result) {
         outcome = (prediction === result) ? 'win' : 'loss';
     }
 
+    // Ván cược hiện tại là ván có số thứ tự bằng chiều dài lịch sử + 1
+    const newRoundNumber = history.length + 1;
+
     const newHistoryEntry = {
-        session: '#' + (Math.floor(Date.now() / 1000) - 1700000000 + Math.floor(Math.random() * 100)),
+        session: generateSessionId(newRoundNumber),
         prediction: prediction,
         result: result,
         outcome: outcome,
@@ -450,8 +470,9 @@ function renderPredictionHistory() {
         
         const timeString = entry.time.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
+        // Thêm class="outcome-..." vào thẻ <tr> để định dạng đường kẻ màu
         html += `
-            <tr>
+            <tr class="outcome-${entry.outcome}">
                 <td class="col-session">${entry.session}</td>
                 <td><span class="pill ${predClass}">${entry.prediction === 'P' ? 'PLAYER' : 'BANKER'}</span></td>
                 <td><span class="pill ${resultClass}">${entry.result === 'P' ? 'PLAYER' : (entry.result === 'B' ? 'BANKER' : 'HÒA')}</span></td>
@@ -473,7 +494,7 @@ function renderPredictionHistoryIcons() {
     if (!container) return;
 
     // Lấy 10 kết quả gần nhất để hiển thị
-    const recentHistory = predictionHistoryLog.slice(0, 10);
+    const recentHistory = predictionHistoryLog.slice(0, 12);
     let html = '';
 
     recentHistory.reverse().forEach(entry => { // Đảo ngược để hiển thị từ cũ -> mới

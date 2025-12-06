@@ -1,6 +1,16 @@
 /* =========================================
-   TOOL.CSS - VERSION FINAL (FIXED SPACING)
+   TOOL.CSS - VERSION FINAL (FIXED GAUGE BOX & BEAD PLATE)
    ========================================= */
+
+/* --- START: THÊM HIỆU ỨNG NHÁY VÀNG --- */
+@keyframes blink-yellow {
+    50% {
+        color: #ffd700; /* Màu vàng Neon */
+        text-shadow: 0 0 10px #ffd700, 0 0 20px #ffd700;
+    }
+}
+/* --- END: THÊM HIỆU ỨNG NHÁY VÀNG --- */
+
 
 /* --- LAYOUT GRID --- */
 .hacker-layout {
@@ -184,23 +194,25 @@
 @keyframes ringSpin { 0% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(180deg) scale(1.1); } 100% { transform: rotate(360deg) scale(1); } }
 @keyframes glitchPulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.05); opacity: 0.9; } }
 
-/* --- PREDICTION AREA --- */
+/* --- PREDICTION AREA (ĐÃ SỬA LỖI Ô VUÔNG) --- */
 .prediction-wrapper {
-    width: 95%; /* SỬA: Tăng chiều rộng để có không gian */
-    max-width: 850px; 
+    width: 95%;
+    max-width: 850px;
     background: linear-gradient(180deg, rgba(20,25,20,0.95) 0%, rgba(0,0,0,1) 100%);
     border: 1px solid rgba(0, 255, 65, 0.3);
-    border-radius: 20px; 
-    display: flex; align-items: center; 
-    justify-content: space-between; /* SỬA: Dàn đều các phần tử */
-    padding: 5px 30px; 
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 15px 30px;
     box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 20px rgba(0, 255, 65, 0.05);
-    margin-top: 15px; 
+    margin-top: 15px;
 }
 .ai-box { 
-    width: 120px; height: 120px; /* SỬA: Tăng kích thước đáng kể */
+    width: 120px; height: 120px;
     border-radius: 50%; background: #050505; 
-    border: 4px solid var(--neon-green); /* SỬA: Viền dày hơn */
+    border: 4px solid var(--neon-green);
     display: flex; justify-content: center; align-items: center; 
     flex-shrink: 0; 
     animation: aiBoxPulse 2.5s infinite alternate;
@@ -234,7 +246,18 @@
 }
 
 .pred-info { flex-grow: 1; text-align: center; margin: 0 10px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-.pred-label { font-size: 0.9rem; font-weight:bold; letter-spacing: 2px; color: var(--neon-green); margin-bottom: 2px; text-shadow: 0 0 8px var(--neon-green); }
+
+/* ÁP DỤNG HIỆU ỨNG NHÁY VÀNG TẠI ĐÂY */
+.pred-label { 
+    font-size: 0.9rem; 
+    font-weight:bold; 
+    letter-spacing: 2px; 
+    color: var(--neon-green); 
+    margin-bottom: 2px; 
+    text-shadow: 0 0 8px var(--neon-green);
+    animation: blink-yellow 1.5s infinite;
+}
+
 .pred-result { font-size: 3.5rem; font-family: 'Orbitron'; font-weight: 900; line-height: 1; text-transform: uppercase; letter-spacing: 2px; }
 .res-wait { color: #fff; animation: blink 0.5s infinite; font-size: 2.5rem; }
 .res-p { color: #00f3ff; text-shadow: 0 0 10px #00f3ff, 0 0 30px #00f3ff, 0 0 60px #00f3ff; }
@@ -279,9 +302,12 @@
 #matrixCode {
     flex: 1;
     background: rgba(0, 10, 0, 0.5);
-    padding: 10px;
+    padding: 0 10px 10px;
     border-radius: 4px;
-    border: 1px dashed #333;
+    border: none;
+    border-right: 1px dashed #333;
+    border-bottom: 1px dashed #333;
+    border-left: 1px dashed #333;
     overflow: hidden;
     font-size: 0.65rem;
     color: #0f0;
@@ -342,11 +368,25 @@
 .col-session, .col-time { color: #aaa; font-weight: bold; }
 
 
-/* --- BEAD PLATE & BIG ROAD --- */
+/* --- BEAD PLATE & BIG ROAD (ĐÃ SỬA LỖI VỠ HÌNH) --- */
 .bead-panel { padding: 25px 5px 5px 5px; display: block; box-shadow: inset 0 0 10px #000; }
 .bead-grid { display: grid; grid-template-rows: repeat(6, 1fr); grid-template-columns: repeat(6, 1fr); grid-auto-flow: column; gap: 0; width: 100%; height: 100%; border-top: 1px solid #333; border-left: 1px solid #333; }
-.bead-cell { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; border-right: 1px solid #333; border-bottom: 1px solid #333; min-width: 0; min-height: 0; }
-.bead-circle { width: 30%; height: auto; aspect-ratio: 1/1; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-family: Arial, sans-serif; font-weight: bold; font-size: clamp(4px, 1.2vh, 10px); color: #fff; }
+.bead-cell { 
+    width: 100%; height: 100%; 
+    display: flex; justify-content: center; align-items: center; 
+    border-right: 1px solid #333; border-bottom: 1px solid #333; 
+    min-width: 0; min-height: 0; 
+    padding: 2px;
+}
+.bead-circle { 
+    height: 100%; 
+    width: auto;   
+    aspect-ratio: 1/1; 
+    border-radius: 50%; 
+    display: flex; justify-content: center; align-items: center; 
+    font-family: Arial, sans-serif; font-weight: bold; 
+    font-size: clamp(4px, 1.2vh, 10px); color: #fff; 
+}
 .bead-p { background-color: #007bff; }
 .bead-b { background-color: #dc3545; }
 .bead-t { background-color: #28a745; }
@@ -369,16 +409,18 @@
 
 
 /* ======================================================= */
-/* === START: GAUGE NÂNG CẤP (V3 - TINH CHỈNH HIỆU ỨNG) === */
+/* === START: GAUGE NÂNG CẤP (V2 - KÍCH THƯỚC LỚN HƠN) === */
 /* ======================================================= */
 .pred-gauge {
-    width: 100px; 
-    height: 100px; 
+    width: 160px;
+    height: 160px;
+    background: transparent; /* THÊM DÒNG NÀY */
     position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
     flex-shrink: 0;
+    margin-left: -15px;
 }
 
 .gauge-svg {
@@ -427,11 +469,11 @@
 
 .gauge-bg {
     stroke: rgba(0,0,0,0.5);
-    stroke-width: 10; 
+    stroke-width: 14;
 }
 
 .gauge-fill {
-    stroke-width: 8; 
+    stroke-width: 12;
     stroke-linecap: round;
     stroke-dasharray: 283;
     stroke-dashoffset: 283;
@@ -451,7 +493,7 @@
     position: relative;
     font-family: 'Orbitron', sans-serif;
     font-weight: 900;
-    font-size: 2.4rem; 
+    font-size: 3.2rem;
     z-index: 3;
     animation: gauge-text-pulse 2s infinite alternate;
     color: #fff; 
@@ -459,7 +501,7 @@
 }
 
 .percent-sign {
-    font-size: 1.1rem; 
+    font-size: 1.5rem;
     vertical-align: super;
     margin-left: 2px;
     color: #ccc; 
@@ -479,7 +521,7 @@
     }
 }
 /* ======================================================= */
-/* === END: GAUGE NÂNG CẤP (V3)                        === */
+/* === END: GAUGE NÂNG CẤP                             === */
 /* ======================================================= */
 
 
@@ -545,4 +587,112 @@
 }
 /* ======================================================= */
 /* === END: CSS CHO ICON LỊCH SỬ DỰ ĐOÁN             === */
+/* ======================================================= */
+
+/* ======================================================= */
+/* === START: MÀU ĐƯỜNG KẺ CHO LỊCH SỬ PHIÊN         === */
+/* ======================================================= */
+
+/* Bỏ đường viền mặc định nếu có */
+.history-table td {
+    border: none;
+}
+
+.history-table tr.outcome-win {
+    border-bottom: 1px solid rgba(40, 167, 69, 0.6); 
+}
+
+.history-table tr.outcome-loss {
+    border-bottom: 1px solid rgba(220, 53, 69, 0.6);
+}
+
+.history-table tr.outcome-tie {
+    border-bottom: 1px solid rgba(255, 193, 7, 0.6);
+}
+
+/* Xóa đường kẻ của dòng cuối cùng để đẹp hơn */
+.history-table tr:last-child {
+    border-bottom: none;
+}
+
+/* ======================================================= */
+/* === END: MÀU ĐƯỜNG KẺ CHO LỊCH SỬ PHIÊN           === */
+/* ======================================================= */
+
+/* ======================================================= */
+/* === START: TIÊU ĐỀ CHO BẢNG MATRIX CODE           === */
+/* ======================================================= */
+
+.matrix-header {
+    color: var(--neon-red);
+    font-weight: bold;
+    font-size: 0.9rem;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #333;
+    text-shadow: 0 0 5px var(--neon-red);
+    animation: matrix-header-pulse 1.5s infinite alternate;
+}
+
+@keyframes matrix-header-pulse {
+    from {
+        opacity: 0.8;
+        text-shadow: 0 0 5px var(--neon-red);
+    }
+    to {
+        opacity: 1;
+        text-shadow: 0 0 10px var(--neon-red), 0 0 15px #fff;
+    }
+}
+
+/* ======================================================= */
+/* === END: TIÊU ĐỀ CHO BẢNG MATRIX CODE             === */
+/* ======================================================= */
+/* ======================================================= */
+/* === START: THANH TRẠNG THÁI CHO BẢNG MATRIX       === */
+/* ======================================================= */
+
+.matrix-status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    color: #888;
+    font-family: var(--font-display);
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+    border-bottom: 1px dashed #333;
+}
+
+.matrix-status-bar .status-ok {
+    color: var(--neon-green);
+    font-weight: bold;
+}
+
+.blinking-cursor {
+    font-weight: bold;
+    font-size: 1rem;
+    color: var(--neon-green);
+    animation: blink 1s step-end infinite;
+}
+
+/* Tái sử dụng keyframe 'blink' đã có sẵn hoặc thêm mới nếu chưa có */
+@keyframes blink {
+    from, to { opacity: 0; }
+    50% { opacity: 1; }
+}
+
+/* Điều chỉnh lại header để không bị dính vào thanh trạng thái */
+.matrix-header {
+    padding-bottom: 5px;
+    border-bottom: 1px solid #333;
+    margin-bottom: 0; 
+}
+
+/* Điều chỉnh lại ô code để sát với header */
+#matrixCode {
+    padding-top: 10px;
+}
+
+/* ======================================================= */
+/* === END: THANH TRẠNG THÁI CHO BẢNG MATRIX         === */
 /* ======================================================= */
