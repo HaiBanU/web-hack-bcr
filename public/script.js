@@ -1,4 +1,4 @@
-// --- START OF FULLY UPDATED script.js (V9 - DYNAMIC ROW BORDERS) ---
+// --- START OF FULLY UPDATED script.js (V12 - SESSION HISTORY STORAGE) ---
 
 let currentTableId = null;
 let history = [];
@@ -14,37 +14,43 @@ let chartHistory = [];
 let isInitialHistoryGenerated = false;
 
 
-// ==================================================================
-// === START CẬP NHẬT: LOGIC TẠO MÃ PHIÊN MỚI (DDMM + BÀN + VÁN) ===
-// ==================================================================
-/**
- * Tạo mã phiên theo định dạng: #DDMM + MãBàn (2 chữ số) + SốVán
- * @param {number} roundNumber - Số thứ tự của ván cược.
- * @returns {string} Mã phiên đã được định dạng.
- */
 function generateSessionId(roundNumber) {
     const now = new Date();
     const day = String(now.getDate()).padStart(2, '0');
     const month = String(now.getMonth() + 1).padStart(2, '0');
-    // currentTableId là biến toàn cục, lấy từ URL
     const paddedTableId = String(currentTableId).padStart(2, '0');
-    
-    // Thêm dấu '#' ở đầu chuỗi.
     return `#${day}${month}${paddedTableId}${roundNumber}`;
 }
 
 // ==================================================================
-// === LOGIC TẠO LỊCH SỬ FAKE VỚI TỶ LỆ 80/20                  ===
+// === LOGIC TẠO LỊCH SỬ FAKE (ĐÃ SỬA ĐỔI ĐỂ LƯU TRỮ PHIÊN)      ===
 // ==================================================================
 function generateAndRenderInitialHistory(realHistory) {
+    // TẠO KEY LƯU TRỮ RIÊNG CHO TỪNG BÀN
+    const storageKey = `predictionHistory_${currentTableId}`;
+    const savedHistory = sessionStorage.getItem(storageKey);
+
+    // NẾU ĐÃ CÓ LỊCH SỬ ĐƯỢC LƯU, TẢI LẠI NÓ VÀ KHÔNG LÀM GÌ THÊM
+    if (savedHistory) {
+        predictionHistoryLog = JSON.parse(savedHistory);
+        // Chuyển đổi chuỗi thời gian về lại đối tượng Date
+        predictionHistoryLog.forEach(entry => {
+            entry.time = new Date(entry.time);
+        });
+        renderPredictionHistory();
+        return; // Dừng hàm tại đây
+    }
+
+    // NẾU CHƯA CÓ, TIẾN HÀNH TẠO LỊCH SỬ GIẢ NHƯ CŨ
     predictionHistoryLog = []; // Xóa log cũ
     const historyToProcess = realHistory.slice(-30);
     const opponent = (side) => (side === 'P' ? 'B' : 'P');
     
+    const targetWinRate = (Math.floor(Math.random() * 11) + 60) / 100;
+    
     let tempLog = [];
     const startingRound = realHistory.length - historyToProcess.length + 1;
 
-    // 1. Tạo dữ liệu dự đoán giả lập trước, lặp từ CŨ -> MỚI
     historyToProcess.forEach((result, index) => {
         let fakePrediction;
         let outcome;
@@ -52,10 +58,10 @@ function generateAndRenderInitialHistory(realHistory) {
             outcome = 'tie';
             fakePrediction = Math.random() > 0.5 ? 'P' : 'B';
         } else {
-            if (Math.random() < 0.8) { // 80% Thắng
+            if (Math.random() < targetWinRate) {
                 outcome = 'win';
                 fakePrediction = result;
-            } else { // 20% Thua
+            } else {
                 outcome = 'loss';
                 fakePrediction = opponent(result);
             }
@@ -66,23 +72,22 @@ function generateAndRenderInitialHistory(realHistory) {
             prediction: fakePrediction, 
             result: result, 
             outcome: outcome,
-            session: generateSessionId(roundNumber) // <-- SỬ DỤNG LOGIC MỚI
+            session: generateSessionId(roundNumber)
         });
     });
 
-    // 2. Gán thời gian, lặp NGƯỢC từ MỚI -> CŨ
-    let currentTime = new Date(); // Bắt đầu từ thời gian thực tế
+    let currentTime = new Date();
     for (let i = tempLog.length - 1; i >= 0; i--) {
         let entry = tempLog[i];
         entry.time = new Date(currentTime.getTime()); 
-        
-        // Lùi thời gian về quá khứ để chuẩn bị cho phiên cũ hơn
         currentTime.setSeconds(currentTime.getSeconds() - (Math.floor(Math.random() * 46) + 45));
     }
     
-    // 3. Đảo ngược lại mảng để có thứ tự hiển thị đúng
     predictionHistoryLog = tempLog.reverse();
 
+    // LƯU LỊCH SỬ VỪA TẠO VÀO sessionStorage
+    sessionStorage.setItem(storageKey, JSON.stringify(predictionHistoryLog));
+    
     renderPredictionHistory();
 }
 
@@ -421,8 +426,7 @@ function updatePredictionHistory(prediction, result) {
         outcome = (prediction === result) ? 'win' : 'loss';
     }
 
-    // Ván cược hiện tại là ván có số thứ tự bằng chiều dài lịch sử + 1
-    const newRoundNumber = history.length + 1;
+    const newRoundNumber = history.length; // Sửa lại để lấy số round chính xác hơn
 
     const newHistoryEntry = {
         session: generateSessionId(newRoundNumber),
@@ -436,6 +440,10 @@ function updatePredictionHistory(prediction, result) {
     if (predictionHistoryLog.length > 30) {
         predictionHistoryLog.pop(); 
     }
+    
+    // CẬP NHẬT LẠI DỮ LIỆU TRONG sessionStorage
+    const storageKey = `predictionHistory_${currentTableId}`;
+    sessionStorage.setItem(storageKey, JSON.stringify(predictionHistoryLog));
     
     renderPredictionHistory();
 }
@@ -470,7 +478,6 @@ function renderPredictionHistory() {
         
         const timeString = entry.time.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-        // Thêm class="outcome-..." vào thẻ <tr> để định dạng đường kẻ màu
         html += `
             <tr class="outcome-${entry.outcome}">
                 <td class="col-session">${entry.session}</td>
@@ -484,43 +491,26 @@ function renderPredictionHistory() {
 
     html += `</tbody></table>`;
     container.innerHTML = html;
-
-    // Gọi hàm render icon mới
     renderPredictionHistoryIcons();
 }
 
 function renderPredictionHistoryIcons() {
     const container = document.getElementById('prediction-history-icons');
     if (!container) return;
-
-    // Lấy 10 kết quả gần nhất để hiển thị
     const recentHistory = predictionHistoryLog.slice(0, 12);
     let html = '';
-
-    recentHistory.reverse().forEach(entry => { // Đảo ngược để hiển thị từ cũ -> mới
+    recentHistory.reverse().forEach(entry => {
         let iconClass = '';
         let iconContent = '';
-
         switch (entry.outcome) {
-            case 'win':
-                iconClass = 'icon-win';
-                iconContent = '✔'; // Ký tự checkmark
-                break;
-            case 'loss':
-                iconClass = 'icon-loss';
-                iconContent = '✖'; // Ký tự X
-                break;
-            case 'tie':
-                iconClass = 'icon-tie';
-                iconContent = '!';
-                break;
+            case 'win': iconClass = 'icon-win'; iconContent = '✔'; break;
+            case 'loss': iconClass = 'icon-loss'; iconContent = '✖'; break;
+            case 'tie': iconClass = 'icon-tie'; iconContent = '!'; break;
         }
-
         if (iconClass) {
             html += `<div class="history-icon ${iconClass}">${iconContent}</div>`;
         }
     });
-
     container.innerHTML = html;
 }
 
@@ -568,35 +558,58 @@ function generateMatrixCode() {
 }
 
 function renderBigRoadGrid(rawHistory) {
-    const grid = document.getElementById('bigRoadGrid'); 
-    if(!grid) return;
-    let cleanData = [];
-    if(rawHistory.length > 0) {
-        if(rawHistory[0] !== 'T') cleanData.push({type: rawHistory[0], hasTie: false});
-        for(let i=1; i<rawHistory.length; i++) {
-            let char = rawHistory[i];
-            if(char === 'T') { if(cleanData.length > 0) cleanData[cleanData.length - 1].hasTie = true; } 
-            else { cleanData.push({type: char, hasTie: false}); }
+    const grid = document.getElementById('bigRoadGrid');
+    if (!grid) return;
+    let processedData = [];
+    rawHistory.forEach(char => {
+        if (char === 'T') {
+            if (processedData.length > 0) processedData[processedData.length - 1].hasTie = true;
+        } else if (char === 'P' || char === 'B') {
+            processedData.push({ type: char, hasTie: false });
         }
-    }
-    let columns = []; let currentCol = []; let lastType = null;
-    cleanData.forEach(item => {
-        if(lastType !== null && item.type !== lastType) { columns.push(currentCol); currentCol = []; }
-        if(currentCol.length >= 6) { columns.push(currentCol); currentCol = []; }
-        currentCol.push(item); lastType = item.type;
     });
-    if(currentCol.length > 0) columns.push(currentCol);
+    let columns = [];
+    if (processedData.length > 0) {
+        let currentCol = [];
+        let lastType = null;
+        processedData.forEach(item => {
+            if (item.type !== lastType) {
+                if (currentCol.length > 0) columns.push(currentCol);
+                currentCol = [item];
+                lastType = item.type;
+            } else {
+                currentCol.push(item);
+            }
+        });
+        if (currentCol.length > 0) columns.push(currentCol);
+    }
     const isMobile = window.innerWidth <= 1024;
-    const MAX_COLS = isMobile ? 10 : 20; 
-    let displayCols = [];
-    if(columns.length > MAX_COLS) displayCols = columns.slice(columns.length - MAX_COLS);
-    else { displayCols = columns; while(displayCols.length < MAX_COLS) displayCols.push([]); }
+    const MAX_COLS = isMobile ? 10 : 20;
+    const numRows = 6;
+    let displayGrid = Array(numRows).fill(null).map(() => Array(MAX_COLS).fill(null));
+    let currentGridCol = 0;
+    for (const columnData of columns.slice(-MAX_COLS)) {
+        if (currentGridCol >= MAX_COLS) break;
+        for (let i = 0; i < columnData.length; i++) {
+            const item = columnData[i];
+            if (i < numRows) {
+                displayGrid[i][currentGridCol] = item;
+            } else {
+                let turnCol = currentGridCol + (i - (numRows - 1));
+                if (turnCol < MAX_COLS) {
+                    displayGrid[numRows - 1][turnCol] = item;
+                }
+            }
+        }
+        currentGridCol++;
+    }
     let html = '';
-    displayCols.forEach(col => {
+    for (let c = 0; c < MAX_COLS; c++) {
         html += '<div class="tool-road-col">';
-        for(let r = 0; r < 6; r++) {
-            let node = col[r]; let inner = '';
-            if(node) {
+        for (let r = 0; r < numRows; r++) {
+            const node = displayGrid[r][c];
+            let inner = '';
+            if (node) {
                 let cls = node.type === 'P' ? 'tool-p' : 'tool-b';
                 let tieClass = node.hasTie ? 'has-tie' : '';
                 inner = `<div class="tool-bead ${cls} ${tieClass}"></div>`;
@@ -604,7 +617,7 @@ function renderBigRoadGrid(rawHistory) {
             html += `<div class="tool-road-cell">${inner}</div>`;
         }
         html += '</div>';
-    });
+    }
     grid.innerHTML = html;
 }
 

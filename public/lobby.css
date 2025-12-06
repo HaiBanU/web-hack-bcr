@@ -1,6 +1,5 @@
 /* =========================================
-   LOBBY.CSS - FULL VERSION (V2.0)
-   Gold/Green/Red Tiers + VIP Effects
+   LOBBY.CSS - FULL VERSION (V2.8 - TIE SLASH FIX)
    ========================================= */
 
 /* --- LAYOUT CHUNG --- */
@@ -129,7 +128,6 @@
     height: 230px; 
     cursor: pointer;
     transition: all 0.3s ease;
-    /* Cắt góc kiểu công nghệ */
     clip-path: polygon(
         15px 0, 100% 0, 
         100% calc(100% - 15px), calc(100% - 15px) 100%, 
@@ -145,47 +143,34 @@
 
 /* --- CARD VIP (GOLD) - VIỀN LED CHẠY --- */
 .casino-card.card-vip {
-    /* Xóa border cũ để dùng border led */
     border: none;
     padding: 3px; 
     background: transparent;
     overflow: hidden;
     position: relative;
-    /* Bỏ clip-path để viền chạy mượt hơn */
     clip-path: none; 
     border-radius: 6px;
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.2); /* Glow vàng nhẹ */
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
 }
-
-/* Lớp LED chạy bên dưới */
 .casino-card.card-vip::before {
     content: '';
     position: absolute;
     top: -50%; left: -50%;
     width: 200%; height: 200%;
-    /* Gradient vàng + trắng tạo hiệu ứng VIP */
     background: conic-gradient(
-        transparent, 
-        transparent, 
-        transparent, 
-        #ffd700,
-        #fff
+        transparent, transparent, transparent, #ffd700, #fff
     );
     animation: rotateCardBorder 3s linear infinite;
     z-index: 0;
 }
-
-/* Lớp nền che ở giữa để lộ viền */
 .casino-card.card-vip::after {
     content: '';
     position: absolute;
-    inset: 3px; /* Khớp với padding */
+    inset: 3px;
     background: #050505;
     border-radius: 4px;
     z-index: 0;
 }
-
-/* Đảm bảo nội dung nổi lên trên nền giả */
 .casino-card.card-vip .cc-header,
 .casino-card.card-vip .cc-body {
     position: relative;
@@ -198,29 +183,93 @@
 }
 
 /* --- NỘI DUNG CARD --- */
-.cc-header { 
-    background: linear-gradient(90deg, #111, #000); 
-    border-bottom: 1px solid #222;
-    padding: 0 20px; 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    height: 50px;
-}
-.cc-name { 
-    font-family: var(--font-display); 
-    font-weight: 900; 
-    color: #fff; 
-    font-size: 1.1rem; 
-    letter-spacing: 1px; 
-    text-shadow: 0 0 5px rgba(255,255,255,0.3);
-}
-
 .cc-body { 
     display: flex; 
     height: calc(100% - 50px); 
     background: #0b0b0b; 
 }
+.cc-name { 
+    font-family: var(--font-display); 
+    font-weight: 900; 
+    color: #fff; 
+    font-size: 1rem; 
+    letter-spacing: 1px; 
+    text-shadow: 0 0 5px rgba(255,255,255,0.3);
+    line-height: 1;
+    white-space: nowrap; 
+}
+
+/* ======================================================= */
+/* === START: CSS HEADER VỚI LAYOUT CÂN BẰNG (DESKTOP) === */
+/* ======================================================= */
+.cc-header { 
+    background: linear-gradient(90deg, #111, #000); 
+    border-bottom: 1px solid #222;
+    padding: 0 15px; 
+    display: flex; 
+    align-items: center; 
+    height: 50px;
+}
+
+/* Chia header thành 2 nửa bằng nhau */
+.cc-name-wrapper {
+    flex: 1; /* Nửa trái */
+    text-align: left;
+}
+.cc-header-right {
+    flex: 1; /* Nửa phải */
+    display: flex;
+    align-items: center;
+    justify-content: flex-end; /* Căn nội dung của nửa phải về phía bên phải */
+    gap: 15px;
+}
+
+/* Khối thống kê */
+.inline-stats {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+.stat-item-inline {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Chữ và số liệu */
+.stat-count-inline {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 1.2rem; 
+    line-height: 1;
+}
+.stat-label-inline {
+    font-family: var(--font-main);
+    font-size: 0.4rem; 
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-top: 3px;
+}
+
+/* Màu sắc */
+.stat-item-inline.player .stat-count-inline,
+.stat-item-inline.player .stat-label-inline { color: var(--neon-blue, #00f3ff); }
+.stat-item-inline.player .stat-count-inline { text-shadow: 0 0 8px var(--neon-blue, #00f3ff); }
+.stat-item-inline.tie .stat-count-inline,
+.stat-item-inline.tie .stat-label-inline { color: var(--neon-green, #00ff41); }
+.stat-item-inline.tie .stat-count-inline { text-shadow: 0 0 8px var(--neon-green, #00ff41); }
+.stat-item-inline.banker .stat-count-inline,
+.stat-item-inline.banker .stat-label-inline { color: var(--neon-red, #ff003c); }
+.stat-item-inline.banker .stat-count-inline { text-shadow: 0 0 8px var(--neon-red, #ff003c); }
+
+.live-status {
+    font-size: 0.7rem;
+    font-weight: bold;
+}
+/* ======================================================= */
+/* === END: CSS HEADER                                   === */
+/* ======================================================= */
 
 /* BẢNG CẦU (GRID AREA) */
 .cc-grid-area { 
@@ -251,14 +300,28 @@
 }
 .bead.p { border-color: #007bff; } 
 .bead.b { border-color: #dc3545; } 
+
+/* ========================================= */
+/* === START: SỬA LỖI MÃ MÀU GẠCH HÒA === */
+/* ========================================= */
 .bead.has-tie::after {
-    content: ''; position: absolute; width: 3px; height: 18px; background: #28a745; 
-    top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg);
+    content: ''; 
+    position: absolute; 
+    width: 3px; 
+    height: 18px; 
+    background: #28a745; /* Sửa lại mã màu đúng */
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%) rotate(45deg);
 }
+/* ======================================= */
+/* === END: SỬA LỖI MÃ MÀU GẠCH HÒA   === */
+/* ======================================= */
+
 
 /* KHUNG DỰ ĐOÁN (BÊN PHẢI) */
 .cc-predict-area { 
-    width: 130px; 
+    width: 120px; 
     background: #000; 
     display: flex; 
     flex-direction: column; 
@@ -280,7 +343,7 @@
     font-family: var(--font-display); 
     font-weight: 900; 
     color: #fff; 
-    background: #333; /* Mặc định */
+    background: #333; 
     padding: 12px 0; 
     width: 100%; 
     font-size: 1.4rem; 
@@ -288,10 +351,8 @@
     clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
 }
 
-/* 1. RATE GOLD (> 85%) */
 .cc-rate.rate-gold {
-    background: #ffd700 !important;
-    color: #000 !important;
+    background: #ffd700 !important; color: #000 !important;
     box-shadow: 0 0 15px rgba(255, 215, 0, 0.6), 0 0 30px rgba(255, 215, 0, 0.4);
     animation: pulseGold 1.5s infinite alternate;
 }
@@ -299,48 +360,23 @@
     0% { transform: scale(1); box-shadow: 0 0 15px rgba(255, 215, 0, 0.6); }
     100% { transform: scale(1.05); box-shadow: 0 0 25px rgba(255, 215, 0, 0.9); }
 }
-
-/* 2. RATE GREEN (70% - 85%) */
-.cc-rate.rate-green {
-    background: #00ff41 !important;
-    color: #000 !important;
-    box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
-}
-
-/* 3. RATE RED (< 70%) */
-.cc-rate.rate-red {
-    background: #ff003c !important;
-    color: #fff !important;
-    box-shadow: 0 0 10px rgba(255, 0, 60, 0.5);
-}
+.cc-rate.rate-green { background: #00ff41 !important; color: #000 !important; box-shadow: 0 0 10px rgba(0, 255, 65, 0.5); }
+.cc-rate.rate-red { background: #ff003c !important; color: #fff !important; box-shadow: 0 0 10px rgba(255, 0, 60, 0.5); }
 
 /* --- MODAL (POPUP XÁC NHẬN) --- */
 .custom-modal-overlay {
-    display: none; 
-    position: fixed; top: 0; left: 0; 
-    width: 100vw; height: 100vh;
-    background: rgba(0, 0, 0, 0.9); 
-    z-index: 99999; 
-    justify-content: center; align-items: center;
+    display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.9); z-index: 99999; justify-content: center; align-items: center;
     backdrop-filter: blur(5px);
 }
 .custom-modal-box {
-    background: #050505; 
-    border: 2px solid var(--neon-green);
-    padding: 30px; 
-    width: 90%; max-width: 450px;
-    box-shadow: 0 0 50px rgba(0, 255, 65, 0.2);
-    text-align: center; 
-    position: relative;
-    border-radius: 8px;
+    background: #050505; border: 2px solid var(--neon-green); padding: 30px; 
+    width: 90%; max-width: 450px; box-shadow: 0 0 50px rgba(0, 255, 65, 0.2);
+    text-align: center; position: relative; border-radius: 8px;
 }
 .modal-title { 
-    font-family: var(--font-display); 
-    font-size: 1.5rem; 
-    color: var(--neon-green); 
-    margin-bottom: 20px; 
-    border-bottom: 1px solid #333; 
-    padding-bottom: 10px;
+    font-family: var(--font-display); font-size: 1.5rem; color: var(--neon-green); 
+    margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px;
 }
 .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
 .btn-modal { 
@@ -353,3 +389,47 @@
 .btn-cancel:hover { background: #555; }
 .btn-confirm { background: var(--neon-green); color: #000; box-shadow: 0 0 15px var(--neon-green); }
 .btn-confirm:hover { transform: translateY(-2px); box-shadow: 0 0 25px var(--neon-green); }
+
+/* ======================================================== */
+/* === START: CSS CHO GIAO DIỆN MOBILE (ĐÃ SỬA LỖI VỠ) === */
+/* ======================================================== */
+@media screen and (max-width: 420px) {
+    .tables-grid { grid-template-columns: 1fr; gap: 20px; }
+    .casino-card { height: 280px; } /* Tăng chiều cao để chứa nội dung mới */
+
+    /* Sắp xếp header thành dạng cột */
+    .cc-header {
+        height: auto; 
+        padding: 10px 15px; 
+        flex-direction: column;
+        align-items: flex-start; /* Căn các item theo chiều dọc sang trái */
+        gap: 8px; /* Khoảng cách giữa tên bàn và hàng thống kê */
+    }
+
+    /* Cho các khối con chiếm toàn bộ chiều rộng */
+    .cc-name-wrapper, .cc-header-right {
+        flex: none; 
+        width: 100%;
+        text-align: left;
+    }
+
+    /* Sắp xếp lại khối bên phải (chứa stats và live) */
+    .cc-header-right { 
+       display: flex;
+       justify-content: space-between; /* Đẩy stats và live ra 2 bên */
+       align-items: center;
+       gap: 10px;
+    }
+    
+    .inline-stats { 
+        justify-content: flex-start; /* Căn stats về bên trái */
+    }
+
+    .cc-name { font-size: 1rem; }
+    .stat-count-inline { font-size: 1.4rem; }
+    .cc-body { height: calc(100% - 85px); } /* Điều chỉnh lại chiều cao body card */
+    .cc-predict-area { width: 120px; }
+    .cc-rate { font-size: 1.2rem; padding: 10px 0; }
+    .bead { width: 11px; height: 11px; border-width: 2px; }
+    .bead.has-tie::after { width: 2px; height: 15px; }
+}

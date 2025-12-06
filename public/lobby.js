@@ -1,4 +1,4 @@
-/* --- START OF FILE lobby.js --- */
+/* --- START OF FILE lobby.js (VERSION 2.1 - UPDATED LAYOUT) --- */
 
 // Quản lý tỷ lệ thắng giả lập
 let rateManager = {
@@ -19,96 +19,124 @@ function shuffleArray(array) {
     return array;
 }
 
-// Cập nhật tỷ lệ thắng theo phân bổ 50% - 40% - 10%
+// Cập nhật tỷ lệ thắng theo phân bổ
 function updateWinRates(tables) {
     const now = Date.now();
-    // Chỉ cập nhật lại sau 120s hoặc khi chưa có dữ liệu
     if (Object.keys(rateManager.rates).length === 0 || now - rateManager.lastUpdate > 120000) {
-        
         rateManager.rates = {};
         rateManager.tiers = {};
-        
-        // 1. Lọc ra các bàn ĐANG HOẠT ĐỘNG
         let activeIds = [];
         tables.forEach(t => {
             const resultStr = t.result || "";
-            // Điều kiện hoạt động: Có kết quả, dài hơn 5 ván, status = 1
             if (resultStr && resultStr.length >= 5 && t.status !== 0) {
                 activeIds.push(t.table_id);
             }
         });
-
-        // 2. Trộn ngẫu nhiên danh sách ID
         activeIds = shuffleArray(activeIds);
         const totalActive = activeIds.length;
-
-        // 3. Tính số lượng cho từng nhóm
-        const goldCount = Math.ceil(totalActive * 0.50); // 50%
-        const greenCount = Math.floor(totalActive * 0.40); // 40%
-        // Số còn lại là Red (khoảng 10%)
-
-        // 4. Gán tỷ lệ và phân loại
+        const goldCount = Math.ceil(totalActive * 0.50);
+        const greenCount = Math.floor(totalActive * 0.40);
         activeIds.forEach((id, index) => {
             let rate, tier;
-
             if (index < goldCount) {
-                // NHÓM GOLD (> 85%): Random 86 - 99
                 rate = Math.floor(Math.random() * (99 - 86 + 1)) + 86;
                 tier = 'gold';
             } else if (index < goldCount + greenCount) {
-                // NHÓM GREEN (70% - 85%): Random 70 - 85
                 rate = Math.floor(Math.random() * (85 - 70 + 1)) + 70;
                 tier = 'green';
             } else {
-                // NHÓM RED (50% - 69%): Random 50 - 69
                 rate = Math.floor(Math.random() * (69 - 50 + 1)) + 50;
                 tier = 'red';
             }
-
             rateManager.rates[id] = rate;
             rateManager.tiers[id] = tier;
         });
-
         rateManager.lastUpdate = now;
     }
 }
 
-// Logic vẽ bảng cầu (Big Road) - Giữ nguyên
+
+// ====================================================================
+// === START: HÀM VẼ BẢNG CẦU ĐÃ HỖ TRỢ "ĐUÔI RỒNG" (DRAGON TAIL) ===
+// ====================================================================
 function generateGridHTML(resultStr) {
-    let rawData = resultStr.split('');
-    let processedData = []; 
-    rawData.forEach(char => {
-        if (char === 'T') { 
-            if (processedData.length > 0) processedData[processedData.length - 1].hasTie = true; 
-        } else { processedData.push({ type: char, hasTie: false }); }
+    // Bước 1: Xử lý chuỗi kết quả thô để gán các ván Hòa (Tie) vào kết quả trước đó.
+    let processedData = [];
+    resultStr.split('').forEach(char => {
+        if (char === 'T') {
+            if (processedData.length > 0) {
+                processedData[processedData.length - 1].hasTie = true;
+            }
+        } else if (char === 'P' || char === 'B') {
+            processedData.push({ type: char, hasTie: false });
+        }
     });
 
-    let maxCols = 12; let columns = []; let currentCol = []; let lastType = null;
-    processedData.forEach(item => {
-        if (lastType !== null && item.type !== lastType) { columns.push(currentCol); currentCol = []; }
-        if (currentCol.length >= 6) { columns.push(currentCol); currentCol = []; }
-        currentCol.push(item); lastType = item.type;
-    });
-    if (currentCol.length > 0) columns.push(currentCol);
-    if (columns.length > maxCols) columns = columns.slice(-maxCols);
-    while(columns.length < maxCols) columns.push([]);
+    // Bước 2: Xây dựng các cột dữ liệu (các chuỗi bệt).
+    let columns = [];
+    if (processedData.length > 0) {
+        let currentCol = [];
+        let lastType = null;
+        processedData.forEach(item => {
+            if (item.type !== lastType) {
+                if (currentCol.length > 0) columns.push(currentCol);
+                currentCol = [item];
+                lastType = item.type;
+            } else {
+                currentCol.push(item);
+            }
+        });
+        if (currentCol.length > 0) columns.push(currentCol);
+    }
 
+    // Bước 3: Chuẩn bị một lưới 2D rỗng để vẽ.
+    const maxCols = 12; // Số cột hiển thị trên sảnh
+    const numRows = 6;
+    let displayGrid = Array(numRows).fill(null).map(() => Array(maxCols).fill(null));
+
+    // Bước 4: Đặt các kết quả vào lưới, xử lý logic "đuôi rồng".
+    let currentGridCol = 0;
+    for (const columnData of columns.slice(-maxCols)) { // Chỉ xử lý các cột cuối cùng
+        if (currentGridCol >= maxCols) break;
+        for (let i = 0; i < columnData.length; i++) {
+            const item = columnData[i];
+            if (i < numRows) {
+                // Đi theo chiều dọc như bình thường
+                displayGrid[i][currentGridCol] = item;
+            } else {
+                // Bắt đầu "đuôi rồng": bẻ lái sang phải ở hàng cuối cùng
+                let turnCol = currentGridCol + (i - (numRows - 1));
+                if (turnCol < maxCols) {
+                    displayGrid[numRows - 1][turnCol] = item;
+                }
+            }
+        }
+        currentGridCol++;
+    }
+
+    // Bước 5: Tạo HTML từ lưới đã được xử lý.
     let html = '<div class="road-grid-wrapper">';
-    columns.forEach(col => {
+    for (let c = 0; c < maxCols; c++) {
         html += '<div class="road-col">';
-        for (let r = 0; r < 6; r++) {
-            let node = col[r];
+        for (let r = 0; r < numRows; r++) {
+            const node = displayGrid[r][c];
             if (node) {
                 let colorClass = (node.type === 'P') ? 'p' : 'b';
                 let tieClass = (node.hasTie) ? 'has-tie' : '';
                 html += `<div class="road-cell"><div class="bead ${colorClass} ${tieClass}"></div></div>`;
-            } else html += `<div class="road-cell"></div>`;
+            } else {
+                html += `<div class="road-cell"></div>`;
+            }
         }
         html += '</div>';
-    });
+    }
     html += '</div>';
     return html;
 }
+// ==================================================================
+// === END: HÀM VẼ BẢNG CẦU ĐÃ HỖ TRỢ "ĐUÔI RỒNG" (DRAGON TAIL) ===
+// ==================================================================
+
 
 // Socket connection
 const grid = document.getElementById('tablesGrid');
@@ -120,79 +148,63 @@ if (socket) {
     });
 }
 
-// --- HÀM RENDER CHÍNH ---
+// --- HÀM RENDER CHÍNH (ĐÃ CẬP NHẬT GIAO DIỆN MỚI) ---
 function renderTables(data) {
     if(!grid) return;
-    
-    // Tính toán lại tỷ lệ dựa trên data mới
     updateWinRates(data);
-
     grid.innerHTML = ''; 
     
-    // Xử lý dữ liệu để sắp xếp
     let processedData = data.map(item => {
         const resultStr = item.result || "";
-        // Xác định bàn lỗi/không hoạt động
         let isInterrupted = (!resultStr || resultStr.length < 5 || item.status === 0);
-        
         let winRate = rateManager.rates[item.table_id] || 0;
         let tier = rateManager.tiers[item.table_id] || 'none';
-
         if (isInterrupted) {
             winRate = 0;
             tier = 'off';
         }
-
-        // Điểm sắp xếp: Gold > Green > Red > Off
         let sortScore = 0;
         if (tier === 'gold') sortScore = 3000 + winRate;
         else if (tier === 'green') sortScore = 2000 + winRate;
         else if (tier === 'red') sortScore = 1000 + winRate;
         else sortScore = -1;
-
         let rawName = item.table_name.toUpperCase().replace("BACCARAT", "").replace("BÀN", "").trim();
         let displayName = "BÀN BACCARAT " + rawName;
-
         return { ...item, resultStr, isInterrupted, winRate, tier, sortScore, displayName };
     });
 
-    // Sắp xếp: Bàn xịn lên đầu
     processedData.sort((a, b) => b.sortScore - a.sortScore);
 
     processedData.forEach(item => {
         const { table_id, resultStr, isInterrupted, winRate, tier, displayName } = item;
-        
-        // Cấu hình hiển thị theo Tier
         let cardClass = 'casino-card';
         let rateClass = '';
         let aiLabel = '';
         let rateDisplay = `WIN ${winRate}%`;
-
         if (isInterrupted) {
             rateDisplay = 'BẢO TRÌ';
             aiLabel = '<span style="color:#666;">OFFLINE</span>';
-            // Không set rateClass => để mặc định đen/trắng
         } else {
             if (tier === 'gold') {
-                // MÀU VÀNG (>85%)
-                cardClass += ' card-vip'; // Thêm hiệu ứng viền chạy
+                cardClass += ' card-vip';
                 rateClass = 'rate-gold'; 
                 aiLabel = '<span style="color:#ffd700; font-weight:bold;">★ SUPER VIP ★</span>';
             } else if (tier === 'green') {
-                // MÀU XANH (70-85%)
                 rateClass = 'rate-green';
                 aiLabel = '<span style="color:#00ff41;">AI GỢI Ý</span>';
             } else {
-                // MÀU ĐỎ (<70%)
                 rateClass = 'rate-red';
                 aiLabel = '<span style="color:#ff003c;">RỦI RO CAO</span>';
             }
         }
-
         const liveStatus = isInterrupted ? 'OFF ●' : 'LIVE ●';
         const liveColor = isInterrupted ? '#555' : '#0f0';
 
-        // Tạo phần tử HTML
+        // Tính toán số liệu thống kê
+        const pCount = (resultStr.match(/P/g) || []).length;
+        const bCount = (resultStr.match(/B/g) || []).length;
+        const tCount = (resultStr.match(/T/g) || []).length;
+
         const card = document.createElement('div');
         card.className = cardClass;
         card.onclick = () => {
@@ -201,11 +213,38 @@ function renderTables(data) {
             const modal = document.getElementById('confirmModal');
             if(modal) modal.style.display = 'flex';
         };
-
+        
+        // =========================================================
+        // === START: CẬP NHẬT INNERHTML VỚI CẤU TRÚC ĐÃ SỬA ĐỔI ===
+        // =========================================================
         card.innerHTML = `
             <div class="cc-header">
-                <div><span class="cc-name">${displayName}</span></div>
-                <div style="color:${liveColor}; font-size:0.7rem; font-weight:bold;">${liveStatus}</div>
+                <!-- Item 1: Tên bàn (căn trái) -->
+                <div class="cc-name-wrapper">
+                    <span class="cc-name">${displayName}</span>
+                </div>
+                
+                <!-- Item 2: Khối bên phải (chứa stats và live) -->
+                <div class="cc-header-right">
+                    <!-- Khối thống kê đã được chuyển vào đây -->
+                    <div class="inline-stats">
+                        <div class="stat-item-inline player">
+                            <span class="stat-count-inline">${pCount}</span>
+                            <span class="stat-label-inline">PLAYER</span>
+                        </div>
+                        <div class="stat-item-inline tie">
+                            <span class="stat-count-inline">${tCount}</span>
+                            <span class="stat-label-inline">HÒA</span>
+                        </div>
+                        <div class="stat-item-inline banker">
+                            <span class="stat-count-inline">${bCount}</span>
+                            <span class="stat-label-inline">BANKER</span>
+                        </div>
+                    </div>
+
+                    <!-- Trạng thái Live -->
+                    <div class="live-status" style="color:${liveColor};">${liveStatus}</div>
+                </div>
             </div>
             <div class="cc-body">
                 <div class="cc-grid-area">${generateGridHTML(resultStr)}</div>
@@ -216,15 +255,15 @@ function renderTables(data) {
                 </div>
             </div>
         `;
+        // =======================================================
+        
         grid.appendChild(card);
     });
 }
 
-// Event Listeners cho Modal
 document.addEventListener('DOMContentLoaded', () => {
     const btnCancel = document.querySelector('.btn-cancel');
     if(btnCancel) btnCancel.onclick = () => document.getElementById('confirmModal').style.display = 'none';
-    
     const btnConfirm = document.getElementById('btnConfirmAction');
     if(btnConfirm) {
         btnConfirm.onclick = async () => {
