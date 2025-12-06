@@ -1,4 +1,4 @@
-// --- START OF FULLY UPDATED script.js (v4.2 - With Android Floating View Support) ---
+// --- START OF FULLY UPDATED script.js (V6 - FINAL TIMESTAMP LOGIC FIX) ---
 
 let currentTableId = null;
 let history = [];
@@ -7,24 +7,67 @@ let tokenInterval = null;
 const socket = io();
 
 let lastPrediction = null; 
-let predictionOutcomes = []; 
+let predictionHistoryLog = []; 
 let chartHistory = []; 
 
-function generateInitialChartHistory(totalRounds) {
-    if (totalRounds <= 0) return [];
-    const winCount = Math.round(totalRounds * 0.70);
-    const tieCount = Math.round(totalRounds * 0.05);
-    const lossCount = totalRounds - winCount - tieCount;
-    let initialData = [];
-    for (let i = 0; i < winCount; i++) initialData.push({ type: 'win' });
-    for (let i = 0; i < lossCount; i++) initialData.push({ type: 'loss' });
-    for (let i = 0; i < tieCount; i++) initialData.push({ type: 'tie' });
-    for (let i = initialData.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [initialData[i], initialData[j]] = [initialData[j], initialData[i]];
+// Biến cờ để đảm bảo lịch sử ban đầu chỉ được tạo một lần duy nhất
+let isInitialHistoryGenerated = false;
+
+
+// ==================================================================
+// === START CẬP NHẬT: LOGIC TẠO LỊCH SỬ FAKE VỚI TỶ LỆ 80/20 ===
+// ==================================================================
+function generateAndRenderInitialHistory(realHistory) {
+    predictionHistoryLog = []; // Xóa log cũ
+    const historyToProcess = realHistory.slice(-30);
+    const opponent = (side) => (side === 'P' ? 'B' : 'P');
+    
+    // ==================================================================
+    // === FIX V5: VIẾT LẠI HOÀN TOÀN THUẬT TOÁN TẠO THỜI GIAN      ===
+    // ==================================================================
+    let tempLog = [];
+
+    // 1. Tạo dữ liệu dự đoán giả lập trước, lặp từ CŨ -> MỚI
+    historyToProcess.forEach(result => {
+        let fakePrediction;
+        let outcome;
+        if (result === 'T') {
+            outcome = 'tie';
+            fakePrediction = Math.random() > 0.5 ? 'P' : 'B';
+        } else {
+            if (Math.random() < 0.8) { // 80% Thắng
+                outcome = 'win';
+                fakePrediction = result;
+            } else { // 20% Thua
+                outcome = 'loss';
+                fakePrediction = opponent(result);
+            }
+        }
+        tempLog.push({ prediction: fakePrediction, result: result, outcome: outcome });
+    });
+
+    // 2. Gán thời gian, lặp NGƯỢC từ MỚI -> CŨ
+    let currentTime = new Date(); // Bắt đầu từ thời gian thực tế
+    for (let i = tempLog.length - 1; i >= 0; i--) {
+        let entry = tempLog[i];
+        
+        // Gán thời gian hiện tại cho phiên này
+        entry.time = new Date(currentTime.getTime()); 
+        entry.session = '#' + (Math.floor(currentTime.getTime() / 1000) - 1700000000 + Math.floor(Math.random() * 100));
+
+        // Lùi thời gian về quá khứ để chuẩn bị cho phiên cũ hơn (ở vòng lặp tiếp theo)
+        currentTime.setSeconds(currentTime.getSeconds() - (Math.floor(Math.random() * 46) + 45));
     }
-    return initialData;
+    
+    // 3. Đảo ngược lại mảng để có thứ tự hiển thị đúng [MỚI NHẤT, ..., CŨ NHẤT]
+    predictionHistoryLog = tempLog.reverse();
+
+    renderPredictionHistory();
 }
+// ==================================================================
+// === END CẬP NHẬT: LOGIC TẠO LỊCH SỬ FAKE                       ===
+// ==================================================================
+
 
 window.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -32,32 +75,18 @@ window.addEventListener('DOMContentLoaded', async () => {
     let tName = decodeURIComponent(urlParams.get('tableName') || "BÀN KHÔNG XÁC ĐỊNH");
     if (!tName.includes("BACCARAT")) tName = tName.replace("BÀN", "BÀN BACCARAT");
     document.getElementById('tableNameDisplay').innerText = tName.toUpperCase();
-
+    
     async function initializeTool() {
-        try {
-            const response = await fetch('/api/tables');
-            const data = await response.json();
-            if (data.status === 'success' && data.data) {
-                const currentTable = data.data.find(t => t.table_id == currentTableId);
-                if (currentTable && currentTable.result) {
-                    const numRounds = currentTable.result.length;
-                    chartHistory = generateInitialChartHistory(numRounds);
-                }
-            }
-        } catch (error) {
-            console.error("Lỗi khi lấy dữ liệu ban đầu:", error);
-            chartHistory = [];
-        }
-
         initCardRain();
         updateTokenUI(localStorage.getItem('tokens') || 0);
+        
+        renderPredictionHistory();
+
         addLog(`HỆ THỐNG ĐÃ KẾT NỐI: ${tName}`);
         addLog(`>> KẾT NỐI MÁY CHỦ... [OK]`);
         deductToken('entry');
         startPeriodicDeduction();
         setInterval(generateMatrixCode, 100); 
-        startWaveChartLoop();
-        startFakeTransactions();
     }
 
     await initializeTool();
@@ -120,33 +149,43 @@ socket.on('server_update', (allTables) => {
             return;
         }
 
-        if (newLength > oldLength || oldLength === 0) {
+        if (!isInitialHistoryGenerated && serverRes.length > 0) {
+            generateAndRenderInitialHistory(serverRes);
+            isInitialHistoryGenerated = true;
+        }
+
+        if (newLength > oldLength && isInitialHistoryGenerated) {
             if (lastPrediction && history.length > 0) {
                 const newResult = serverRes[serverRes.length - 1];
+                updatePredictionHistory(lastPrediction.side, newResult);
+
                 if (newResult === 'T') {
                     chartHistory.push({ type: 'tie' });
                 } else {
                     const outcome = (newResult === lastPrediction.side) ? 'win' : 'loss';
-                    predictionOutcomes.push(outcome);
                     chartHistory.push({ type: outcome });
                 }
             }
-            
+        }
+        
+        if (newLength > oldLength || oldLength === 0) {
             history = serverRes;
             updateGameStats(history);
             renderBigRoadGrid(history);
             renderBeadPlate(history);
-            updateChartData(history); 
 
             if (history.length > 0) {
                 const lastWin = history[history.length - 1];
-                addLog(`-------------------------------`);
-                addLog(`>> KẾT QUẢ VỪA RA: [ ${lastWin} ]`);
+                if (oldLength > 0) { 
+                    addLog(`-------------------------------`);
+                    addLog(`>> KẾT QUẢ VỪA RA: [ ${lastWin} ]`);
+                }
                 runPredictionSystem(history);
             }
         }
     }
 });
+
 
 function runPredictionSystem(historyArr) {
     isProcessing = true;
@@ -154,19 +193,25 @@ function runPredictionSystem(historyArr) {
     const ui = {
         advice: document.getElementById('aiAdvice'),
         pred: document.getElementById('aiPredText'),
-        gaugePath: document.getElementById('gaugePath'),
         gaugeValue: document.getElementById('gaugeValue'),
-        gaugeContainer: document.querySelector('.pred-gauge')
+        gaugeContainer: document.getElementById('predGauge'),
+        gaugeFill: document.getElementById('gaugeFill')
     };
+    
+    const circumference = 2 * Math.PI * 45; // 282.7
 
-    ui.advice.innerText = "PHÂN TÍCH MA TRẬN V20"; ui.advice.style.color = "#00ff41";
-    ui.pred.innerText = "ĐANG CHỜ"; ui.pred.className = "pred-result res-wait";
-    ui.gaugePath.setAttribute("stroke-dasharray", "0, 100"); ui.gaugeValue.innerText = "0%";
-    ui.gaugeContainer.classList.remove('active');
+    ui.advice.innerText = "PHÂN TÍCH MA TRẬN...";
+    ui.pred.innerText = "ĐANG CHỜ";
+    ui.pred.className = "pred-result res-wait";
+    
+    ui.gaugeValue.innerHTML = `0<span class="percent-sign">%</span>`;
+    ui.gaugeContainer.classList.remove('gauge-player', 'gauge-banker');
+    ui.gaugeFill.style.transition = 'none';
+    ui.gaugeFill.style.strokeDashoffset = circumference;
 
     const cleanHist = historyArr.filter(x => x !== 'T');
     const len = cleanHist.length;
-    let prediction = null, confidence = 70, reason = "ĐANG PHÂN TÍCH...";
+    let prediction = null, confidence = 70;
 
     if (len > 3) {
         const last1 = cleanHist[len - 1], last2 = cleanHist[len - 2], last3 = cleanHist[len - 3], last4 = cleanHist[len - 4];
@@ -174,64 +219,75 @@ function runPredictionSystem(historyArr) {
         let streak = 0;
         for (let i = len - 1; i >= 0; i--) { if (cleanHist[i] === last1) streak++; else break; }
 
-        if (streak === 7) { prediction = opponent(last1); confidence = 96; reason = `BẺ CẦU RỒNG (7)`; }
-        else if (streak >= 3 && streak < 7) { prediction = last1; confidence = 85 + (streak * 2); reason = `CẦU BỆT (${last1} x${streak})`; }
-        else if (len >= 4 && last1 === last2 && last3 === last4 && last1 !== last3) { prediction = last1; confidence = 92; reason = `CẦU (2-2)`; }
-        else if (len >= 6 && last1===last2 && last2==last3 && last4===cleanHist[len-5] && cleanHist[len-5]==cleanHist[len-6] && last1 !== last4) { prediction = last1; confidence = 94; reason = `CẦU (3-3)`; }
-        else if (len >= 3 && last1 !== last2 && last2 === last3) { prediction = last1; confidence = 88; reason = `CẦU (2-1)`; }
-        else if (len >= 3 && last1 === last2 && last1 !== last3) { prediction = last3; confidence = 90; reason = `CẦU (1-2)`; }
-        else if (len >= 4 && last1 !== last2 && last2 === last3 && last3 === last4) { prediction = last1; confidence = 89; reason = `CẦU (3-1)`; }
-        else if (len >= 4 && last1 === last2 && last2 === last3 && last1 !== last4) { prediction = last4; confidence = 91; reason = `CẦU (1-3)`; }
-        else if (len >= 4 && last1 !== last2 && last2 !== last3 && last3 !== last4) { prediction = opponent(last1); confidence = 93; reason = `CẦU 1-1`; }
-        else { prediction = last1; confidence = 78; reason = "THEO XU HƯỚNG"; }
+        if (streak >= 8) { prediction = opponent(last1); confidence = 98; }
+        else if (streak >= 3 && streak < 8) { prediction = last1; confidence = 85 + (streak * 2); }
+        else if (len >= 4 && last1 === last2 && last3 === last4 && last1 !== last3) { prediction = last1; confidence = 92; }
+        else if (len >= 6 && last1===last2 && last2==last3 && last4===cleanHist[len-5] && cleanHist[len-5]==cleanHist[len-6] && last1 !== last4) { prediction = last1; confidence = 94; }
+        else if (len >= 3 && last1 !== last2 && last2 === last3) { prediction = last1; confidence = 88; }
+        else if (len >= 3 && last1 === last2 && last1 !== last3) { prediction = last3; confidence = 90; }
+        else if (len >= 4 && last1 !== last2 && last2 === last3 && last3 === last4) { prediction = last1; confidence = 89; }
+        else if (len >= 4 && last1 === last2 && last2 === last3 && last1 !== last4) { prediction = last4; confidence = 91; }
+        else if (len >= 4 && last1 !== last2 && last2 !== last3 && last3 !== last4) { prediction = opponent(last1); confidence = 93; }
+        else { prediction = last1; confidence = 78; }
     } 
     
     if (!prediction) {
         if (len > 0) prediction = cleanHist[len - 1]; else prediction = 'B';
-        confidence = 75; reason = "KHỞI TẠO DỮ LIỆU...";
+        confidence = 75;
     }
 
     setTimeout(() => { addLog(`>> PHÂN TÍCH VÁN TIẾP THEO...`); }, 500);
     setTimeout(() => {
-        ui.advice.innerText = reason;
+        ui.advice.innerText = "DỰ ĐOÁN VÁN TIẾP THEO";
+        ui.advice.classList.remove("typing-effect");
+        void ui.advice.offsetWidth; 
+        ui.advice.classList.add("typing-effect");
+
         ui.pred.innerText = (prediction === 'P') ? "PLAYER" : "BANKER";
         ui.pred.className = (prediction === 'P') ? "pred-result res-p" : "pred-result res-b";
-        ui.gaugeValue.innerText = confidence + "%";
-        ui.gaugePath.setAttribute("stroke-dasharray", `${confidence}, 100`);
         
-        let color = (prediction === 'P') ? '#00f3ff' : '#ff003c';
-        ui.gaugePath.className.baseVal = (prediction === 'P') ? "circle stroke-p" : "circle stroke-b";
-        ui.gaugeContainer.style.setProperty('--target-color', color);
-        ui.gaugeContainer.classList.add('active');
+        if (prediction === 'P') {
+            ui.gaugeContainer.classList.add('gauge-player');
+        } else {
+            ui.gaugeContainer.classList.add('gauge-banker');
+        }
 
-        let confP = (prediction === 'P') ? confidence : (100 - confidence);
-        let confB = (prediction === 'B') ? confidence : (100 - confidence);
-        document.getElementById('confP').innerText = confP + "%"; document.getElementById('barP').style.width = confP + "%";
-        document.getElementById('confB').innerText = confB + "%"; document.getElementById('barB').style.width = confB + "%";
+        const offset = circumference - (confidence / 100) * circumference;
+        ui.gaugeFill.style.transition = 'stroke-dashoffset 1s cubic-bezier(0.25, 1, 0.5, 1)';
+        ui.gaugeFill.style.strokeDashoffset = offset;
+        
+        let start = 0;
+        const end = confidence;
+        const duration = 1000;
+        const stepTime = Math.max(1, Math.floor(duration / (end || 1)));
+        
+        let timer = setInterval(() => {
+            start += 1;
+            ui.gaugeValue.innerHTML = `${start}<span class="percent-sign">%</span>`;
+            if (start >= end) {
+                clearInterval(timer);
+                ui.gaugeValue.innerHTML = `${end}<span class="percent-sign">%</span>`;
+            }
+        }, stepTime);
         
         addLog(`>> DỰ ĐOÁN: [ ${prediction} ] (TỶ LỆ: ${confidence}%)`);
         lastPrediction = { side: prediction };
         
-        // ================================================================
-        // [NEW CODE] GỬI DỮ LIỆU SANG APP ANDROID (FLOATING VIEW)
-        // ================================================================
         if (window.AppInventor) {
             var tenBan = document.getElementById('tableNameDisplay').innerText;
-            // Chuỗi gửi đi: "BÀN C01|P|97%"
             var dataGuiDi = tenBan + "|" + prediction + "|" + confidence + "%";
             window.AppInventor.setWebViewString(dataGuiDi);
         }
-        // ================================================================
-
         displayScorePredictions(prediction);
     }, 1500);
 }
+
 
 function generateScoreProbabilities(side, predictedWinner, scenario) {
     let baseProbs = [7, 7, 8, 8, 9, 9, 10, 10, 9, 8]; 
 
     switch(scenario.type) {
-        case 'HIGH_VS_LOW': // Kịch bản: Áp đảo
+        case 'HIGH_VS_LOW':
             if (side === predictedWinner) {
                 baseProbs[7] *= 1.6; baseProbs[8] *= 2.2; baseProbs[9] *= 2.0;
             } else {
@@ -239,7 +295,7 @@ function generateScoreProbabilities(side, predictedWinner, scenario) {
                 baseProbs[8] *= 0.5; baseProbs[9] *= 0.4;
             }
             break;
-        case 'CLOSE_GAME': // Kịch bản: Sít sao
+        case 'CLOSE_GAME':
             baseProbs[4] *= 1.5; baseProbs[5] *= 1.8; baseProbs[6] *= 2.0; baseProbs[7] *= 1.8;
             if (side === predictedWinner) {
                 baseProbs[6] *= 1.2; baseProbs[7] *= 1.2;
@@ -247,7 +303,7 @@ function generateScoreProbabilities(side, predictedWinner, scenario) {
                 baseProbs[4] *= 1.1; baseProbs[5] *= 1.1;
             }
             break;
-        case 'LOW_WIN': // Kịch bản: Thắng sát nút (điểm thấp)
+        case 'LOW_WIN':
             baseProbs[0] *= 1.5; baseProbs[1] *= 1.8; baseProbs[2] *= 2.0;
             baseProbs[3] *= 1.8; baseProbs[4] *= 1.5;
             if (side === predictedWinner) {
@@ -342,11 +398,116 @@ function displayScorePredictions(predictedWinner) {
     }, 1000);
 }
 
+function updatePredictionHistory(prediction, result) {
+    let outcome = 'tie';
+    if (result !== 'T') {
+        outcome = (prediction === result) ? 'win' : 'loss';
+    }
+
+    const newHistoryEntry = {
+        session: '#' + (Math.floor(Date.now() / 1000) - 1700000000 + Math.floor(Math.random() * 100)),
+        prediction: prediction,
+        result: result,
+        outcome: outcome,
+        time: new Date()
+    };
+    
+    predictionHistoryLog.unshift(newHistoryEntry); 
+    if (predictionHistoryLog.length > 30) {
+        predictionHistoryLog.pop(); 
+    }
+    
+    renderPredictionHistory();
+}
+
+function renderPredictionHistory() {
+    const container = document.querySelector('#predictionHistoryPanel .history-table-container');
+    if (!container) return;
+
+    if (predictionHistoryLog.length === 0) {
+        container.innerHTML = '<div style="text-align: center; padding-top: 50px; color: #666;">Đang chờ dữ liệu phiên...</div>';
+        return;
+    }
+
+    let html = `
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>Phiên</th>
+                    <th>Dự Đoán</th>
+                    <th>Kết Quả</th>
+                    <th>Đánh Giá</th>
+                    <th>Thời Gian</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    predictionHistoryLog.forEach(entry => {
+        const predClass = entry.prediction === 'P' ? 'player' : 'banker';
+        const resultClass = entry.result === 'P' ? 'player' : (entry.result === 'B' ? 'banker' : 'tie');
+        const outcomeText = entry.outcome === 'win' ? 'THẮNG' : (entry.outcome === 'loss' ? 'THUA' : 'HÒA');
+        
+        const timeString = entry.time.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+        html += `
+            <tr>
+                <td class="col-session">${entry.session}</td>
+                <td><span class="pill ${predClass}">${entry.prediction === 'P' ? 'PLAYER' : 'BANKER'}</span></td>
+                <td><span class="pill ${resultClass}">${entry.result === 'P' ? 'PLAYER' : (entry.result === 'B' ? 'BANKER' : 'HÒA')}</span></td>
+                <td><span class="outcome ${entry.outcome}">${outcomeText}</span></td>
+                <td class="col-time">${timeString}</td>
+            </tr>
+        `;
+    });
+
+    html += `</tbody></table>`;
+    container.innerHTML = html;
+
+    // Gọi hàm render icon mới
+    renderPredictionHistoryIcons();
+}
+
+function renderPredictionHistoryIcons() {
+    const container = document.getElementById('prediction-history-icons');
+    if (!container) return;
+
+    // Lấy 10 kết quả gần nhất để hiển thị
+    const recentHistory = predictionHistoryLog.slice(0, 10);
+    let html = '';
+
+    recentHistory.reverse().forEach(entry => { // Đảo ngược để hiển thị từ cũ -> mới
+        let iconClass = '';
+        let iconContent = '';
+
+        switch (entry.outcome) {
+            case 'win':
+                iconClass = 'icon-win';
+                iconContent = '✔'; // Ký tự checkmark
+                break;
+            case 'loss':
+                iconClass = 'icon-loss';
+                iconContent = '✖'; // Ký tự X
+                break;
+            case 'tie':
+                iconClass = 'icon-tie';
+                iconContent = '!';
+                break;
+        }
+
+        if (iconClass) {
+            html += `<div class="history-icon ${iconClass}">${iconContent}</div>`;
+        }
+    });
+
+    container.innerHTML = html;
+}
+
 function addLog(msg) {
     const box = document.getElementById('systemLog');
     const time = new Date().toLocaleTimeString('vi-VN', { hour12: false });
     const div = document.createElement('div');
-    div.style.borderBottom = "1px solid #111"; div.style.padding = "3px 0"; div.style.fontFamily = "monospace"; div.style.fontSize = "0.75rem";
+    div.style.borderBottom = "1px solid #111"; div.style.padding = "3px 0"; div.style.fontSize = "0.75rem";
     let color = "#fff";
     if(msg.includes("PLAYER")) color = "#00f3ff"; else if(msg.includes("BANKER")) color = "#ff003c"; else if(msg.includes("FEE") || msg.includes("PHÍ")) color = "#ff9800";
     div.innerHTML = `<span style="color:#666">[${time}]</span> <span style="color:${color}">${msg}</span>`;
@@ -383,20 +544,6 @@ function generateMatrixCode() {
         el.prepend(div); 
         if(el.children.length > 25) el.lastChild.remove();
     }
-}
-
-function startFakeTransactions() {
-    const box = document.getElementById('transLog'); if(!box) return;
-    const names = ["hhhoo","laoodaii99","vica","User99", "HackerVN", "ProPlayer", "Bot_AI", "Winner88", "Master_B", "Dragon_X"];
-    setInterval(() => {
-        const n = names[Math.floor(Math.random()*names.length)];
-        const side = Math.random()>0.5 ? "PLAYER" : "BANKER";
-        const amt = Math.floor(Math.random()*900)+100;
-        const color = side==="PLAYER"?"#00f3ff":"#ff003c";
-        const div = document.createElement('div'); div.className = "trans-item";
-        div.innerHTML = `<span style="color:#888">${n}</span><span style="color:${color}; font-weight:bold;">${side}</span><span style="color:#fff">$${amt}k</span>`;
-        box.prepend(div); if(box.children.length > 8) box.lastChild.remove();
-    }, 1500);
 }
 
 function renderBigRoadGrid(rawHistory) {
@@ -461,103 +608,6 @@ function renderBeadPlate(res) {
     grid.innerHTML = html;
 }
 window.addEventListener('resize', () => { if(history.length > 0) renderBeadPlate(history); });
-
-let waveCanvas, waveCtx;
-let waveW, waveH;
-let waveConfig = { pAmp: 20, targetP: 20, bAmp: 20, targetB: 20, speed: 0.08, pColor: "rgba(0, 243, 255, 0.6)", bColor: "rgba(255, 0, 60, 0.6)" };
-
-function startWaveChartLoop() {
-    waveCanvas = document.getElementById('trendChart');
-    if (!waveCanvas) return;
-    waveCtx = waveCanvas.getContext('2d');
-    function resize() {
-        if (waveCanvas.parentElement) {
-            waveCanvas.width = waveCanvas.parentElement.clientWidth;
-            waveCanvas.height = waveCanvas.parentElement.clientHeight;
-            waveW = waveCanvas.width; waveH = waveCanvas.height;
-        }
-    }
-    window.addEventListener('resize', resize);
-    resize();
-    animateWave();
-}
-
-function animateWave() {
-    if (!waveCtx) return;
-    waveCtx.clearRect(0, 0, waveW, waveH);
-    waveConfig.pAmp += (waveConfig.targetP - waveConfig.pAmp) * 0.05;
-    waveConfig.bAmp += (waveConfig.targetB - waveConfig.bAmp) * 0.05;
-    drawHistoryCandles();
-    waveCtx.globalCompositeOperation = 'screen';
-    if(waveConfig.bAmp > waveConfig.pAmp) { waveCtx.shadowBlur = 20; waveCtx.shadowColor = "#ff003c"; } else { waveCtx.shadowBlur = 0; }
-    drawSineWave(waveConfig.bAmp, 0.02, 1.5, waveConfig.bColor);
-    if(waveConfig.pAmp > waveConfig.bAmp) { waveCtx.shadowBlur = 20; waveCtx.shadowColor = "#00f3ff"; } else { waveCtx.shadowBlur = 0; }
-    drawSineWave(waveConfig.pAmp, 0.025, 0, waveConfig.pColor);
-    waveCtx.shadowBlur = 0;
-    waveCtx.globalCompositeOperation = 'source-over';
-    requestAnimationFrame(animateWave);
-}
-
-function drawSineWave(amplitude, frequency, phaseShift, color) {
-    waveCtx.beginPath();
-    waveCtx.moveTo(0, waveH);
-    let grad = waveCtx.createLinearGradient(0, 0, 0, waveH);
-    grad.addColorStop(0, color.replace("0.6", "0.9"));
-    grad.addColorStop(1, "rgba(0,0,0,0)"); 
-    waveCtx.fillStyle = grad;
-    for (let x = 0; x <= waveW; x += 5) {
-        let y = (waveH / 1.3) + Math.sin(x * frequency + Date.now() * 0.001 + phaseShift) * -amplitude;
-        waveCtx.lineTo(x, y);
-    }
-    waveCtx.lineTo(waveW, waveH);
-    waveCtx.lineTo(0, waveH);
-    waveCtx.closePath();
-    waveCtx.fill();
-}
-
-function updateChartData(hist) {
-    if (!hist || hist.length === 0) return;
-    const lastResult = hist[hist.length - 1];
-    if (lastResult === 'P') { waveConfig.targetP = 80; waveConfig.targetB = 15; } 
-    else if (lastResult === 'B') { waveConfig.targetB = 80; waveConfig.targetP = 15; } 
-    else { waveConfig.targetP = 40; waveConfig.targetB = 40; }
-}
-
-function drawHistoryCandles() {
-    const spacing = 16, candleWidth = 14, minHeight = 15, maxHeight = 45, heightStep = 5;
-    let processedData = []; let streakCounter = 0; let lastResultType = null;
-    for (const result of chartHistory) {
-        if (result.type === 'tie') { processedData.push({ type: 'tie', streak: 0 }); continue; }
-        if (result.type === lastResultType) streakCounter++; else streakCounter = 1;
-        processedData.push({ type: result.type, streak: streakCounter });
-        lastResultType = result.type;
-    }
-    const centerY = waveH / 2;
-    waveCtx.beginPath();
-    waveCtx.moveTo(0, centerY); waveCtx.lineTo(waveW, centerY);
-    waveCtx.strokeStyle = 'rgba(255, 255, 255, 0.2)'; waveCtx.lineWidth = 1; waveCtx.shadowBlur = 0; waveCtx.stroke();
-    const maxCandles = Math.floor(waveW / spacing);
-    const dataToDraw = processedData.slice(-maxCandles);
-    dataToDraw.forEach((item, i) => {
-        const x = waveW - (dataToDraw.length - i) * spacing + (spacing / 2);
-        if (item.type === 'tie') {
-            waveCtx.beginPath(); waveCtx.arc(x, centerY, 4, 0, Math.PI * 2);
-            waveCtx.fillStyle = '#00ff41'; waveCtx.shadowColor = '#00ff41'; waveCtx.shadowBlur = 8; waveCtx.fill();
-            return;
-        }
-        const candleHeight = Math.min(maxHeight, minHeight + (item.streak - 1) * heightStep);
-        waveCtx.beginPath(); waveCtx.lineWidth = candleWidth; waveCtx.shadowBlur = 8;
-        if (item.type === 'win') {
-            waveCtx.strokeStyle = '#00ff41'; waveCtx.shadowColor = '#00ff41';
-            waveCtx.moveTo(x, centerY); waveCtx.lineTo(x, centerY - candleHeight);
-        } else {
-            waveCtx.strokeStyle = '#ff003c'; waveCtx.shadowColor = '#ff003c';
-            waveCtx.moveTo(x, centerY); waveCtx.lineTo(x, centerY + candleHeight);
-        }
-        waveCtx.stroke();
-    });
-    waveCtx.shadowBlur = 0;
-}
 
 function updateGameStats(historyArr) {
     const playerWinsEl = document.getElementById('playerWins');

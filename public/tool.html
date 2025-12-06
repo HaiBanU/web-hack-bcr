@@ -6,9 +6,9 @@
     <title>HACK SEXY-V1.0.26</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="shortcut icon" href="favicon.png" type="image/x-icon">
-    <!-- Font chữ -->
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@500;900&display=swap" rel="stylesheet">
-    <!-- CSS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Orbitron:wght@500;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="tool.css">
     <link rel="stylesheet" href="mobile.css">
@@ -60,26 +60,15 @@
         <main class="game-center">
             <canvas id="cardRain"></canvas>
 
-            <!-- Khu vực bài (Player vs Banker) -->
             <div class="battle-wrapper">
-                <!-- PLAYER SIDE -->
-                <div class="side-container p-side">
-                    <!-- NỘI DUNG SẼ ĐƯỢC JS TẠO RA -->
-                </div>
-                
-                <!-- Cụm VS mới với hiệu ứng tia sét -->
+                <div class="side-container p-side"></div>
                 <div class="vs-container">
                     <div class="vs-ring"></div>
                     <div class="vs-text" data-text="VS">VS</div>
                 </div>
-
-                <!-- BANKER SIDE -->
-                <div class="side-container b-side">
-                    <!-- NỘI DUNG SẼ ĐƯỢC JS TẠO RA -->
-                </div>
+                <div class="side-container b-side"></div>
             </div>
 
-            <!-- KHUNG DỰ ĐOÁN & ROBOT -->
             <div class="prediction-wrapper">
                 <div class="ai-box">
                     <img src="robot.png" class="ai-img" alt="AI" onerror="this.style.display='none'">
@@ -87,88 +76,73 @@
                 <div class="pred-info">
                     <div class="pred-label" id="aiAdvice">HỆ THỐNG ĐANG PHÂN TÍCH...</div>
                     <div class="pred-result blink-wait" id="aiPredText">ĐANG CHỜ</div>
-                </div>
-                <div class="pred-gauge">
-                    <div class="gauge-circle">
-                        <svg viewBox="0 0 36 36" class="circular-chart">
-                            <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                            <path class="circle" id="gaugePath" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                        </svg>
-                        <div class="gauge-text" id="gaugeValue">0%</div>
+                    
+                    <div class="stats-wrapper">
+                        <div class="stat-box player-stat">
+                            <div class="stat-value" id="playerWins">0</div>
+                            <div class="stat-label">PLAYER</div>
+                        </div>
+                        <div class="stat-box tie-stat">
+                            <div class="stat-value" id="tieWins">0</div>
+                            <div class="stat-label">HÒA</div>
+                        </div>
+                        <div class="stat-box banker-stat">
+                            <div class="stat-value" id="bankerWins">0</div>
+                            <div class="stat-label">BANKER</div>
+                        </div>
                     </div>
+                    <div id="prediction-history-icons" class="history-icons-wrapper">
+    <!-- Các icon sẽ được JS chèn vào đây -->
+</div>
                 </div>
-            </div>
 
-            <!-- KHỐI THỐNG KÊ MỚI -->
-            <div class="stats-wrapper">
-                <!-- Player Stats -->
-                <div class="stat-box player-stat">
-                    <div class="stat-value" id="playerWins">0</div>
-                    <div class="stat-label">PLAYER</div>
+                <!-- ============================================= -->
+                <!-- === START: GAUGE NÂNG CẤP (V2)            === -->
+                <!-- ============================================= -->
+                <div class="pred-gauge" id="predGauge">
+                    <svg class="gauge-svg" viewBox="0 0 120 120">
+                        <!-- Vòng tĩnh bên ngoài -->
+                        <circle class="gauge-dial" cx="60" cy="60" r="54"></circle>
+                        <!-- Vòng quét xoay -->
+                        <circle class="gauge-scanner" cx="60" cy="60" r="50"></circle>
+                        <!-- Vòng nền của thanh % -->
+                        <circle class="gauge-bg" cx="60" cy="60" r="45"></circle>
+                        <!-- Vòng thanh % chính -->
+                        <circle class="gauge-fill" id="gaugeFill" cx="60" cy="60" r="45"></circle>
+                    </svg>
+                    <div class="gauge-text" id="gaugeValue">0<span class="percent-sign">%</span></div>
                 </div>
-                <!-- Tie Stats -->
-                <div class="stat-box tie-stat">
-                    <div class="stat-value" id="tieWins">0</div>
-                    <div class="stat-label">HÒA</div>
-                </div>
-                <!-- Banker Stats -->
-                <div class="stat-box banker-stat">
-                    <div class="stat-value" id="bankerWins">0</div>
-                    <div class="stat-label">BANKER</div>
-                </div>
+                <!-- ============================================= -->
+                <!-- === END: GAUGE NÂNG CẤP (V2)              === -->
+                <!-- ============================================= -->
+
             </div>
-            
         </main>
 
         <!-- PANEL PHẢI: TỈ LỆ & MATRIX -->
         <aside class="panel-right">
-            <div style="margin-bottom:15px;">
-                <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:5px;">
-                    <span style="color:#00f3ff;">PLAYER</span> <span id="confP">50%</span>
-                </div>
-                <div style="background:#222; height:8px; border-radius:4px;"><div id="barP" style="height:100%; background:#00f3ff; width:50%;"></div></div>
-            </div>
-            <div>
-                <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:5px;">
-                    <span style="color:#ff003c;">BANKER</span> <span id="confB">50%</span>
-                </div>
-                <div style="background:#222; height:8px; border-radius:4px;"><div id="barB" style="height:100%; background:#ff003c; width:50%;"></div></div>
-            </div>
-            <div id="matrixCode" style="margin-top:auto; font-size:0.6rem; color:#0f0; word-break:break-all; opacity:0.5; font-family:monospace; height:150px; overflow:hidden;"></div>
+            <div id="matrixCode"></div>
         </aside>
 
         <!-- FOOTER: CHIA 4 CỘT -->
-        <footer class="sys-footer">
-            
-            <!-- CỘT 1: BIỂU ĐỒ SÓNG -->
-            <div id="waveTrendPanel" class="footer-panel chart-panel">
-                <div class="panel-label">BIỂU ĐỒ THẮNG-THUA</div>
-                <canvas id="trendChart"></canvas>
+         <footer class="sys-footer">
+            <div id="predictionHistoryPanel" class="footer-panel">
+                <div class="panel-label">LỊCH SỬ PHIÊN</div>
+                <div class="history-table-container">
+                    <div style="text-align: center; padding-top: 50px; color: #666;">Đang chờ dữ liệu phiên...</div>
+                </div>
             </div>
-
-            <!-- CỘT 2: CẦU GIỌT NƯỚC -->
             <div id="beadPlatePanel" class="footer-panel bead-panel">
                 <div class="panel-label">BẢNG CẦU HẠT</div>
                 <div id="beadPlateGrid" class="bead-grid"></div>
             </div>
-
-            <!-- CỘT 3: CẦU LỚN -->
             <div id="bigRoadPanel" class="footer-panel road-panel">
                 <div class="panel-label">BẢNG CẦU LỚN</div>
                 <div class="road-container" id="bigRoadGrid"></div>
             </div>
-
-            <!-- CỘT 4: GIAO DỊCH -->
-            <div id="transLogPanel" class="footer-panel trans-panel">
-                <div class="panel-label">GIAO DỊCH</div>
-                <div id="transLog" class="trans-log-content"></div>
-            </div>
-
         </footer>
     </div>
     
-    
-    <!-- Load Socket.io -->
     <script src="/socket.io/socket.io.js"></script>
     <script src="script.js"></script>
 </body>

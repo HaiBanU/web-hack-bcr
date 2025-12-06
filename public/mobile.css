@@ -1,5 +1,5 @@
 /* =========================================
-   MOBILE.CSS - FINAL LAYOUT (4 BẢNG DƯỚI DỰ ĐOÁN)
+   MOBILE.CSS - V4 (TỐI ƯU GAUGE)
    ========================================= */
 
 @media screen and (max-width: 1024px) {
@@ -36,16 +36,34 @@
         padding-bottom: 20px !important;
     }
 
-    /* Vị trí 3: FOOTER (4 BẢNG THỐNG KÊ) -> ĐƯA LÊN ĐÂY */
+    /* Vị trí 3: FOOTER (3 BẢNG THỐNG KÊ) -> ĐƯA LÊN ĐÂY */
     .sys-footer {
         order: 3;
         display: grid !important;
-        grid-template-columns: 1fr 1fr !important; /* Chia 2 cột */
-        grid-template-rows: 150px 150px !important; /* Chiều cao cố định cho đẹp */
+        grid-template-columns: 1fr 1fr !important; 
+        grid-template-rows: auto auto !important; /* Chiều cao tự động */
         height: auto !important;
         gap: 8px !important;
         width: 100% !important;
         margin-top: 5px !important;
+    }
+    
+    /* Hai bảng cầu nhỏ hơn ở hàng đầu tiên */
+    #beadPlatePanel {
+        grid-column: 1;
+        grid-row: 1;
+        height: 150px !important;
+    }
+    #bigRoadPanel {
+        grid-column: 2;
+        grid-row: 1;
+        height: 150px !important;
+    }
+
+    #predictionHistoryPanel {
+        grid-column: 1 / -1; 
+        grid-row: 2; 
+        height: 500px !important;
     }
 
     /* Vị trí 4: Matrix Code (Chữ chạy xanh) -> Đẩy xuống dưới */
@@ -61,24 +79,22 @@
     .panel-left {
         order: 5;
         width: 100% !important;
-        height: 200px !important; /* Tăng chiều cao để xem log dễ hơn */
+        height: 200px !important;
         margin-bottom: 30px !important;
     }
 
-    /* --- CÁC FIX GIAO DIỆN KHÁC (GIỮ NGUYÊN) --- */
+    /* --- CÁC FIX GIAO DIỆN KHÁC --- */
 
     /* Header */
-    .brand-box { width: 100%; text-align: center; }
+    .brand-box { width: 100%; text-align: center; margin-bottom: 5px; }
     .sys-header h1 { font-size: 1.1rem !important; width: 100%; text-align: center; }
     .sys-status { width: 100%; justify-content: center; }
 
     /* Game (Bài & VS) */
     .battle-wrapper { width: 100% !important; padding: 0 !important; gap: 4px !important; }
     .side-container { width: 48% !important; padding: 5px 2px !important; }
-    .cards-area { gap: 2px !important; margin-top: 5px !important; }
-    .card-slot { width: 30px !important; height: 45px !important; }
-    .card-front, .card-back { font-size: 0.7rem !important; }
-    .score-box { font-size: 1.5rem !important; margin-top: 5px !important; }
+    .score-analysis-title { font-size: 0.7rem !important; }
+    .prob-item { font-size: 0.7rem !important; padding: 1px 5px !important; }
 
     /* VS Badge */
     .vs-container { width: 50px !important; height: 50px !important; }
@@ -93,18 +109,70 @@
         padding: 10px 5px !important;
         margin-top: 15px !important;
         border-radius: 15px !important;
+        flex-direction: column;
+        gap: 10px;
     }
-    .ai-box, .pred-gauge { width: 60px !important; height: 60px !important; }
+    .ai-box { width: 60px !important; height: 60px !important; }
     .ai-img { width: 80% !important; height: 80% !important; }
+    .pred-info { margin: 0 !important; }
     .pred-result { font-size: 2rem !important; }
     .pred-label { font-size: 0.6rem !important; }
-    .gauge-text { font-size: 0.9rem !important; }
+    
+    /* ================================================= */
+    /* === START: TỐI ƯU GAUGE % CHO DI ĐỘNG         === */
+    /* ================================================= */
+    .pred-gauge { 
+        width: 80px !important;
+        height: 80px !important;
+        margin-top: 10px;
+    }
+    /* Làm mỏng các vòng tròn bên trong */
+    .gauge-svg .gauge-dial {
+        stroke-width: 0.5 !important;
+    }
+    .gauge-svg .gauge-scanner {
+        stroke-width: 2 !important;
+    }
+    .gauge-svg .gauge-bg {
+        stroke-width: 8 !important;
+    }
+    .gauge-svg .gauge-fill {
+        stroke-width: 6 !important;
+    }
+    /* Điều chỉnh lại cỡ chữ */
+    .gauge-text { 
+        font-size: 1.6rem !important; 
+    }
+    .percent-sign {
+        font-size: 0.8rem !important;
+    }
+    /* ================================================= */
+    /* === END: TỐI ƯU GAUGE % CHO DI ĐỘNG           === */
+    /* ================================================= */
 
-     #matrixCode { height: 100px !important; flex: none !important; }
+    /* Stats Counter */
+     .stats-wrapper {
+        width: 100% !important;
+        padding: 0 5px !important;
+        gap: 8px !important;
+        margin-top: 15px !important;
+    }
+    .stat-box {
+        height: 60px !important; 
+    }
+    .stat-value {
+        font-size: 1.5rem !important;
+    }
+    .stat-label {
+        font-size: 0.6rem !important;
+        letter-spacing: 1px !important;
+    }
+    
+    /* Footer Panels & Grids */
+    #matrixCode { height: 100px !important; flex: none !important; }
     .footer-panel { border: 1px solid #333; background: #050505; }
     
     .bead-grid {
-        /* THAY ĐỔI: Chuyển từ repeat(5, 1fr) thành repeat(6, 1fr) */
         grid-template-rows: repeat(6, 1fr) !important;
         grid-template-columns: repeat(6, 1fr) !important;
         grid-auto-flow: column !important;
@@ -113,41 +181,9 @@
     .bead-cell {
         direction: ltr !important;
     }
-
-    /* =========================================
-       BỔ SUNG: SẮP XẾP LẠI FOOTER & SỬA LỖI BIG ROAD
-       ========================================= */
-
-    /* --- 1. SẮP XẾP LẠI VỊ TRÍ 4 Ô --- */
-    #beadPlatePanel { grid-column: 1; grid-row: 1; }
-    #waveTrendPanel { grid-column: 1; grid-row: 2; }
-    #bigRoadPanel { grid-column: 2; grid-row: 1; }
-    #transLogPanel { grid-column: 2; grid-row: 2; }
-
-    /* --- 2. SỬA LỖI HIỂN THỊ BIG ROAD BỊ HẸP --- */
+    
     .tool-road-col {
-        max-width: none !important; /* Bỏ giới hạn chiều rộng */
-        flex: 1; /* Cho phép các cột tự chia đều không gian */
-    }
-
-    /* === MÃ MỚI: CSS CHO KHỐI STATS TRÊN MOBILE === */
-    .stats-wrapper {
-        width: 100% !important;
-        padding: 0 5px !important;
-        gap: 8px !important;
-        margin-top: 15px !important;
-    }
-
-    .stat-box {
-        height: 60px !important; /* Giảm chiều cao một chút */
-    }
-
-    .stat-value {
-        font-size: 1.5rem !important; /* Giảm kích thước số */
-    }
-
-    .stat-label {
-        font-size: 0.6rem !important; /* Giảm kích thước chữ */
-        letter-spacing: 1px !important;
+        max-width: none !important;
+        flex: 1;
     }
 }
