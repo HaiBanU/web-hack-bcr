@@ -1,11 +1,20 @@
-/* --- START OF FILE lobby.js (VERSION 2.1 - UPDATED LAYOUT) --- */
+/* --- START OF FILE lobby.js (VERSION 2.2 - SESSION RATES STORAGE) --- */
 
-// Quản lý tỷ lệ thắng giả lập
-let rateManager = {
-    lastUpdate: 0,
-    rates: {}, // Lưu { table_id: rate }
-    tiers: {}  // Lưu { table_id: 'gold' | 'green' | 'red' }
-};
+// Quản lý tỷ lệ thắng giả lập (Đã cập nhật để lưu phiên)
+let rateManager;
+const savedRateManager = sessionStorage.getItem('rateManager');
+
+if (savedRateManager) {
+    // Nếu có dữ liệu đã lưu, lấy ra sử dụng
+    rateManager = JSON.parse(savedRateManager);
+} else {
+    // Nếu không có, khởi tạo mới
+    rateManager = {
+        lastUpdate: 0,
+        rates: {}, // Lưu { table_id: rate }
+        tiers: {}  // Lưu { table_id: 'gold' | 'green' | 'red' }
+    };
+}
 
 // Biến lưu URL bàn sắp vào
 let pendingTableUrl = "";
@@ -19,10 +28,11 @@ function shuffleArray(array) {
     return array;
 }
 
-// Cập nhật tỷ lệ thắng theo phân bổ
+// Cập nhật tỷ lệ thắng theo phân bổ (Đã sửa đổi)
 function updateWinRates(tables) {
     const now = Date.now();
-    if (Object.keys(rateManager.rates).length === 0 || now - rateManager.lastUpdate > 120000) {
+    // Thay 120000 (2 phút) thành 60000 (1 phút)
+    if (Object.keys(rateManager.rates).length === 0 || now - rateManager.lastUpdate > 60000) {
         rateManager.rates = {};
         rateManager.tiers = {};
         let activeIds = [];
@@ -52,6 +62,9 @@ function updateWinRates(tables) {
             rateManager.tiers[id] = tier;
         });
         rateManager.lastUpdate = now;
+
+        // THÊM DÒNG QUAN TRỌNG: Lưu trạng thái mới vào sessionStorage
+        sessionStorage.setItem('rateManager', JSON.stringify(rateManager));
     }
 }
 
