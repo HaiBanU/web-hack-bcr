@@ -80,7 +80,7 @@
 
 /* --- BATTLE AREA (KHU VỰC PHÂN TÍCH) --- */
 .battle-wrapper { 
-    width: 80%; /* SỬA: Giảm chiều rộng tổng thể */
+    width: 80%; 
     display: flex; 
     justify-content: space-between; 
     align-items: stretch; 
@@ -89,7 +89,7 @@
 }
 
 .side-container {
-    width: 40%; /* SỬA: Giảm chiều rộng mỗi khung */
+    width: 40%; 
     position: relative; z-index: 1; border-radius: 12px;
     overflow: hidden; padding: 3px; 
     transition: transform 0.3s, box-shadow 0.3s;
@@ -190,23 +190,47 @@
     background: linear-gradient(180deg, rgba(20,25,20,0.95) 0%, rgba(0,0,0,1) 100%);
     border: 1px solid rgba(0, 255, 65, 0.3);
     border-radius: 20px; 
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 5px 30px; 
+    display: flex; align-items: center; 
+    justify-content: space-around; /* SỬA: Điều chỉnh vị trí các item */
+    padding: 5px 20px; 
     box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 20px rgba(0, 255, 65, 0.05);
     margin-top: 15px; 
 }
 .ai-box { 
-    width: 80px; height: 80px; 
+    width: 100px; height: 100px; /* SỬA: Tăng kích thước */
     border-radius: 50%; background: #050505; 
     border: 3px solid var(--neon-green); display: flex; justify-content: center; align-items: center; 
-    flex-shrink: 0; box-shadow: 0 0 20px var(--neon-green), inset 0 0 10px var(--neon-green);
+    flex-shrink: 0; 
     animation: aiBoxPulse 2s infinite alternate;
 }
-.ai-img { width: 90%; height: 90%; object-fit: contain; z-index: 2; animation: robotFloat 3s ease-in-out infinite; }
-@keyframes robotFloat { 0% { transform: translateY(0); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0); } }
+.ai-img { 
+    width: 90%; height: 90%; 
+    object-fit: contain; z-index: 2; 
+    animation: robotFloat 3s ease-in-out infinite;
+    /* THÊM: Hiệu ứng phát sáng cho robot */
+    filter: drop-shadow(0 0 8px var(--neon-green)); 
+}
+
+/* SỬA: Nâng cấp hiệu ứng */
+@keyframes robotFloat { 
+    0%, 100% { 
+        transform: translateY(0); 
+        filter: drop-shadow(0 0 8px var(--neon-green)); 
+    }
+    50% { 
+        transform: translateY(-5px); 
+        filter: drop-shadow(0 0 15px var(--neon-green)); 
+    } 
+}
 @keyframes aiBoxPulse {
-    from { box-shadow: 0 0 20px var(--neon-green), inset 0 0 10px var(--neon-green); }
-    to { box-shadow: 0 0 30px var(--neon-green), 0 0 10px #fff, inset 0 0 15px var(--neon-green); }
+    from { 
+        transform: scale(1);
+        box-shadow: 0 0 20px var(--neon-green), inset 0 0 10px var(--neon-green); 
+    }
+    to { 
+        transform: scale(1.05);
+        box-shadow: 0 0 35px var(--neon-green), 0 0 10px #fff, inset 0 0 15px var(--neon-green); 
+    }
 }
 
 .pred-info { flex-grow: 1; text-align: center; margin: 0 15px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
